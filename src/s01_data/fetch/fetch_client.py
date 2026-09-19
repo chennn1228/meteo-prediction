@@ -11,6 +11,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+from src.s02_data.cache_contract import DataContractError
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_RETRIES = 4
@@ -76,6 +78,9 @@ def fetch_json(endpoint, params, out_file, force=False,
                 os.replace(meta_tmp, meta_path)
             logger.info("已保存 %s（%d bytes）", out_file, len(raw))
             return data
+        except DataContractError as exc:
+            logger.error("API payload fails a permanent data contract; not retrying: %s", exc)
+            return None
         except Exception as exc:
             last_err = exc
             wait = 2 ** attempt

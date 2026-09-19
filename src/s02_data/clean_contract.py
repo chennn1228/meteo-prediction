@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.s02_data.cache_contract import DataContractError, cache_metadata, validate_raw_payload
+from .cache_contract import DataContractError, cache_metadata, validate_raw_payload
 
 
 def expected_month_slices(start: dt.date, end: dt.date):
@@ -61,7 +61,7 @@ def audit_clean_frame(df: pd.DataFrame, start: dt.date, end: dt.date,
     if missing:
         raise DataContractError(f"Missing cleaned columns: {sorted(missing)}")
     target = pd.to_datetime(df["target_time_utc"], utc=True)
-    issue = pd.to_datetime(df["fcst_issue_time_utc"], utc=True)
+    issue = pd.to_datetime(df["forecast_issue_time_utc"], utc=True)
     lead = pd.to_numeric(df["lead_time"], errors="coerce")
     if target.isna().any() or issue.isna().any() or lead.isna().any():
         raise DataContractError("Null or unparsable target/issue/lead")

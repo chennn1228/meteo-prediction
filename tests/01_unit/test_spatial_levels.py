@@ -28,7 +28,8 @@ DAY = dt.date(2024, 2, 1)
 def make_context():
     points = tuple(service_point(31 + i * .5 + j * .02, 119 + j * .1, region)
                    for i, region in enumerate(REGIONS) for j in range(5))
-    audit = convergence_audit([(0.05, points), (0.025, points), (0.0125, points)])
+    audit = convergence_audit([(0.05, points), (0.025, points), (0.0125, points)],
+                              boundary_sensitivity_passed=True)
     hours = pd.date_range("2024-02-01", periods=24, freq="h", tz="UTC")
     evidence = {}
     for point in points:

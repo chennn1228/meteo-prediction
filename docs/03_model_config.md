@@ -1,4 +1,4 @@
-# Model registry and tuning policy
+# 模型注册与调参政策
 
 Version 2.0.0-provisional | Generated logically from `project_manifest.yaml`
 
@@ -54,9 +54,13 @@ DL search uses two learning rates, two model scales and at most two dropout valu
 
 ## Feature modes
 
-- `seen_site`: `station_id` may be used only for an explicit seen-site comparator.
-- `province_wide`: `station_id` is forbidden; use latitude, longitude, elevation, region, source coordinates, solar geometry and other transferable fields.
+- 所有正式与诊断模型均禁止把 `station_id`、`location_id`、`source_grid_id` 及其编码送入特征矩阵；这些字段只作分组与溯源。
+- 使用 API 实际返回的 GFS 服务点经纬度与海拔计算物理特征；请求坐标只作溯源，不参与太阳几何。
 - Feature selection uses group evidence in inner folds. SHAP is interpretation-only.
+
+## 当前 CPU 准入状态
+
+固定定义、无需伪造六候选：`climatology`、`persistence`、`smart_persistence`、`optimal_convex`、`raw_gfs`、`bias_correction`、`linear_mos`。需要六个预注册候选：`ridge_mos`、`lgbm`、`xgboost`。除 `raw_gfs` 外，目前均为 `pending_validation`，不得进入正式比较；GPU 模型状态不影响 CPU 专属门禁。概率分位数是主评价，MAE/RMSE/Bias/R² 是点预测辅助指标，RMSE skill 必须标明参照模型。
 
 ## Seed policy
 
@@ -68,4 +72,3 @@ DL search uses two learning rates, two model scales and at most two dropout valu
 ## Current selection status
 
 No v2 selection file is official. Existing `reports/02_experiment/cv/month_balanced/*/selection.json` belongs to the retired protocol and is retained only in legacy artifacts.
-

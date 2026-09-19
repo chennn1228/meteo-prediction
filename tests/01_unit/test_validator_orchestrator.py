@@ -18,13 +18,13 @@ class ValidatorOrchestratorTests(unittest.TestCase):
         self.assertEqual([stage.number for stage in STAGES], list(range(1, 14)))
         self.assertEqual(run_stage("validate")["status"], "pass")
         with self.assertRaises(ProtocolError):
-            run_stage("train")
+            run_stage("train_cpu")
 
     def test_official_fail_closed_until_evidence_exists(self):
         report = result("official")
         self.assertEqual(report["status"], "blocked")
         with self.assertRaises(ProtocolError):
-            run_stage("train", implementation_level="validated", execution_level="official")
+            run_stage("train_cpu", implementation_level="validated", execution_level="official")
 
 
 if __name__ == "__main__":

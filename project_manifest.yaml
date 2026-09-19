@@ -1,5 +1,8 @@
 protocol_version: "2.0.0-provisional"
 data_version: "openmeteo-point-2024-02_2026-09-v1"
+data_layout:
+  root: data/protocol2
+  policy: preserve_legacy_raw_and_rebuild_with_sidecars
 feature_version: "feature-mechanism-v2-pending-retrain"
 benchmark_version: "nested-purged-rolling-v1-pending"
 schema_version: "1.0.0"
@@ -13,6 +16,10 @@ official_gate:
   required_execution_level: official
   legacy_imports_forbidden: true
   official_run_requires_validation_pass: true
+cpu_experiment:
+  model_ids: [climatology, persistence, smart_persistence, optimal_convex, raw_gfs,
+              bias_correction, linear_mos, ridge_mos, lgbm, xgboost]
+  readiness_scope: declared_cpu_models_only
 daylight_definition:
   formal: solar_elevation_gt_0
   sensitivity_only: [solar_elevation_gt_10, is_day_fcst_eq_1]
@@ -81,7 +88,15 @@ validation_protocol:
 
 quantiles: [0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95]
 selection_metric: mean_pinball
-report_metrics: [mae, rmse, bias, rmse_skill_score, mean_pinball, coverage, interval_width]
+report_metrics: [mae, rmse, bias, r2, rmse_skill, mean_pinball, coverage, interval_width]
+point_metric_references:
+  climatology: null
+  raw_gfs: climatology
+  other_fixed: climatology
+  corrected: raw_gfs
+probability_construction:
+  ridge_mos: early_stop_residual_distribution_uncalibrated
+  posthoc_calibration: independent_later_calibration_block
 
 feature_groups:
   radiation: [ghi_fcst, dhi_fcst, dni_fcst, gti_fcst, terrestrial_fcst]
@@ -104,6 +119,7 @@ feature_policy:
   diffuse_denominator_min_wm2: 50
   fit_preprocessing_on: current_training_fold_only
   lag_source: prior_available_forecasts_by_issue_time
+  cloud_imputation_predictors: [ghi_fcst, temp_fcst, rh_fcst, pressure_fcst]
 
 spatial_design:
   training_sites: 20
@@ -125,30 +141,30 @@ spatial_design:
   requested_coordinates_role: provenance_only
 
 models:
-  - {id: climatology, family: baseline, role: value_ladder}
-  - {id: persistence, family: baseline, role: value_ladder}
-  - {id: smart_persistence, family: baseline, role: value_ladder}
-  - {id: optimal_convex, family: baseline, role: value_ladder}
-  - {id: raw_gfs, family: raw, role: value_ladder}
-  - {id: bias_correction, family: statistical, role: value_ladder}
-  - {id: linear_mos, family: statistical, role: value_ladder}
-  - {id: ridge_mos, family: statistical, role: value_ladder}
-  - {id: lgbm, family: tree_ml, role: value_ladder}
-  - {id: xgboost, family: tree_ml, role: value_ladder}
-  - {id: mlp, family: deep, internal_version: v2}
-  - {id: cnn, family: deep, internal_version: v3}
-  - {id: tcn, family: deep, internal_version: v4}
-  - {id: lstm, family: deep, internal_version: v5}
-  - {id: transformer, family: deep, internal_version: v6}
-  - {id: autoformer, family: deep, internal_version: v7}
-  - {id: informer, family: deep, internal_version: v8}
-  - {id: fedformer, family: deep, internal_version: v9}
-  - {id: itransformer, family: deep, internal_version: v10}
-  - {id: patchtst, family: deep, internal_version: v11}
-  - {id: dlinear, family: deep, internal_version: v12}
-  - {id: timesnet, family: deep, internal_version: v13}
-  - {id: tsmixer, family: deep, internal_version: v14}
-  - {id: pinn, family: experimental_constrained, internal_version: v15}
+  - {id: climatology, family: baseline, role: value_ladder, implementation_status: pending_validation, official_eligible: false, tuning_required: false, execution_device: cpu}
+  - {id: persistence, family: baseline, role: value_ladder, implementation_status: pending_validation, official_eligible: false, tuning_required: false, execution_device: cpu}
+  - {id: smart_persistence, family: baseline, role: value_ladder, implementation_status: pending_validation, official_eligible: false, tuning_required: false, execution_device: cpu}
+  - {id: optimal_convex, family: baseline, role: value_ladder, implementation_status: pending_validation, official_eligible: false, tuning_required: false, execution_device: cpu}
+  - {id: raw_gfs, family: raw, role: value_ladder, implementation_status: validated, official_eligible: true, tuning_required: false, execution_device: cpu}
+  - {id: bias_correction, family: statistical, role: value_ladder, implementation_status: pending_validation, official_eligible: false, tuning_required: false, execution_device: cpu}
+  - {id: linear_mos, family: statistical, role: value_ladder, implementation_status: pending_validation, official_eligible: false, tuning_required: false, execution_device: cpu}
+  - {id: ridge_mos, family: statistical, role: value_ladder, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: cpu}
+  - {id: lgbm, family: tree_ml, role: value_ladder, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: cpu}
+  - {id: xgboost, family: tree_ml, role: value_ladder, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: cpu}
+  - {id: mlp, family: deep, internal_version: v2, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: gpu}
+  - {id: cnn, family: deep, internal_version: v3, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: gpu}
+  - {id: tcn, family: deep, internal_version: v4, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: gpu}
+  - {id: lstm, family: deep, internal_version: v5, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: gpu}
+  - {id: transformer, family: deep, internal_version: v6, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: gpu}
+  - {id: autoformer, family: deep, internal_version: v7, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: gpu}
+  - {id: informer, family: deep, internal_version: v8, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: gpu}
+  - {id: fedformer, family: deep, internal_version: v9, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: gpu}
+  - {id: itransformer, family: deep, internal_version: v10, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: gpu}
+  - {id: patchtst, family: deep, internal_version: v11, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: gpu}
+  - {id: dlinear, family: deep, internal_version: v12, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: gpu}
+  - {id: timesnet, family: deep, internal_version: v13, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: gpu}
+  - {id: tsmixer, family: deep, internal_version: v14, implementation_status: pending_validation, official_eligible: false, tuning_required: true, execution_device: gpu}
+  - {id: pinn, family: experimental_constrained, internal_version: v15, implementation_status: experimental, official_eligible: false, tuning_required: false, execution_device: gpu}
 model_count: 24
 deep_model_count: 14
 

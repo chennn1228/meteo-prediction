@@ -20,11 +20,22 @@ def main() -> int:
                         choices=("prototype", "validated"))
     parser.add_argument("--execution-level", default="smoke",
                         choices=("smoke", "development", "official"))
+    parser.add_argument("--validation-mode", default="structural",
+                        choices=("structural", "data_ready", "cpu_ready", "deep_ready",
+                                 "official_full"))
+    parser.add_argument("--input-path", type=Path)
+    parser.add_argument("--output-path", type=Path)
+    parser.add_argument("--probe-step", type=float)
+    parser.add_argument("--max-new-batches", type=int, default=0)
     args = parser.parse_args()
     report = run_stage(args.stage, implementation_level=args.implementation_level,
-                       execution_level=args.execution_level)
+                       execution_level=args.execution_level,
+                       validation_mode=args.validation_mode, input_path=args.input_path,
+                       output_path=args.output_path, probe_step=args.probe_step,
+                       max_new_batches=args.max_new_batches)
     print(json.dumps(report, indent=2, ensure_ascii=False))
-    return 0 if report.get("status") == "pass" else 2
+    return 0 if report.get("status") in {"pass", "complete_empirical_round",
+                                         "partial_not_frozen", "development_feature_build_not_official_result"} else 2
 
 
 if __name__ == "__main__":

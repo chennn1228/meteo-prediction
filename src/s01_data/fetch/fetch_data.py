@@ -47,7 +47,7 @@ def load_cfg():
         variables = yaml.safe_load(fh)
     with open(CODE_ROOT / "project_manifest.yaml", "r", encoding="utf-8") as fh:
         manifest = yaml.safe_load(fh)
-    return sites, variables, manifest["data_version"]
+    return sites, variables, manifest["data_version"], manifest["data_layout"]["root"]
 
 
 def month_ranges(start: dt.date, end: dt.date):
@@ -160,10 +160,9 @@ def main():
     parser.add_argument("--data-dir", default=None, help="数据根目录（默认项目根/data）")
     args = parser.parse_args()
 
+    sites, cfg, data_version, data_root_name = load_cfg()
     global DATA_ROOT
-    DATA_ROOT = Path(args.data_dir) if args.data_dir else CODE_ROOT / "data"
-
-    sites, cfg, data_version = load_cfg()
+    DATA_ROOT = Path(args.data_dir) if args.data_dir else CODE_ROOT / data_root_name
     if args.site == "all":
         selected = sites
     else:

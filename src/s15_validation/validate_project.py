@@ -1,13 +1,16 @@
-"""Strong structural checks and an explicit, conservative official gate."""
+"""Evidence-based readiness gates; a structural pass never authorizes training."""
 from __future__ import annotations
 
 import ast
 from dataclasses import asdict, dataclass
 from pathlib import Path
+import datetime as dt
+import json
 
 from s01_core.config_loader import ProtocolError, load_data_config, load_manifest, project_root
 from s01_core.schemas import assert_model_features
 from s15_validation.validate_protocol import check_contract_alignment, chronological_boundaries
+from s02_data.clean_contract import validate_cached_month
 
 
 ACTIVE_PACKAGES = (
@@ -114,35 +117,161 @@ def validate_structural(root: Path | None = None) -> list[Check]:
     return checks
 
 
-def validate_official_readiness(root: Path | None = None) -> list[Check]:
+def validate_data_readiness(root: Path | None = None) -> list[Check]:
     root = root or project_root()
     manifest = load_manifest(root / "project_manifest.yaml")
     checks = validate_structural(root)
+    data_root = root / manifest["data_layout"]["root"]
+    sites = load_data_config("01_sites.yaml", root)["sites"]
+    first = dt.date.fromisoformat(manifest["development_period"]["start"][:10])
+    last = dt.date.fromisoformat(manifest["test_period"]["end"][:10])
+    months = []
+    year, month = first.year, first.month
+    while (year, month) <= (last.year, last.month):
+        months.append(f"{year:04d}-{month:02d}")
+        month += 1
+        if month == 13:
+            year, month = year + 1, 1
+    sources = (("previous_runs", "01_gfs"), ("era5", "02_era5"),
+               ("satellite", "03_satellite"))
+    missing = []
+    for site in sites:
+        for month_key in months:
+            for _, folder in sources:
+                path = data_root / "01_raw" / folder / site["id"] / f"{site['id']}_{month_key}.json"
+                if not path.is_file() or not path.with_name(path.name + ".meta.json").is_file():
+                    missing.append(str(path.relative_to(root)))
+    checks.append(Check("complete 18-variable monthly raw grid with sidecars", not missing,
+                        f"expected={len(sites)*len(months)*len(sources)} files; missing={len(missing)}; "
+                        f"first={missing[:2]}", "data_ready"))
+    pilot = data_root / "01_raw" / "01_gfs" / "nanjing_1" / "nanjing_1_2024-02.json"
+    if pilot.is_file():
+        try:
+            site = next(site for site in sites if site["id"] == "nanjing_1")
+            validate_cached_month(pilot, source="previous_runs",
+                                  cfg=load_data_config("02_variables.yaml", root),
+                                  start=dt.date(2024, 2, 1), end=dt.date(2024, 2, 29),
+                                  data_version=manifest["data_version"],
+                                  requested_lat=site["lat"], requested_lon=site["lon"])
+            checks.append(Check("real pilot GFS satisfies strict 18-variable contract", True,
+                                scope="data_ready"))
+        except (ValueError, KeyError, TypeError, OSError) as exc:
+            checks.append(Check("real pilot GFS satisfies strict 18-variable contract", False,
+                                str(exc), "data_ready"))
+    else:
+        checks.append(Check("real pilot GFS satisfies strict 18-variable contract", False,
+                            "no current-protocol pilot file", "data_ready"))
+    checks.append(Check("returned-service coordinate provenance complete", not missing,
+                        "requires every current-protocol GFS sidecar and raw payload", "data_ready"))
+    checks.append(Check("independently audited hourly Himawari truth", False,
+                        "no province-wide hourly quality-gate receipt", "data_ready"))
+    return checks
+
+
+def validate_cpu_readiness(root: Path | None = None) -> list[Check]:
+    root = root or project_root()
+    manifest = load_manifest(root / "project_manifest.yaml")
+    checks = validate_data_readiness(root)
     chronology = chronological_boundaries(manifest)
-    checks.extend([
-        Check("first outer prefix supports three purged inner folds",
-              bool(chronology["first_outer_has_nonempty_fit"]),
-              f"available={chronology['first_outer_prefix_days']}d; minimum before nonempty fit="
-              f"{chronology['minimum_days_before_fit']}d; protocol change requires explicit decision",
-              "official"),
-        Check("Jiangsu returned-service registry convergence frozen",
-              manifest["spatial_design"]["service_registry_status"] == "frozen",
-              "0.05-degree probe: 707 distinct returned coordinates from in-province requests; "
-              "654 returned coordinates inside the Jiangsu boundary; no convergence audit", "official"),
-        Check("province hourly Himawari truth gate passed", False,
-              "no complete independently gated hourly truth is registered", "official"),
-        Check("v2 raw/clean/featured data regenerated and audited", False,
-              "current local raw cache predates strict 18-variable version sidecars", "official"),
-        Check("all compared models audited as validated implementations", False,
-              "per-model architecture and six-candidate tuner integration remains pending", "official"),
-    ])
+    checks.append(Check("first outer prefix fits all three purged inner folds",
+                        bool(chronology["first_outer_has_nonempty_fit"]),
+                        f"available={chronology['first_outer_prefix_days']}d; "
+                        f"minimum before nonempty fit={chronology['minimum_days_before_fit']}d",
+                        "cpu_ready"))
+    registry = root / manifest["data_layout"]["root"] / "04_service_probes" / "frozen_registry.json"
+    frozen = manifest["spatial_design"]["service_registry_status"] == "frozen" and registry.is_file()
+    checks.append(Check("Jiangsu returned-service registry frozen after convergence", frozen,
+                        "0.025° probe currently partial; two zero-new rounds and boundary sensitivity required",
+                        "cpu_ready"))
+    cpu_ids = manifest["cpu_experiment"]["model_ids"]
+    models = {item["id"]: item for item in manifest["models"]}
+    invalid = [model_id for model_id in cpu_ids if model_id not in models or
+               models[model_id]["execution_device"] != "cpu" or
+               models[model_id]["implementation_status"] != "validated" or
+               not models[model_id]["official_eligible"]]
+    checks.append(Check("declared CPU models validated and eligible", not invalid,
+                        f"pending={invalid}; deep-model status intentionally ignored", "cpu_ready"))
+    tuned = [model_id for model_id in cpu_ids if models[model_id]["tuning_required"]]
+    candidate_ok = all(len(manifest["tuning_search_spaces"].get(model_id, [])) == 6
+                       for model_id in tuned)
+    fixed_ok = all(not models[model_id]["tuning_required"]
+                   for model_id in cpu_ids if model_id not in tuned)
+    checks.append(Check("six candidates only for tuned CPU models", candidate_ok and fixed_ok,
+                        f"tuned={tuned}", "cpu_ready"))
+    from s03_features.engineering import formal_feature_columns
+    from s01_core.schemas import assert_model_features
+    try:
+        # The registry is the sole selection source; it also rejects IDs/truth.
+        columns = [column for group, values in manifest["feature_groups"].items()
+                   if group not in {"selection_evidence", "shap_role"} for column in values]
+        assert_model_features(columns)
+        feature_ok = callable(formal_feature_columns)
+    except (ValueError, KeyError, TypeError):
+        feature_ok = False
+    checks.append(Check("one formal feature registry and identity exclusion", feature_ok,
+                        scope="cpu_ready"))
+    from s03_features.preprocessing import fit_fold_preprocessing
+    checks.append(Check("fold-local preprocessing entry point available",
+                        callable(fit_fold_preprocessing), scope="cpu_ready"))
+    from s07_prediction.schema import validate_predictions
+    from s09_metrics.deterministic import point_metrics
+    from s10_evaluation.runner import evaluate_predictions
+    checks.append(Check("prediction, probability and point metric interfaces available",
+                        all(callable(fn) for fn in
+                            (validate_predictions, point_metrics, evaluate_predictions)),
+                        "interface presence does not substitute for mini-E2E", "cpu_ready"))
+    receipt = root / manifest["data_layout"]["root"] / "05_cpu_mini_e2e" / "receipt.json"
+    receipt_ok = False
+    if receipt.is_file():
+        try:
+            payload = json.loads(receipt.read_text(encoding="utf-8"))
+            receipt_ok = payload.get("status") == "pass" and payload.get("data_version") == manifest["data_version"]
+        except (OSError, ValueError, TypeError):
+            pass
+    checks.append(Check("real-data CPU mini-E2E receipt", receipt_ok,
+                        "must be produced by current-protocol real data; no synthetic substitute",
+                        "cpu_ready"))
+    from s01_core.provenance import runtime_provenance
+    try:
+        snapshot = runtime_provenance(root)
+        missing_packages = [name for name, version in snapshot["packages"].items()
+                            if version is None]
+        lock = (root / "requirements-lock.txt").read_text(encoding="utf-8")
+        pinned = all(f"{name}=={version}" in lock for name, version in
+                     snapshot["packages"].items() if version is not None)
+        provenance_ok = not missing_packages and pinned
+        detail = f"missing={missing_packages}; pinned_installed_versions={pinned}"
+    except (ValueError, OSError, KeyError) as exc:
+        provenance_ok, detail = False, str(exc)
+    checks.append(Check("Git/environment provenance capture and package pins",
+                        provenance_ok, detail, "cpu_ready"))
+    return checks
+
+
+def validate_deep_readiness(root: Path | None = None) -> list[Check]:
+    checks = validate_cpu_readiness(root)
+    manifest = load_manifest((root or project_root()) / "project_manifest.yaml")
+    deep = [item for item in manifest["models"] if item["execution_device"] == "gpu"]
+    checks.append(Check("14 GPU model implementations validated", len(deep) == 14 and all(
+        item["implementation_status"] == "validated" and item["official_eligible"]
+        for item in deep), "pinned experimental model is not silently promoted", "deep_ready"))
+    return checks
+
+
+def validate_official_readiness(root: Path | None = None) -> list[Check]:
+    checks = validate_deep_readiness(root)
+    checks.append(Check("official experiment result set intentionally not yet created", False,
+                        "full benchmark forbidden in this preparation round", "official_full"))
     return checks
 
 
 def result(mode: str = "structural", root: Path | None = None) -> dict:
-    if mode not in {"structural", "official"}:
+    modes = {"structural": validate_structural, "data_ready": validate_data_readiness,
+             "cpu_ready": validate_cpu_readiness, "deep_ready": validate_deep_readiness,
+             "official_full": validate_official_readiness, "official": validate_official_readiness}
+    if mode not in modes:
         raise ProtocolError(f"invalid validation mode: {mode}")
-    checks = validate_structural(root) if mode == "structural" else validate_official_readiness(root)
+    checks = modes[mode](root)
     return {
         "mode": mode,
         "status": "pass" if all(check.passed for check in checks) else "blocked",

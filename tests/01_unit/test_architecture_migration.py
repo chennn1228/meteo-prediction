@@ -45,6 +45,7 @@ def test_whole_dataset_cloud_imputer_blocked_and_fit_boundary():
     with pytest.raises(RuntimeError, match="retired"):
         impute_cloud_forecast(pd.DataFrame())
     fit = pd.DataFrame({"target_time_utc": pd.date_range("2024-01-01", periods=4, tz="UTC"),
+                        "forecast_issue_time_utc": pd.date_range("2023-12-31", periods=4, tz="UTC"),
                         "cloud_cover_fcst": [10., 20., 30., np.nan], "temp_fcst": [1., 2., 3., 4.]})
     later = pd.DataFrame({"target_time_utc": [pd.Timestamp("2025-01-01", tz="UTC")],
                           "cloud_cover_fcst": [np.nan], "temp_fcst": [999.]})

@@ -56,6 +56,10 @@ class DataContractMigrationTests(unittest.TestCase):
         with self.assertRaisesRegex(DataContractError, "cloud_cover_low"):
             validate_raw_payload(good, source="previous_runs", cfg=CFG, start=DAY, end=DAY)
         good = payload()
+        good["hourly"]["cloud_cover_low_previous_day1"] = [None] * 24
+        with self.assertRaisesRegex(DataContractError, "All values are null.*cloud_cover_low"):
+            validate_raw_payload(good, source="previous_runs", cfg=CFG, start=DAY, end=DAY)
+        good = payload()
         good["hourly"]["time"][4] = good["hourly"]["time"][3]
         with self.assertRaisesRegex(DataContractError, "timestamps"):
             validate_raw_payload(good, source="previous_runs", cfg=CFG, start=DAY, end=DAY)
@@ -100,7 +104,7 @@ class DataContractMigrationTests(unittest.TestCase):
         target = pd.date_range("2024-02-01", periods=24, freq="h", tz="UTC")
         frame = pd.DataFrame({"target_time_utc": list(target) * 3,
                               "lead_time": [24] * 24 + [48] * 24 + [72] * 24})
-        frame["fcst_issue_time_utc"] = frame["target_time_utc"] - pd.to_timedelta(frame["lead_time"], unit="h")
+        frame["forecast_issue_time_utc"] = frame["target_time_utc"] - pd.to_timedelta(frame["lead_time"], unit="h")
         for source, lat in (("gfs", 32.1), ("himawari", 32.2), ("era5", 32.3)):
             frame[f"{source}_service_latitude"] = lat
             frame[f"{source}_service_longitude"] = 119.0
@@ -109,7 +113,7 @@ class DataContractMigrationTests(unittest.TestCase):
         audit = audit_clean_frame(frame, DAY, DAY, tuple(frame.columns))
         self.assertEqual(audit["service_coordinates"]["himawari"], [(32.2, 119.0)])
         bad = frame.copy()
-        bad.loc[0, "fcst_issue_time_utc"] = bad.loc[0, "target_time_utc"]
+        bad.loc[0, "forecast_issue_time_utc"] = bad.loc[0, "target_time_utc"]
         with self.assertRaisesRegex(DataContractError, "issue"):
             audit_clean_frame(bad, DAY, DAY, tuple(bad.columns))
 
@@ -138,7 +142,8 @@ class SpatialMigrationTests(unittest.TestCase):
         self.assertIsNone(audit["final_service_count"])
         with self.assertRaises(SpatialContractError):
             require_frozen_registry(points, audit)
-        frozen = convergence_audit([(0.05, points), (0.025, points), (0.0125, points)])
+        frozen = convergence_audit([(0.05, points), (0.025, points), (0.0125, points)],
+                                   boundary_sensitivity_passed=True)
         self.assertTrue(frozen["converged"])
         self.assertEqual(len(require_frozen_registry(points, frozen)), 25)
 
@@ -150,7 +155,8 @@ class SpatialMigrationTests(unittest.TestCase):
             self.assertLess(set(layers[lower]), set(layers[upper]))
         self.assertEqual(layers, select_nested_density(reversed(points), ("a", "b", "c", "d", "e")))
         self.assertEqual(coverage_diagnostics(points, layers[5], coverage_radius_km=1000)["covered_service_count"], 25)
-        audit = convergence_audit([(0.05, points), (0.025, points), (0.0125, points)])
+        audit = convergence_audit([(0.05, points), (0.025, points), (0.0125, points)],
+                                  boundary_sensitivity_passed=True)
         preflight = validate_spatial_preflight(points, audit, layers[20], points, layers)
         self.assertEqual(preflight["status"], "preflight_only_no_official_results")
 

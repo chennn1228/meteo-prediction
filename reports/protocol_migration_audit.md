@@ -1,5 +1,8 @@
 # 协议到代码迁移审计（2026-09-20）
 
+> **更新说明：**下文第 7 节是 2026-09-20 真实数据抽样后的最新验收快照，
+> 优先于前面保留的上一轮 60 项测试/20/25 门禁等历史数字。未生成正式结果。
+
 本报告记录本轮**仓库重构与正式重跑前验证**，不是正式实验报告。没有启动正式全量训练、GPU benchmark、多种子或省域正式评价；没有生成新的 official results。`project_manifest.yaml` 的 `official_result_set` 保持 `null`。网站交接包 `NWP_website_handoff/` 未参与此次科研执行，也不纳入源码推送。
 
 ## 1. 施工摘要与真实目录
@@ -107,3 +110,67 @@ NWP_website_handoff/      冻结且不推送的网站交接包
 6. 补齐真实数据的强数据校验凭据、正式结果 provenance 与可复现环境记录。只有所有正式门槛通过，另行批准正式重跑。此次 `official_result_set` 必须继续为空。
 
 Git 提交前应仅暂存源代码、配置、文档及本审计文件；检查 `git diff --cached --name-only` 与 `git diff --cached --check`，确保不含 `data/`、`secrets/`、网站包、权重、缓存、日志和大型运行结果。
+
+## 7. 本轮追加验收：严格 18 变量下 `cpu_ready=blocked`
+
+**实际修改与目录：**新数据根为被 Git 忽略的 `data/protocol2/`，旧缓存未覆盖；
+`src/s03_features/{physics,pipeline,build}.py` 是返回服务点物理量→因果特征的唯一新正式入口，
+旧 `src/s01_data/features/features.py` 实现移入 `legacy/s01_data/features/`，原路径只留阻断说明；
+`src/s06_models/cpu_fixed.py` 增加固定 CPU 基线；`src/s12_spatial/probe.py` 增加可续跑限额探测；
+`scripts/02_data/` 增加薄入口；`src/s15_validation/` 增加分层检查；
+`requirements.in`、`requirements-lock.txt` 记录直接依赖版本。网站目录未修改。
+
+**首外折：**2024-02-01 至 2024-05-31 共 121 天；3×30 天评分、14 天早停、
+2×10 天隔离先占 124 天，仍无非空拟合段。由于当前真实新数据不满足 18 变量合同，
+无法给出逐点/逐 lead 的合格样本数依据，故没有擅改折定义，也没有删除首外折。
+
+**18 变量真实审计：**20 站点 × 31 月 × 3 源预期 1,860 个原始月文件及侧车；
+目前仅 5 个抽样文件。南京 GFS Previous Runs 的 2024-02（696 小时）、
+2025-06（720 小时）、2026-08（744 小时）中，`cloud_cover_low/mid/high`
+各 D+1/D+2/D+3 九个字段均存在、但每列非空数为 0。当前合同已拒绝“字段存在但全空”。
+三个抽样月不足以证明全时段均不可用，但足以使当前 pilot 不合格。用户明确选择
+保留 18 变量，缺数据即阻断；不得删列、使用 ERA5 真值或造数。2024-02
+Himawari/ERA5 仅是抓取样本，不是省域独立小时真值验收。
+
+**江苏返回服务点：**旧 0.05° 单轮 3,997 个省内请求得到 707 个去重返回点，
+返回坐标在江苏边界内为 654 个；均非最终数。0.025° 棋盘生成 15,994 个边界内
+请求点、共 400 个 40 点批次，实际仅发起前 2 批（80 请求，当前已见 4 个边界内
+去重点）。这是 `partial_not_frozen`，尚无完整本轮集合、两轮零新增或边界敏感性通过证据。
+所以没有正式服务点全集，也没有合法的 5⊂10⊂15⊂20 **正式点集**。
+算法已按五区域各取真实返回点的 minimax 中心，再逐层按离已有点最远的合法点扩充，
+但只能用合成点测试；不能公布正式覆盖/边际收益。
+
+**正式特征和身份：**manifest 注册的 42 个列分成辐射 5、晴空/kt 6、云 7、
+气象 9、太阳几何 3、时间动力 9、空间静态 3。`station_id`、`location_id`、
+`source_grid_id`、真值及请求坐标不在正式矩阵；位置物理量来自 GFS 实际返回经纬度/海拔。
+更改请求坐标但保持同一返回服务点的回归测试通过。`forecast_issue_time_utc`
+是唯一新时间字段；云量插补和数值预处理只在当前 fit 折学习。
+
+**CPU 模型和调参：**无需调参的固定定义模型：`climatology`、`persistence`、
+`smart_persistence`、`optimal_convex`、`raw_gfs`、`bias_correction`、`linear_mos`；
+需六候选的是 `ridge_mos`、`lgbm`、`xgboost`。其中只有 `raw_gfs`
+在 manifest 标记 validated；其余因真实数据接口/结果未完成审计仍为
+`pending_validation`。Ridge/树适配已转用统一正式特征及折内预处理，
+但没有以当前严格 18 变量真实数据完成六候选训练/早停/评分验证。
+
+**执行链与 mini-E2E：**`scripts/run_stage.py` 可显式执行结构/数据/CPU/GPU/全量
+分层验证、限额服务点探测和开发性质的文件特征构建；不得隐式进入下一阶段。
+`data`、`splits`、`tuning_cpu`、`train_cpu`、`calibrate`、`evaluate`、
+`interpret`、`spatial`、`figures`、`report` 尚未贯通为可运行正式单阶段，
+会 fail-closed。现有合成 E2E 不可充当真实数据 mini-E2E；当前 pilot 被严格合同拒绝，
+因此真实 mini-E2E receipt 不存在。未运行全量 CPU、GPU、多种子或最终测试模型比较。
+
+**指标与环境：**确定性辅助指标包含 MAE、RMSE、Bias、R²；RMSE skill
+按预注册参照模型对齐同一样本。概率选择仍用七分位 mean pinball，
+Ridge 的早停段残差分位构造与更晚的正式校准职责分离。直接依赖版本已记录，
+但这不是传递依赖哈希锁；当前 `.venv` 已安装 pytest 及自身依赖并可运行全套测试，
+环境直接包版本门禁已通过；仍需在正式 CPU 实验前生成完全可复现的传递锁及运行收据。
+每次实验的 Git SHA/Python/包版本/OS/CPU/时间
+provenance 写入接口已实现，正式实验尚未运行。
+
+**测试与门禁：**`.venv\Scripts\python.exe -m pytest -q tests`：67 passed，
+无跳过；结构 20/20，通过；`cpu_ready` 25/33、8 项阻断。阻断为月文件不全、真实 GFS
+18 变量 pilot 全空、返回坐标全覆盖未证实、Himawari 全省小时真值未审计、
+首外折不可行、服务点未冻结、9 个 CPU 模型尚未 validated、真实 mini-E2E 不存在。
+`cpu_ready` **不得**检查深度模型；14 个 GPU 模型的机制/实现
+验证留到后续 GPU 阶段。`official_result_set: null` 未变。

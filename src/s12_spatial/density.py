@@ -24,8 +24,8 @@ def _nearest_km(point: ServicePoint, selected: Sequence[ServicePoint]) -> float:
 def select_nested_density(points: Iterable[ServicePoint], regions: Sequence[str]) -> dict[int, tuple[ServicePoint, ...]]:
     """One new point per region per layer; farthest legal candidate wins.
 
-    Initialization is the lexicographically smallest service_id in the first
-    region. All later distance ties use ascending service_id; no RNG is used.
+    Layer 5 uses the real returned point minimising each region's worst
+    candidate distance (minimax centre). Later ties use service_id; no RNG.
     """
     candidates = tuple(sorted(points))
     if len(regions) != 5 or len(set(regions)) != 5:
@@ -38,14 +38,15 @@ def select_nested_density(points: Iterable[ServicePoint], regions: Sequence[str]
     if any(counts[region] < 4 for region in regions):
         raise SpatialContractError("Each region needs at least four service points")
     selected: list[ServicePoint] = []
-    results = {}
-    for layer in range(1, 5):
+    for region in regions:
+        local = [p for p in candidates if p.region == region]
+        centre = min(local, key=lambda p: (max(haversine_km(p, q) for q in local), p.service_id))
+        selected.append(centre)
+    results = {5: tuple(selected)}
+    for layer in range(2, 5):
         for region in regions:
             legal = [p for p in candidates if p.region == region and p not in selected]
-            if not selected:
-                winner = legal[0]
-            else:
-                winner = min(legal, key=lambda p: (-_nearest_km(p, selected), p.service_id))
+            winner = min(legal, key=lambda p: (-_nearest_km(p, selected), p.service_id))
             selected.append(winner)
         results[layer * 5] = tuple(selected)
     return results

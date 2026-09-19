@@ -1,0 +1,15 @@
+# Direct research dependencies; use requirements-lock.txt for the audited CPU environment.
+numpy
+pandas
+scipy
+scikit-learn
+lightgbm
+xgboost
+pyarrow
+pvlib
+matplotlib
+PyYAML
+pytest
+shap
+torch
+paramiko

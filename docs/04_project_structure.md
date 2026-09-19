@@ -5,7 +5,7 @@
 
 ```text
 project_manifest.yaml       当前协议配置源
-README.md / requirements.txt
+README.md / requirements.txt / requirements.in / requirements-lock.txt
 config/                     站点和变量数据配置
 docs/                       当前文档；旧文档已移入 archive/docs/
 src/
@@ -23,13 +23,14 @@ src/
   s12_spatial/              返回服务点注册、空间层级与密度预检
   s13_visualization/        论文样式与高密度 hexbin 接口
   s14_pipeline/             安全阶段注册与编排
-  s15_validation/           结构及正式就绪检查
+  s15_validation/           结构、数据、CPU、GPU、全量正式分层检查
   s01_data/                 尚存旧数据实现/兼容代码
   s02_experiment/           尚存旧切分兼容代码；month-balanced 已迁 legacy
   s03_models/               尚存过渡训练与深度架构代码；旧 v1 训练已迁 legacy
   s04_evaluation/           旧校准 CLI 已硬阻断；其余旧代码待退出
 scripts/
-  01_validate/run.py        薄校验入口
+  01_validate/run.py        分层校验入口
+  02_data/                  当前特征构建与限额服务点探测
   run_stage.py              默认安全校验；其他阶段不自动执行
 tests/01_unit/             单元测试
 tests/02_integration/      合成协议接口集成测试
@@ -37,7 +38,7 @@ tests/03_e2e/              合成预测读写—校准—评价最小端到端�
 legacy/                    旧服务器脚本、绘图/分析与验证代码，禁止正式 import
 archive/                   历史文档和不可执行快照
 reports/ / figs/           已有历史/开发产物；非正式结果
-data/                      本地科研数据，非 GitHub 源码交付
+data/                      本地科研数据；新数据在 data/protocol2，非 GitHub 源码交付
 NWP_website_handoff/       独立网站交接包，不参与科研执行
 ```
 
@@ -50,7 +51,7 @@ NWP_website_handoff/       独立网站交接包，不参与科研执行
 
 | 旧位置 | 新位置/处置 |
 |---|---|
-| `src/s01_data/{fetch,clean,features}` | 数据合同到 `s02_data`；特征规则到 `s03_features`；旧实现暂存待逐项迁移 |
+| `src/s01_data/{fetch,clean,features}` | 抓取/清洗暂为过渡入口；旧特征实现迁至 `legacy/s01_data/features/`，正式特征在 `s03_features` |
 | `src/s02_experiment/*` | 滚动切分到 `s04_splits`、调参到 `s05_tuning`；month-balanced 已迁 `legacy/s02_experiment/` |
 | `src/s03_models/train/*` | 正式模型应接入 `s06_models` 及统一预测合同；旧 v1 训练已迁 `legacy/s03_models/`，其余过渡实现不得宣称 validated |
 | `src/s04_evaluation/calibration/calibrate_quantiles.py` | 旧命令硬阻断；正式校准在 `s08_calibration` |

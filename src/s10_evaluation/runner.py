@@ -34,9 +34,9 @@ def evaluate_predictions(predictions: pd.DataFrame | str | Path,
     dimensions = groupings if groupings is not None else (
         "lead_time", "location_id", "outer_fold", "season"
     )
-    overview = evaluate_groups(clean)
+    overview = evaluate_groups(clean, require_references=formal)
     grouped = {
-        name: evaluate_groups(clean, (name,))
+        name: evaluate_groups(clean, (name,), require_references=formal)
         for name in dimensions if name in clean.columns
     }
     return EvaluationReport(overview=overview, grouped=grouped)

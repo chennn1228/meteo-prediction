@@ -7,6 +7,7 @@ from collections.abc import Sequence
 import numpy as np
 import pandas as pd
 
+from s01_core.config_loader import load_manifest
 from s07_prediction.schema import QUANTILE_COLUMNS, validate_predictions
 from s09_metrics.deterministic import point_metrics
 from s09_metrics.probabilistic import probability_metrics
@@ -22,6 +23,47 @@ PROVENANCE_KEYS = (
     "model_id", "implementation_level", "execution_level", "result_status",
     "prediction_type", "seed",
 )
+SAMPLE_KEYS = (
+    "experiment_id", "protocol_revision", "data_version", "feature_version",
+    "execution_level", "result_status", "seed", "location_id", "target_time_utc",
+    "forecast_issue_time_utc", "lead_time", "outer_fold", "inner_fold",
+)
+
+
+def _reference_id(model_id: str) -> str | None:
+    config = load_manifest()
+    references = config["point_metric_references"]
+    if model_id == "climatology":
+        return None
+    if model_id == "raw_gfs":
+        return references["raw_gfs"]
+    family = next((entry["family"] for entry in config["models"]
+                   if entry["id"] == model_id), "corrected")
+    return references["other_fixed" if family == "baseline" else "corrected"]
+
+
+def _reference_vector(all_rows: pd.DataFrame, subset: pd.DataFrame,
+                      reference_id: str, *, required: bool) -> np.ndarray | None:
+    source = all_rows.loc[all_rows.model_id == reference_id]
+    if source.empty:
+        if required:
+            raise ValueError(f"missing preregistered RMSE skill reference: {reference_id}")
+        return None
+    if source.duplicated(list(SAMPLE_KEYS)).any():
+        raise ValueError(f"duplicate reference sample keys for {reference_id}")
+    left = subset.loc[:, [*SAMPLE_KEYS, "y"]].copy()
+    left["_order"] = np.arange(len(left))
+    matched = left.merge(source.loc[:, [*SAMPLE_KEYS, "y", "point_prediction"]],
+                         on=list(SAMPLE_KEYS), how="left", sort=False,
+                         suffixes=("_target", "_reference"))
+    if len(matched) != len(subset) or matched.point_prediction.isna().any():
+        if required:
+            raise ValueError(f"incomplete preregistered RMSE skill reference: {reference_id}")
+        return None
+    matched = matched.sort_values("_order")
+    if not np.allclose(matched.y_target, matched.y_reference, rtol=0, atol=1e-9):
+        raise ValueError("reference and model observations disagree on matched samples")
+    return matched.point_prediction.to_numpy(dtype=float)
 
 
 def _group_keys(frame: pd.DataFrame, dimensions: Sequence[str]) -> list[str]:
@@ -31,7 +73,8 @@ def _group_keys(frame: pd.DataFrame, dimensions: Sequence[str]) -> list[str]:
 
 
 def evaluate_groups(frame: pd.DataFrame,
-                    dimensions: Sequence[str] = ()) -> EvaluationTables:
+                    dimensions: Sequence[str] = (),
+                    *, require_references: bool = False) -> EvaluationTables:
     """Return separate probability, auxiliary point, and reliability tables."""
     clean = validate_predictions(frame)
     keys = _group_keys(clean, dimensions)
@@ -49,7 +92,7 @@ def evaluate_groups(frame: pd.DataFrame,
             # Only probability scores enter the primary table. The q0.50
             # deterministic metrics are emitted in point_secondary below.
             primary_scores = {name: value for name, value in scores.items()
-                              if name not in {"mae", "rmse", "bias", "rmse_skill"}}
+                              if name not in {"mae", "rmse", "bias", "r2", "rmse_skill"}}
             probability_rows.append({**identity, "n": len(subset), **primary_scores})
             point_prediction = q[:, 3]
             if scores["crossing_rate"] == 0:
@@ -71,10 +114,16 @@ def evaluate_groups(frame: pd.DataFrame,
                 })
         else:
             point_prediction = subset.point_prediction.to_numpy(dtype=float)
+        reference_id = _reference_id(str(identity["model_id"]))
+        reference = (_reference_vector(clean, subset, reference_id, required=require_references)
+                     if reference_id is not None else None)
         point_rows.append({
             **identity, "n": len(subset), "metric_role": "auxiliary_point",
             "point_source": "q0.50" if is_quantile else "point_prediction",
-            **point_metrics(y, point_prediction),
+            "rmse_skill_reference": reference_id,
+            "rmse_skill_status": ("not_applicable" if reference_id is None else
+                                  "matched" if reference is not None else "reference_unavailable"),
+            **point_metrics(y, point_prediction, reference_prediction=reference),
         })
     probability = pd.DataFrame(probability_rows)
     if not probability.empty:

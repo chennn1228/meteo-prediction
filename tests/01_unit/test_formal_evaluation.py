@@ -92,8 +92,24 @@ def test_formal_gate_rejects_prototype_and_nonofficial_without_upgrading():
     frame["implementation_level"] = "validated"
     frame["execution_level"] = "official"
     frame["result_status"] = "official"
+    with pytest.raises(ValueError, match="reference"):
+        evaluate_predictions(frame, formal=True)
+    corrected = frame.loc[frame.model_id == "ridge_mos"].copy()
+    raw = corrected.copy()
+    raw["model_id"] = "raw_gfs"
+    raw["prediction_type"] = "point"
+    raw["point_prediction"] = raw["y"] - 2
+    raw[list(QUANTILE_COLUMNS)] = np.nan
+    climatology = raw.copy()
+    climatology["model_id"] = "climatology"
+    climatology["point_prediction"] = climatology["y"] - 3
+    frame = pd.concat([corrected, raw, climatology], ignore_index=True)
     report = evaluate_predictions(frame, formal=True)
     assert set(report.overview.probability_primary.execution_level) == {"official"}
+    point = report.overview.point_secondary.set_index("model_id")
+    assert point.loc["ridge_mos", "rmse_skill_reference"] == "raw_gfs"
+    assert point.loc["raw_gfs", "rmse_skill_reference"] == "climatology"
+    assert np.isfinite(point.loc["ridge_mos", "r2"])
 
 
 def test_group_api_validates_contract_and_provenance_is_not_merged():

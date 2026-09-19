@@ -1,0 +1,17 @@
+# Observed Windows Python 3.12.14 CPU environment on 2026-09-20.
+# Direct-package pins only, NOT a transitive hash lock; pytest 9.0.3 observed in D:\anaconda3.
+# Recreate then verify with scripts/01_validate/run.py; do not claim bit-for-bit reproducibility.
+numpy==2.5.2
+pandas==3.0.5
+scipy==1.18.0
+scikit-learn==1.9.0
+lightgbm==4.7.0
+xgboost==3.4.0
+pyarrow==25.0.1
+pvlib==0.15.2
+matplotlib==3.11.1
+PyYAML==6.0.3
+pytest==9.0.3
+shap==0.52.0
+torch==2.14.0+cpu
+paramiko==5.0.0

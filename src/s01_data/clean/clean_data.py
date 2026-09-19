@@ -114,7 +114,7 @@ def read_prev_runs(path, cfg):
             df[new] = h[f"{var}_previous_day{lead}"]
         frames.append(df)
     out = pd.concat(frames, ignore_index=True)
-    out["fcst_issue_time_utc"] = out["target_time_utc"] - pd.to_timedelta(out["lead_time"], unit="h")
+    out["forecast_issue_time_utc"] = out["target_time_utc"] - pd.to_timedelta(out["lead_time"], unit="h")
     return out
 
 
@@ -172,12 +172,12 @@ def main():
     parser.add_argument("--data-dir", default=None)
     args = parser.parse_args()
 
-    data_root = Path(args.data_dir) if args.data_dir else CODE_ROOT / "data"
     cfg_dir = CODE_ROOT / "config"
     sites = yaml.safe_load((cfg_dir / "01_sites.yaml").read_text(encoding="utf-8"))["sites"]
     site_by_id = {s["id"]: s for s in sites}
     cfg = yaml.safe_load((cfg_dir / "02_variables.yaml").read_text(encoding="utf-8"))
     manifest = yaml.safe_load((CODE_ROOT / "project_manifest.yaml").read_text(encoding="utf-8"))
+    data_root = Path(args.data_dir) if args.data_dir else CODE_ROOT / manifest["data_layout"]["root"]
     data_version = manifest["data_version"]
     start = dt.date.fromisoformat(args.start)
     end = dt.date.fromisoformat(args.end)
@@ -221,7 +221,7 @@ def main():
 
         required = tuple(FCST_RENAME.values()) + tuple(SAT_RENAME.values()) + tuple(ERA5_RENAME.values())
         required += tuple(ERA5_CLOUD_RENAME.values()) + (
-            "target_time_utc", "fcst_issue_time_utc", "lead_time",
+            "target_time_utc", "forecast_issue_time_utc", "lead_time",
             "requested_latitude", "requested_longitude",
             "gfs_service_latitude", "gfs_service_longitude",
             "himawari_service_latitude", "himawari_service_longitude",

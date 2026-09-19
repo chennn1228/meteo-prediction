@@ -25,6 +25,9 @@ def point_metrics(y: object, prediction: object,
         "rmse": float(np.sqrt(np.mean(error ** 2))),
         "bias": float(np.mean(error)),
     }
+    centered_sum_squares = float(np.sum((observed - observed.mean()) ** 2))
+    result["r2"] = (float(1 - np.sum(error ** 2) / centered_sum_squares)
+                    if centered_sum_squares > 0 else float("nan"))
     if reference_prediction is not None:
         result["rmse_skill"] = rmse_skill(observed, forecast, reference_prediction)
     return result

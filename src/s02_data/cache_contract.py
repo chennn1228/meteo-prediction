@@ -72,6 +72,8 @@ def validate_raw_payload(payload: Mapping, *, source: str, cfg: Mapping,
         series = hourly.get(field)
         if not isinstance(series, list) or len(series) != len(expected):
             raise DataContractError(f"Missing or length-mismatched field: {field}")
+        if all(value is None for value in series):
+            raise DataContractError(f"All values are null despite field presence: {field}")
 
 
 def cache_metadata(*, source: str, cfg: Mapping, start: dt.date, end: dt.date,

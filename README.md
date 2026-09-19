@@ -18,16 +18,16 @@
 在仓库根目录的 PowerShell 中运行；这些命令**不启动训练，也不生成正式结果**：
 
 ```powershell
-python -m pytest -q tests
-python scripts/01_validate/run.py --mode structural
-python scripts/01_validate/run.py --mode official
-python scripts/run_stage.py --stage validate
+.\.venv\Scripts\python.exe -m pytest -q tests
+.\.venv\Scripts\python.exe scripts/01_validate/run.py --mode structural
+.\.venv\Scripts\python.exe scripts/01_validate/run.py --mode cpu_ready
+.\.venv\Scripts\python.exe scripts/run_stage.py --stage validate
 ```
 
-`--mode official` 当前应返回 `blocked` 和非零退出码；这表示正式运行门槛在起作用，
-不是要求绕过检查。截至 2026-09-20 的本地快照：全量测试 60 项通过（含合成
-集成及最小端到端）；结构检查 20/20 通过；正式就绪检查 20/25 通过、5 项阻断。
-这不是正式训练或科学结果的验收。
+`--mode cpu_ready` 当前应返回 `blocked` 和非零退出码，不能绕过检查。2026-09-20
+真实 GFS Previous Runs 抽样的 2024-02、2025-06、2026-08 三个月中，低/中/高云层
+三个变量全空。用户明确选择保留严格 18 变量要求，因此不删列、不用 ERA5 或虚构值
+补成正式特征。当前只完成了小样本探测，并未启动正式 CPU 训练或生成科学结果。
 
 ## 正式协议边界
 
@@ -47,4 +47,4 @@ python scripts/run_stage.py --stage validate
 
 `legacy/` 只供历史复现；`archive/` 存放历史文档。网站交接包完全隔离在
 `NWP_website_handoff/`，不参与科研执行。`data/`、`secrets/`、大型报告、缓存、
-模型权重和网站交接包均不得随科研源码推送到 GitHub。
+模型权重和网站交接包均不得随科研源码推送到 GitHub。网站交接包本轮未修改。

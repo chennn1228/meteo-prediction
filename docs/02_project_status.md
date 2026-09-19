@@ -1,19 +1,25 @@
 # 当前项目状态
 
-协议 `2.0.0-provisional`；本页按 2026-09-20 本地仓库核对。Git 仓库已建立，
-但本轮代码施工**尚未产生正式训练或正式结果**。
+本页按 2026-09-20 本地仓库核对。代码施工**尚未产生正式训练或正式结果**；
+`cpu_ready=blocked`，`official_result_set=null`。网站交接包未修改。
+
+本轮已将新抓取根目录隔离为 `data/protocol2/`，保留旧数据不覆盖；真实抽样覆盖
+南京一个请求位置的 2024-02、2025-06、2026-08 GFS Previous Runs，以及 2024-02
+的 Himawari/ERA5。三个 GFS 月份的低/中/高云量 × D+1/D+2/D+3 均为全空
+（696、720、744 小时各 9 列非空数均为 0）。用户明确要求保持 18 变量；
+因此严格数据合同拒绝这些文件，不允许用旧缓存、ERA5 真值或伪值冒充正式数据。
 
 ## 已落地的代码边界
 
 | 领域 | 当前实现 | 状态 |
 |---|---|---|
 | 配置与身份 | `src/s01_core/` 读取 manifest、记录 provenance、阻断身份字段入特征 | 结构/单元验证通过；旧脚本仍须逐一迁移 |
-| 数据与特征 | `src/s02_data/` 的缓存/清洗合同，`src/s03_features/` 的因果工程与折内预处理 | 合同可检查；现有原始缓存未完成新版再抓取 |
+| 数据与特征 | `src/s02_data/` 的严格月缓存合同，`src/s03_features/` 的返回坐标物理量、因果工程与折内预处理 | 实际抽样全空字段被阻断；全时段未抓取 |
 | 切分与调参 | `src/s04_splits/` 的滚动/诊断，`src/s05_tuning/` 的六候选与 trial ledger | 最小测试通过；首外折不可行，正式调参阻断 |
-| 模型 | `src/s06_models/` 的实现级别/状态门槛；旧训练器仍在 `src/s03_models/` | 深度架构未逐模型核验，不能视为全部 validated |
+| 模型 | `src/s06_models/` 的固定 CPU 基线和 manifest 准入；Ridge/树模型使用同一正式特征预处理 | 除 raw_gfs 外 CPU 模型尚待真实数据核验；GPU 单独待审 |
 | 预测、校准、指标、评估 | `src/s07_prediction/` 至 `s10_evaluation/` | 七分位合同、时间顺序、真实日历块 bootstrap、分组指标测试通过；无正式预测 |
 | 解释、空间、绘图 | `src/s11_interpretation/` 至 `s13_visualization/` | 开发期/空间设计与样式接口；无正式省域得分或正式论文图 |
-| 编排与校验 | `src/s14_pipeline/`、`src/s15_validation/`，薄入口 `scripts/` | 默认只做安全校验；正式就绪检查明确阻断 |
+| 编排与校验 | `src/s14_pipeline/`、`src/s15_validation/`，薄入口 `scripts/` | 已有 structural/data_ready/cpu_ready/deep_ready/official_full 分层检查；非校验阶段仍未贯通 |
 
 正式概率输出为 `q0.05/q0.10/q0.25/q0.50/q0.75/q0.90/q0.95`；正式选择指标
 是七分位 mean pinball。`crps_q7_trunc` 只代表七分位覆盖区间内的**截尾 CRPS 近似**，
@@ -24,13 +30,13 @@
 2026-09-20 在本地仓库根目录执行：
 
 ```powershell
-python -m pytest -q tests
-python scripts/01_validate/run.py --mode structural
-python scripts/01_validate/run.py --mode official
+.\.venv\Scripts\python.exe -m pytest -q tests
+.\.venv\Scripts\python.exe scripts/01_validate/run.py --mode structural
+.\.venv\Scripts\python.exe scripts/01_validate/run.py --mode cpu_ready
 ```
 
-结果为 **60 项测试通过**（含合成集成和最小端到端）；结构校验 **20/20 通过**；
-正式就绪校验 **20/25 通过、状态 `blocked`**。最后一条命令预期返回非零退出码。
+最新回归结果为项目 `.venv` 中 **67 项测试全通过**；`cpu_ready` 当前 **25/33 通过、
+8 项阻断**。最后一条命令预期返回非零退出码。
 合成用例覆盖预测读写、校准、评价及正式状态拒绝，但不代表各模型真实数据训练链
 已完整跑通，更不等于官方结果已生成。
 
@@ -42,13 +48,17 @@ python scripts/01_validate/run.py --mode official
    序列有效及 fit/early-stop/scoring 数量，再经明确决策修订协议；代码不得自行缩窗。
 2. **服务点全集未收敛**：0.05° 单轮探针的 707 个去重 API 返回位置，按返回
    坐标边界筛得的 654 个江苏服务点，均非最终全集。需加密探针、比较新增集合，
-   确定边界规则并冻结注册表。请求点不得参与正式空间选择和评价。
-3. **数据与真值未就绪**：本地旧缓存缺新版 18 变量版本侧车/完整再抓取审计；
+   确定边界规则并冻结注册表。0.025° 已生成 15,994 请求点、400 批计划，
+   目前仅执行前 2 批（80 请求点；边界内已见 4 个去重点），绝非收敛证据。
+3. **数据与真值未就绪**：新版样本存在真实全空云层字段；全时段共需 1,860 个
+   月文件及侧车，当前仅 5 个文件已取到且并非均符合严格数据合同；
    江苏候选点的独立小时 Himawari 真值尚未通过完整时段 truth gate。
-4. **深度模型尚未逐个 validated**：需核查架构机制、张量形状、输出、损失、
+4. **CPU 模型和执行链尚未验证**：除 raw_gfs 外当前 CPU 模型尚未 validated；
+   真实数据 mini-E2E 无法通过，单阶段编排也未全贯通。深度模型不属于 CPU 门禁。
+5. **深度模型尚未逐个 validated**：需核查架构机制、张量形状、输出、损失、
    早停和参数规模，尤其 AutoCorrelation lag 聚合；PINN 物理单位/约束未解决前
    继续保持实验性。
-5. **正式全链路未完成**：旧训练代码与新模块并存，需完成各模型的正式接口接入、
+6. **正式全链路未完成**：旧训练代码与新模块并存，需完成各模型的正式接口接入、
    集成/最小端到端验证和完整 provenance 审计。现有旧结果及图均不得升级为正式。
 
 `project_manifest.yaml` 的 `official_result_set: null` 必须保持，直至上述门槛和

@@ -1,4 +1,4 @@
-"""Thin CLI for structural or official-readiness validation."""
+"""Thin CLI for layered evidence-based readiness validation."""
 from __future__ import annotations
 
 import argparse
@@ -15,7 +15,9 @@ from s15_validation.validate_project import result
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=("structural", "official"), default="structural")
+    parser.add_argument("--mode", choices=("structural", "data_ready", "cpu_ready",
+                                           "deep_ready", "official_full", "official"),
+                        default="structural")
     args = parser.parse_args()
     report = result(args.mode)
     print(json.dumps(report, indent=2, ensure_ascii=False))

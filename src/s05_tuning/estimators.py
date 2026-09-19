@@ -6,19 +6,9 @@ their validated architecture audit. No station/location identity is encoded.
 from __future__ import annotations
 
 import numpy as np
-import pandas as pd
-from sklearn.impute import SimpleImputer
+from sklearn.linear_model import Ridge
 
-
-def _shared_features():
-    # Retained feature definitions are temporary until the formal feature
-    # registry has completed its forecast-issue availability audit.
-    import sys
-    from pathlib import Path
-    root = next(p for p in Path(__file__).resolve().parents if (p / "project_manifest.yaml").exists())
-    sys.path.insert(0, str(root / "src" / "s03_models" / "train"))
-    import train_v1
-    return train_v1
+from s03_features.preprocessing import fit_fold_preprocessing
 
 
 def ridge_fit_predict(parameters, fit, early_stop, score, seed, taus):
@@ -28,22 +18,13 @@ def ridge_fit_predict(parameters, fit, early_stop, score, seed, taus):
     baseline (Ridge has no epoch). It never acts as the scoring block.
     """
     del seed
-    tv = _shared_features()
-    columns = tv.FEATURES_NUM + tv.CAT_COLS
-    estimator = tv.lin_pipe(parameters["alpha"], kind="ridge")
-    estimator.fit(fit[columns], fit["y"].to_numpy())
-    residual = early_stop["y"].to_numpy() - estimator.predict(early_stop[columns])
+    x_fit, x_early, x_score = fit_fold_preprocessing(fit, early_stop, score)[0]
+    estimator = Ridge(alpha=parameters["alpha"])
+    estimator.fit(x_fit, fit["y"].to_numpy())
+    residual = early_stop["y"].to_numpy() - estimator.predict(x_early)
     offsets = np.quantile(residual, taus)
-    point = estimator.predict(score[columns])
+    point = estimator.predict(x_score)
     return point[:, None] + offsets[None, :], None, None
-
-
-def _tree_matrices(fit, early_stop, score):
-    tv = _shared_features()
-    raw = [tv.tree_matrix(frame) for frame in (fit, early_stop, score)]
-    imputer = SimpleImputer(strategy="median").fit(raw[0])
-    return [pd.DataFrame(imputer.transform(x), columns=raw[0].columns,
-                         index=x.index) for x in raw]
 
 
 def tree_fit_predict(algorithm):
@@ -51,7 +32,8 @@ def tree_fit_predict(algorithm):
         raise ValueError(algorithm)
 
     def evaluate(parameters, fit, early_stop, score, seed, taus):
-        x_fit, x_early, x_score = _tree_matrices(fit, early_stop, score)
+        x_fit, x_early, x_score = fit_fold_preprocessing(
+            fit, early_stop, score, seed=seed)[0]
         y_fit, y_early = fit["y"].to_numpy(), early_stop["y"].to_numpy()
         predictions, epochs = [], []
         for tau in taus:

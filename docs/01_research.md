@@ -4,7 +4,13 @@ Version 2.0.0-provisional | 2026-09-15
 
 > `project_manifest.yaml` is the Single Source of Truth（单一事实源）. This
 > document explains the scientific logic. Existing numerical results are
-> provisional until regenerated under the v2 protocol.
+> provisional until regenerated under the current protocol.
+
+2026-09-20 数据边界更新：真实 Previous Runs 抽样三个分散月份的低/中/高云层
+历史预报字段全部为空。按用户决定，正式主特征继续要求 18 个原始变量，
+缺少任一必需云层变量即阻断数据与 CPU 就绪；不得拿 ERA5 真值、当前预报或
+推断值伪装成相同提前量的历史 GFS 预报。请求坐标只作溯源，太阳几何使用
+GFS API 实际返回的服务点；所有 station/location ID 均不得进入模型。
 
 ## 1 One-sentence argument
 
@@ -335,7 +341,7 @@ uncertainty 评估完成前，PINN 只称 experimental constrained model。
 - ERA5 cloud 不是独立观测；
 - clear-sky reference 在 cloud enhancement 条件下不能当硬上限；
 - 14 个 DL 是受限预算架构 benchmark，不支持普遍性 ML-vs-DL 排名；
-- 当前仓库不是 Git 工作树，变更追踪依赖归档与 consistency report，建议尽快纳入版本控制。
+- 当前仓库已有 Git 工作树；当前施工仍须经过源码审计和 readiness 门禁，不能把历史图表提升为正式证据。
 
 ## 17 Claim–evidence map
 
@@ -348,4 +354,3 @@ uncertainty 评估完成前，PINN 只称 experimental constrained model。
 | cloud has a stable feature contribution | old ablation only | needs evidence |
 | weather-conditional calibration is needed | old grouped PIT/coverage | inferred; needs outer-fold validation |
 | 20 sites generalize province-wide | no truth-gated full-grid evaluation | needs evidence |
-
