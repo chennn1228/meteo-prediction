@@ -147,7 +147,8 @@ def main():
         df = add_derived_features(df)
         df = add_time_features(df)
         df = add_sequence_features(df)
-        df = add_analysis_fields(df, cfg["kt_weather_bins"])
+        protocol = yaml.safe_load((CODE_ROOT / "project_manifest.yaml").read_text(encoding="utf-8"))
+        df = add_analysis_fields(df, protocol["weather_diagnostics"]["legacy_kt_bins"])
         out_path = out_dir / f"{site_id}_featured_{tag}.parquet"
         df.to_parquet(out_path, index=False)
         logger.info("%s: %d 行 %d 列 -> %s", site_id, len(df), len(df.columns), out_path)

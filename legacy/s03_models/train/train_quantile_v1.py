@@ -1,4 +1,4 @@
-"""v1_ml 正式分位数协议（pinball）：GHI / 云量，full-year test。
+"""Legacy v1 quantile reproduction only; not a current formal entry point.
 
 train 2024-02~2025-02; val 2025-03~2025-08; test 2025-09~2026-08.
 quantiles: 0.05,0.10,0.25,0.50,0.75,0.90,0.95.
@@ -112,7 +112,13 @@ def main():
     ap.add_argument("--smoke", action="store_true", help="3% 抽样 + 200 棵树，仅验证流程")
     ap.add_argument("--encoding", choices=["auto", "onehot", "native", "target"], default="auto",
                     help="树模型编码；auto 读 selection.json，缺省 onehot")
+    ap.add_argument("--allow-legacy-reproduction", action="store_true",
+                    help="明确仅复现旧结果；输出不得进入正式模型比较")
     args = ap.parse_args()
+    if not args.allow_legacy_reproduction:
+        raise SystemExit(
+            "retired v1 trainer: current protocol uses s04_splits + s05_tuning; "
+            "pass --allow-legacy-reproduction only for historical reproduction")
     global SMOKE, ENCODING
     SMOKE = bool(args.smoke)
     from sklearn.impute import SimpleImputer

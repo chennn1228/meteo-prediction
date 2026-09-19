@@ -51,7 +51,3 @@ era5_variables:
   - cloud_cover_low
   - cloud_cover_mid
   - cloud_cover_high
-
-# 天气分型（kt 分箱，定稿 2026-08-24）：日平均晴空指数 kt = 观测GHI/晴空GHI 的日均值
-# 三个数据驱动边界。它们只定义分组诊断，不作为预先固定的物理阈值或模型选择依据。
-kt_weather_bins: [0.44, 0.73, 0.97]

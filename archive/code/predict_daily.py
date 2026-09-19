@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""推理管线骨架：最新起报 -> 特征构造 -> 订正输出（与训练特征口径一致）。
+"""Archived unimplemented live-prediction sketch; not an active entry point.
 
 TODO（尚未实现，需按以下步骤补全）：
 1. fetch_live_forecast: 调用 Open-Meteo Forecast API（models=gfs_seamless），

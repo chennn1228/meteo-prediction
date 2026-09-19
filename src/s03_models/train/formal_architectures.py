@@ -23,6 +23,24 @@ class SeriesDecomp(nn.Module):
         return x - trend, trend
 
 
+def aggregate_lags(v, lags, weights):
+    """Weighted circular aggregation for independent top-k lags.
+
+    ``v`` is (batch, head, time, channel); ``lags`` and ``weights`` are
+    (batch, k). Kept separate so the lag mechanism can be unit tested.
+    """
+    b, h, l, channels = v.shape
+    if lags.shape != weights.shape or lags.shape[0] != b:
+        raise ValueError("lag/weight shape mismatch")
+    ar = torch.arange(l, device=v.device).view(1, l)
+    out = torch.zeros_like(v)
+    for i in range(lags.shape[1]):
+        idx = (ar - lags[:, i].view(b, 1)) % l
+        gather_idx = idx.view(b, 1, l, 1).expand(b, h, l, channels)
+        out = out + weights[:, i].view(b, 1, 1, 1) * torch.gather(v, 2, gather_idx)
+    return out
+
+
 class AutoCorrelation(nn.Module):
     def __init__(self, d_model, n_heads, topk=5):
         super().__init__()
@@ -41,15 +59,10 @@ class AutoCorrelation(nn.Module):
         kk = min(self.topk, l)
         weights, lags = torch.topk(corr, kk, dim=-1)
         weights = torch.softmax(weights, dim=-1)
-        # 向量化移位：按样本取头平均 lag，用 gather 做循环移位，避免逐样本 python 循环与 GPU 同步。
-        lag = lags.float().mean(dim=1).round().long()                 # (b,)
-        ar = torch.arange(l, device=x.device).view(1, l)
-        idx = (ar - lag.view(b, 1)) % l                              # (b, l)
-        gather_idx = idx.view(b, 1, l, 1).expand(b, self.h, l, d // self.h)
-        out = torch.zeros_like(v)
-        for i in range(kk):
-            shifted = torch.gather(v, 2, gather_idx)
-            out = out + weights[:, i].view(b, 1, 1, 1) * shifted
+        # Each selected lag needs its *own* circular shift. The previous code
+        # averaged all selected lags and repeated one shift kk times, so top-k
+        # aggregation collapsed to a single-lag operator.
+        out = aggregate_lags(v, lags, weights)
         out = out.permute(0, 2, 1, 3).reshape(b, l, d)
         return self.out(out)
 
@@ -252,10 +265,10 @@ class PINNFormal(nn.Module):
                                  nn.Linear(128, out_dim))
     def forward(self, x):
         pred = self.net(x)
-        # Experimental constrained model: non-negativity only. The previous
-        # clear-sky ceiling was dimensionally invalid after feature scaling and
-        # scientifically unsupported where observed GHI exceeds Ineichen.
-        pen = torch.relu(-pred).mean()
+        # Do not penalize standardized target values as though they were W/m².
+        # A physical-unit constraint needs fold-specific inverse scaling and
+        # a documented tolerance/enhancement ablation before activation.
+        pen = pred.new_zeros(())
         return pred, pen
 
 

@@ -1,3 +1,4 @@
+throw 'BLOCKED: this pre-v2 PowerShell queue is archived in legacy and cannot produce official results.'
 $root = "D:\Administrator Files\SEU\12.Project\260801_electricity market\meteo prediction"
 $py = Join-Path $root ".venv\Scripts\python.exe"
 $trainer = Join-Path $root "src\s03_models\train\train_deep.py"

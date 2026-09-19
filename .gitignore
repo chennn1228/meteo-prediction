@@ -25,6 +25,9 @@ __pycache__/
 deploy/
 artifacts/
 reports/
+!reports/
+reports/*
+!reports/protocol_migration_audit.md
 literature/
 
 # Website work is outside this repository's upload scope
@@ -34,6 +37,7 @@ handoff_templates/
 schemas/
 scripts/06_export/
 docs/archive/legacy_v11_20260915/08_website_handoff.md
+archive/docs/legacy_v11_20260915/08_website_handoff.md
 figs/00_preview/
 
 # Large model/checkpoint and tabular artifacts

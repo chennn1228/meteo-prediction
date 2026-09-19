@@ -15,7 +15,6 @@ import calendar
 import csv
 import datetime as dt
 import logging
-import os
 import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -28,6 +27,7 @@ CODE_ROOT = next(p for p in Path(__file__).resolve().parents if (p / "config" / 
 sys.path.insert(0, str(CODE_ROOT))
 
 from src.s01_data.fetch.fetch_client import fetch_json  # noqa: E402
+from src.s02_data.cache_contract import cache_metadata, validate_raw_payload  # noqa: E402
 
 # raw 数据源目录（docs/04 目录规范：01_gfs / 02_era5 / 03_satellite）
 SOURCE_DIRS = {"previous_runs": "01_gfs", "era5": "02_era5", "satellite": "03_satellite"}
@@ -45,17 +45,19 @@ def load_cfg():
         sites = yaml.safe_load(fh)["sites"]
     with open(cfg_dir / "02_variables.yaml", "r", encoding="utf-8") as fh:
         variables = yaml.safe_load(fh)
-    return sites, variables
+    with open(CODE_ROOT / "project_manifest.yaml", "r", encoding="utf-8") as fh:
+        manifest = yaml.safe_load(fh)
+    return sites, variables, manifest["data_version"]
 
 
 def month_ranges(start: dt.date, end: dt.date):
     """把 [start, end] 切成逐月区间（每片一个请求）。"""
-    cur = start.replace(day=1)
+    cur = start
     while cur <= end:
         last_day = calendar.monthrange(cur.year, cur.month)[1]
         m_end = min(dt.date(cur.year, cur.month, last_day), end)
         yield cur, m_end
-        cur = (dt.date(cur.year, cur.month, last_day) + dt.timedelta(days=1)).replace(day=1)
+        cur = m_end + dt.timedelta(days=1)
 
 
 def source_request(cfg, source, site, s, e):
@@ -66,6 +68,7 @@ def source_request(cfg, source, site, s, e):
         start_date=s.isoformat(),
         end_date=e.isoformat(),
         timezone=cfg["timezone"],
+        cell_selection="land",
     )
     data_root = DATA_ROOT
     if source == "previous_runs":
@@ -109,28 +112,36 @@ _log_lock = threading.Lock()
 
 
 def append_log(row):
-    log_path = DATA_ROOT / "01_raw" / "fetch_log.csv"
+    log_path = DATA_ROOT / "01_raw" / "fetch_log_v2.csv"
     with _log_lock:
         new = not log_path.exists()
         with open(log_path, "a", newline="", encoding="utf-8") as fh:
             writer = csv.DictWriter(
                 fh,
-                fieldnames=["source", "site", "start", "end", "status", "grid_lat", "grid_lon", "bytes", "error"],
+                fieldnames=["source", "site", "start", "end", "status",
+                            "requested_lat", "requested_lon", "service_lat", "service_lon",
+                            "data_version", "bytes", "error"],
             )
             if new:
                 writer.writeheader()
             writer.writerow(row)
 
 
-def fetch_one(cfg, source, site, s, e, force):
+def fetch_one(cfg, source, site, s, e, force, data_version):
     endpoint, params, out_file = source_request(cfg, source, site, s, e)
-    data = fetch_json(endpoint, params, out_file, force=force)
+    validate = lambda payload: validate_raw_payload(payload, source=source, cfg=cfg, start=s, end=e)
+    metadata = cache_metadata(source=source, cfg=cfg, start=s, end=e,
+                              params=params, data_version=data_version)
+    data = fetch_json(endpoint, params, out_file, force=force,
+                      validator=validate, cache_metadata=metadata)
+    common = dict(source=source, site=site["id"], start=s.isoformat(), end=e.isoformat(),
+                  requested_lat=site["lat"], requested_lon=site["lon"], data_version=data_version)
     if data is None:
-        row = dict(source=source, site=site["id"], start=s.isoformat(), end=e.isoformat(),
-                   status="fail", grid_lat="", grid_lon="", bytes="", error="重试耗尽")
+        row = dict(**common, status="fail", service_lat="", service_lon="",
+                   bytes="", error="缓存无效或请求/合同校验失败")
     else:
-        row = dict(source=source, site=site["id"], start=s.isoformat(), end=e.isoformat(),
-                   status="ok", grid_lat=data.get("latitude"), grid_lon=data.get("longitude"),
+        row = dict(**common, status="ok", service_lat=data.get("latitude"),
+                   service_lon=data.get("longitude"),
                    bytes=out_file.stat().st_size, error="")
     append_log(row)
     return row
@@ -152,7 +163,7 @@ def main():
     global DATA_ROOT
     DATA_ROOT = Path(args.data_dir) if args.data_dir else CODE_ROOT / "data"
 
-    sites, cfg = load_cfg()
+    sites, cfg, data_version = load_cfg()
     if args.site == "all":
         selected = sites
     else:
@@ -184,7 +195,7 @@ def main():
     ok = fail = 0
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         futures = {
-            pool.submit(fetch_one, cfg, source, site, s, e, args.force): (source, site["id"], s)
+            pool.submit(fetch_one, cfg, source, site, s, e, args.force, data_version): (source, site["id"], s)
             for source, site, s, e in tasks
         }
         for fut in as_completed(futures):
@@ -194,7 +205,7 @@ def main():
             else:
                 fail += 1
                 logger.error("失败: %s %s %s", row["source"], row["site"], row["start"])
-    logger.info("完成：成功 %d，失败 %d（日志: %s）", ok, fail, DATA_ROOT / "01_raw" / "fetch_log.csv")
+    logger.info("完成：成功 %d，失败 %d（日志: %s）", ok, fail, DATA_ROOT / "01_raw" / "fetch_log_v2.csv")
     sys.exit(1 if fail else 0)
 
 

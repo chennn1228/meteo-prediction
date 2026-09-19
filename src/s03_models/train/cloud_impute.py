@@ -1,78 +1,79 @@
-"""GFS 云量预报缺失的三级插补（正式协议）。
+"""Fold-fitted forecast-cloud imputation, never trained on later rows.
 
-1) 同 station+target_time，用其他时效 cloud_cover_fcst 的中位数；
-2) 仍缺失：LightGBM 回归插补（仅训练集非缺失样本训练）；
-3) 最后：station+lead+month 中位数。
-返回 df（含 cloud_cover_fcst、cloud_fcst_imputed、cloud_fcst_impute_stage）。
+The retired whole-dataset function is deliberately blocked. A forecast issued
+at one lead must not borrow another lead's value merely because target times
+match: that other run may not yet have been issued.
 """
-import logging
+from __future__ import annotations
+
+from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
 
-logger = logging.getLogger("cloud_impute")
+
+IDENTITY_OR_LABEL = frozenset({
+    "station_id", "location_id", "source_grid_id", "ghi_obs_sat",
+    "cloud_cover_obs", "target_time_utc", "forecast_issue_time_utc",
+    "cloud_cover_fcst", "cloud_fcst_imputed", "cloud_fcst_impute_method",
+})
 
 
-def impute_cloud_forecast(df, feature_cols=None, seed=0, validate=True):
-    d = df.copy()
-    col = "cloud_cover_fcst"
-    if col not in d.columns:
-        return d
-    d["cloud_fcst_imputed"] = d[col].isna()
-    d["cloud_fcst_impute_stage"] = np.where(d[col].isna(), "missing", "raw")
+@dataclass
+class FoldCloudImputer:
+    """Fit numeric predictors and fallback statistics solely on a fit block."""
 
-    # stage 1: other leads at same station/time
-    same_time = d.groupby(["station_id", "target_time_utc"])[col].transform("median")
-    m1 = d[col].isna() & same_time.notna()
-    d.loc[m1, col] = same_time[m1]
-    d.loc[m1, "cloud_fcst_impute_stage"] = "other_lead_median"
+    feature_columns: tuple[str, ...]
+    seed: int = 0
+    model_version: str = "fold-cloud-lgbm-v1"
 
-    # stage 2: LightGBM imputation using other numeric features
-    miss = d[col].isna()
-    if miss.any():
-        import lightgbm as lgb
-        if feature_cols is None:
-            feature_cols = [c for c in d.columns if c not in
-                            (col, "cloud_cover_obs", "ghi_obs_sat", "target_time_utc",
-                             "station_id", "cloud_fcst_imputed", "cloud_fcst_impute_stage")
-                            and pd.api.types.is_numeric_dtype(d[c])]
-        Xall = d[feature_cols].copy()
-        Xall = Xall.fillna(Xall.median(numeric_only=True))
-        known = ~miss
-        if known.sum() > 1000:
-            model = np.nan
-            # 10% artificial mask validation（只在 known 内部）
-            if validate and len(Xall) > 5000:
-                rng = np.random.default_rng(seed)
-                idx = np.flatnonzero(known.to_numpy())
-                val_idx = rng.choice(idx, size=max(1000, int(0.1 * len(idx))), replace=False)
-                tr = np.ones(len(d), bool)
-                tr[val_idx] = False
-                tr &= known.to_numpy()
-                mdl = lgb.LGBMRegressor(n_estimators=400, learning_rate=0.05,
-                                        num_leaves=31, random_state=seed, verbose=-1)
-                mdl.fit(Xall[tr], d.loc[tr, col])
-                pred = mdl.predict(Xall[val_idx])
-                yv = d.loc[val_idx, col].to_numpy()
-                logger.info("cloud impute validation MAE=%.3f RMSE=%.3f",
-                            float(np.mean(np.abs(pred - yv))),
-                            float(np.sqrt(np.mean((pred - yv) ** 2))))
-            model = lgb.LGBMRegressor(n_estimators=500, learning_rate=0.05,
-                                      num_leaves=31, random_state=seed, verbose=-1)
-            model.fit(Xall[known], d.loc[known, col])
-            pred = np.clip(model.predict(Xall[miss]), 0, 100)
-            d.loc[miss, col] = pred
-            d.loc[miss, "cloud_fcst_impute_stage"] = "lightgbm"
+    def fit(self, fit_rows: pd.DataFrame) -> "FoldCloudImputer":
+        forbidden = set(self.feature_columns) & IDENTITY_OR_LABEL
+        if forbidden:
+            raise ValueError(f"cloud imputer predictors include identity/label fields: {forbidden}")
+        if fit_rows.empty or "cloud_cover_fcst" not in fit_rows:
+            raise ValueError("nonempty fit rows with cloud_cover_fcst required")
+        self.fit_start_utc = pd.to_datetime(fit_rows["target_time_utc"], utc=True).min()
+        self.fit_end_utc = pd.to_datetime(fit_rows["target_time_utc"], utc=True).max()
+        self.medians_ = fit_rows[list(self.feature_columns)].median(numeric_only=True)
+        self.global_median_ = float(fit_rows["cloud_cover_fcst"].median())
+        if not np.isfinite(self.global_median_):
+            raise ValueError("fit fold has no observed forecast cloud values")
+        known = fit_rows["cloud_cover_fcst"].notna()
+        self.model_ = None
+        if known.sum() >= 1000:
+            import lightgbm as lgb
+            x_fit = fit_rows.loc[known, list(self.feature_columns)].fillna(self.medians_)
+            self.model_ = lgb.LGBMRegressor(n_estimators=500, learning_rate=.05,
+                                            num_leaves=31, random_state=self.seed, verbose=-1)
+            self.model_.fit(x_fit, fit_rows.loc[known, "cloud_cover_fcst"])
+        return self
 
-    # stage 3: station+lead+month median fallback
-    miss = d[col].isna()
-    if miss.any():
-        d["_month"] = pd.to_datetime(d["target_time_utc"], utc=True).dt.month
-        fallback = d.groupby(["station_id", "lead_time", "_month"])[col].transform("median")
-        d.loc[miss, col] = fallback[miss]
-        d.loc[miss, "cloud_fcst_impute_stage"] = "station_lead_month_median"
-        d = d.drop(columns=["_month"])
-    d[col] = d[col].clip(0, 100)
-    logger.info("cloud imputed %d rows; stages=%s", int(d["cloud_fcst_imputed"].sum()),
-                d["cloud_fcst_impute_stage"].value_counts().to_dict())
-    return d
+    def transform(self, rows: pd.DataFrame) -> pd.DataFrame:
+        if not hasattr(self, "medians_"):
+            raise RuntimeError("fit must precede transform")
+        result = rows.copy()
+        missing = result["cloud_cover_fcst"].isna()
+        result["cloud_fcst_imputed"] = missing
+        method = "lightgbm" if self.model_ is not None else "training_fold_median"
+        result["cloud_fcst_impute_method"] = np.where(missing, method, "raw")
+        if missing.any():
+            if self.model_ is None:
+                value = self.global_median_
+            else:
+                value = self.model_.predict(
+                    result.loc[missing, list(self.feature_columns)].fillna(self.medians_))
+            result.loc[missing, "cloud_cover_fcst"] = np.clip(value, 0, 100)
+        result.attrs["cloud_imputation"] = {
+            "model_version": self.model_version,
+            "fit_start_utc": self.fit_start_utc.isoformat(),
+            "fit_end_utc": self.fit_end_utc.isoformat(),
+            "imputed_fraction": float(missing.mean()),
+            "method": method,
+        }
+        return result
+
+
+def impute_cloud_forecast(*args, **kwargs):
+    raise RuntimeError(
+        "whole-dataset cloud imputation is retired; fit FoldCloudImputer on each fit fold")

@@ -21,14 +21,18 @@ import pandas as pd
 import yaml
 
 CODE_ROOT = next(p for p in Path(__file__).resolve().parents if (p / "config" / "01_sites.yaml").exists())
+sys.path.insert(0, str(CODE_ROOT))
+
+from src.s02_data.cache_contract import DataContractError  # noqa: E402
+from src.s02_data.clean_contract import (  # noqa: E402
+    audit_clean_frame, validate_cached_month, validate_month_paths,
+)
 
 # raw 数据源目录（docs/04 目录规范：01_gfs / 02_era5 / 03_satellite）
 SOURCE_DIRS = {"previous_runs": "01_gfs", "era5": "02_era5", "satellite": "03_satellite"}
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("clean")
-
-LEADS = [1, 2, 3]
 
 # 原始 API 变量名 -> 长表列名
 FCST_RENAME = {
@@ -85,12 +89,8 @@ CLOUD_COLS = [
 
 
 def month_files(data_root, source, site, start, end):
-    cur = start.replace(day=1)
-    while cur <= end:
-        p = data_root / "01_raw" / source / site / f"{site}_{cur:%Y-%m}.json"
-        if p.exists():
-            yield p
-        cur = (cur.replace(day=1) + dt.timedelta(days=32)).replace(day=1)
+    for path, _, _ in validate_month_paths(data_root, source, site, start, end):
+        yield path
 
 
 def read_prev_runs(path, cfg):
@@ -98,13 +98,16 @@ def read_prev_runs(path, cfg):
     h = payload["hourly"]
     time = pd.to_datetime(h["time"], utc=True)
     frames = []
-    for lead in LEADS:
+    for lead in cfg["leads"]:
         df = pd.DataFrame({
             "target_time_utc": time,
             "lead_time": lead * 24,
             "source_grid_latitude": payload.get("latitude"),
             "source_grid_longitude": payload.get("longitude"),
             "source_grid_elevation": payload.get("elevation"),
+            "gfs_service_latitude": payload.get("latitude"),
+            "gfs_service_longitude": payload.get("longitude"),
+            "gfs_service_elevation": payload.get("elevation"),
         })
         for var in cfg["forecast_variables"]:
             new = FCST_RENAME[var]
@@ -115,9 +118,14 @@ def read_prev_runs(path, cfg):
     return out
 
 
-def read_simple(path, rename_map):
-    h = json.loads(path.read_text(encoding="utf-8"))["hourly"]
+def read_simple(path, rename_map, service_name=None):
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    h = payload["hourly"]
     df = pd.DataFrame({"target_time_utc": pd.to_datetime(h["time"], utc=True)})
+    if service_name:
+        df[f"{service_name}_service_latitude"] = payload["latitude"]
+        df[f"{service_name}_service_longitude"] = payload["longitude"]
+        df[f"{service_name}_service_elevation"] = payload.get("elevation")
     for raw, new in rename_map.items():
         df[new] = h[raw]
     return df
@@ -169,6 +177,8 @@ def main():
     sites = yaml.safe_load((cfg_dir / "01_sites.yaml").read_text(encoding="utf-8"))["sites"]
     site_by_id = {s["id"]: s for s in sites}
     cfg = yaml.safe_load((cfg_dir / "02_variables.yaml").read_text(encoding="utf-8"))
+    manifest = yaml.safe_load((CODE_ROOT / "project_manifest.yaml").read_text(encoding="utf-8"))
+    data_version = manifest["data_version"]
     start = dt.date.fromisoformat(args.start)
     end = dt.date.fromisoformat(args.end)
     site_ids = [s["id"] for s in sites] if args.site == "all" else [args.site]
@@ -177,33 +187,55 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     for site_id in site_ids:
-        prev_files = list(month_files(data_root, SOURCE_DIRS["previous_runs"], site_id, start, end))
-        sat_files = list(month_files(data_root, SOURCE_DIRS["satellite"], site_id, start, end))
-        era5_files = list(month_files(data_root, SOURCE_DIRS["era5"], site_id, start, end))
-        if not (prev_files and sat_files and era5_files):
-            logger.error("%s 三源文件不齐，跳过", site_id)
-            continue
+        if site_id not in site_by_id:
+            raise DataContractError(f"Unknown site: {site_id}")
+        requested = site_by_id[site_id]
+        source_files = {}
+        for source in SOURCE_DIRS:
+            paths = validate_month_paths(data_root, SOURCE_DIRS[source], site_id, start, end)
+            for path, first, last in paths:
+                validate_cached_month(path, source=source, cfg=cfg, start=first, end=last,
+                                      data_version=data_version,
+                                      requested_lat=requested["lat"], requested_lon=requested["lon"])
+            source_files[source] = [path for path, _, _ in paths]
+        prev_files = source_files["previous_runs"]
+        sat_files = source_files["satellite"]
+        era5_files = source_files["era5"]
 
         prev = pd.concat([read_prev_runs(p, cfg) for p in prev_files], ignore_index=True)
-        sat = pd.concat([read_simple(p, SAT_RENAME) for p in sat_files], ignore_index=True)
-        era5 = pd.concat([read_simple(p, ERA5_RENAME | ERA5_CLOUD_RENAME) for p in era5_files], ignore_index=True)
+        sat = pd.concat([read_simple(p, SAT_RENAME, "himawari") for p in sat_files], ignore_index=True)
+        era5 = pd.concat([read_simple(p, ERA5_RENAME | ERA5_CLOUD_RENAME, "era5") for p in era5_files], ignore_index=True)
         df = prev.merge(sat, on="target_time_utc", how="left").merge(era5, on="target_time_utc", how="left")
         df = clean(df)
 
         meta = json.loads(prev_files[0].read_text(encoding="utf-8"))
-        requested = site_by_id[site_id]
         df.insert(0, "station_id", site_id)
-        df.insert(1, "lat", requested["lat"])
-        df.insert(2, "lon", requested["lon"])
-        df.insert(3, "elevation", meta.get("elevation"))
-        df.insert(4, "region", requested.get("region"))
+        df.insert(1, "requested_latitude", requested["lat"])
+        df.insert(2, "requested_longitude", requested["lon"])
+        # Legacy aliases remain for existing readers; never use them as service coordinates.
+        df.insert(3, "lat", requested["lat"])
+        df.insert(4, "lon", requested["lon"])
+        df.insert(5, "elevation", meta.get("elevation"))
+        df.insert(6, "region", requested.get("region"))
         df = df.sort_values(["target_time_utc", "lead_time"]).reset_index(drop=True)
+
+        required = tuple(FCST_RENAME.values()) + tuple(SAT_RENAME.values()) + tuple(ERA5_RENAME.values())
+        required += tuple(ERA5_CLOUD_RENAME.values()) + (
+            "target_time_utc", "fcst_issue_time_utc", "lead_time",
+            "requested_latitude", "requested_longitude",
+            "gfs_service_latitude", "gfs_service_longitude",
+            "himawari_service_latitude", "himawari_service_longitude",
+            "era5_service_latitude", "era5_service_longitude",
+        )
+        audit = audit_clean_frame(df, start, end, required)
 
         tag = f"{start:%Y-%m}_{end:%Y-%m}"
         parquet_path = out_dir / f"{site_id}_clean_{tag}.parquet"
         df.to_parquet(parquet_path, index=False)
         report = quality_report(df, site_id, start, end)
         (out_dir / f"quality_report_{site_id}.md").write_text(report, encoding="utf-8")
+        (out_dir / f"quality_audit_{site_id}.json").write_text(
+            json.dumps(audit, ensure_ascii=False, indent=2), encoding="utf-8")
         logger.info("%s: %d 行 -> %s", site_id, len(df), parquet_path)
 
 

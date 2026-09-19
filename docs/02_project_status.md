@@ -1,74 +1,61 @@
-# Project status
+# 当前项目状态
 
-Version 2.0.0-provisional | 2026-09-15
+协议 `2.0.0-provisional`；本页按 2026-09-20 本地仓库核对。Git 仓库已建立，
+但本轮代码施工**尚未产生正式训练或正式结果**。
 
-## Completed in the v2 refactor
+## 已落地的代码边界
 
-- Created `project_manifest.yaml` as the machine-readable Single Source of Truth（单一事实源）.
-- Replaced the formal split with nested purged rolling-origin validation（嵌套式带间隔滚动起点验证）.
-- Bounded the final test to 2025-09-01 through 2026-08-31; 2026-09 is no longer silently included.
-- Derived the primary purge as 168 h lookback + 72 h lead = 240 h; registered 7/10/14-day sensitivity.
-- Separated fit, early stopping, calibration and final test in time.
-- Added additive quantile-calibration sign tests; current code uses `y - q_hat` and `q + delta`.
-- Retired month-balanced tuning from formal use; legacy execution now requires `--allow-legacy`.
-- Added low/mid/high GFS cloud fields to the v2 data contract (18 forecast variables total).
-- Separated requested site coordinates from returned service coordinates in the clean-data contract.
-- Audited the 20 stations: 20 distinct returned locations; maximum request offset about 7.79 km.
-- Sampled 3997 in-province request locations at 0.05° and enumerated 707 distinct
-  Open-Meteo land-selected service cells; this is not an authoritative raw-GFS grid count.
-- Applied the hourly-truth gate: exactly 0 province service cells are currently
-  eligible for formal evaluation because full-period hourly Himawari has not been fetched.
-- Disabled the dimensionally invalid/unsupported PINN clear-sky hard ceiling.
-- Added 8 dependency-free unit tests; all pass.
-- Added reproducible website exporter, schemas and a working zero-dependency website demo.
-
-## Current artifacts
-
-| Artifact | Status | Meaning |
+| 领域 | 当前实现 | 状态 |
 |---|---|---|
-| `project_manifest.yaml` | active | protocol/data/model/feature SSOT |
-| `docs/01_research.md` | active | scientific argument and protocol |
-| `docs/03_model_config.md` | active | model registry and equal budget |
-| `reports/01_data_audit/gfs_semantics/` | active audit | local + official temporal semantics |
-| `reports/01_data_audit/source_grid/` | active audit | 20-site mapping + sampled province service-cell inventory |
-| `NWP_website_handoff/` | sealed delivery | standalone website package; isolated from active research |
-| existing `reports/03_modeling` | legacy/provisional | not v2 official evidence |
-| existing `figs/` | provisional/reference | visual reference, not v2 official result set |
+| 配置与身份 | `src/s01_core/` 读取 manifest、记录 provenance、阻断身份字段入特征 | 结构/单元验证通过；旧脚本仍须逐一迁移 |
+| 数据与特征 | `src/s02_data/` 的缓存/清洗合同，`src/s03_features/` 的因果工程与折内预处理 | 合同可检查；现有原始缓存未完成新版再抓取 |
+| 切分与调参 | `src/s04_splits/` 的滚动/诊断，`src/s05_tuning/` 的六候选与 trial ledger | 最小测试通过；首外折不可行，正式调参阻断 |
+| 模型 | `src/s06_models/` 的实现级别/状态门槛；旧训练器仍在 `src/s03_models/` | 深度架构未逐模型核验，不能视为全部 validated |
+| 预测、校准、指标、评估 | `src/s07_prediction/` 至 `s10_evaluation/` | 七分位合同、时间顺序、真实日历块 bootstrap、分组指标测试通过；无正式预测 |
+| 解释、空间、绘图 | `src/s11_interpretation/` 至 `s13_visualization/` | 开发期/空间设计与样式接口；无正式省域得分或正式论文图 |
+| 编排与校验 | `src/s14_pipeline/`、`src/s15_validation/`，薄入口 `scripts/` | 默认只做安全校验；正式就绪检查明确阻断 |
 
-`official_result_set` is deliberately `null` until the new protocol is executed.
+正式概率输出为 `q0.05/q0.10/q0.25/q0.50/q0.75/q0.90/q0.95`；正式选择指标
+是七分位 mean pinball。`crps_q7_trunc` 只代表七分位覆盖区间内的**截尾 CRPS 近似**，
+不是完整 CRPS。可靠性、PIT 与 crossing 按各分组独立计算；原始 GFS 只进入点预测辅助表。
 
-## Blocked or incomplete evidence
+## 验证快照
 
-| Priority | Item | Blocking condition | Required output |
-|---|---|---|---|
-| P0 | v2 data regeneration | archived raw lacks low/mid/high GFS cloud | new raw/clean/featured version |
-| P0 | formal model comparison | v2 features and GPU equal-budget run not completed | outer/inner OOF + final frozen results |
-| P0 | province-wide test | full-period hourly Himawari truth not gated | eligible grid list + missingness report |
-| P0 | recalibration | predictions under new folds do not exist | time-ordered calibrated predictions |
-| P1 | service-grid convergence | current 0.05° lattice is an empirical inventory, not an exact raw grid | stable counts at finer meshes |
-| P1 | raw-GFS grid claim | no direct GRIB/archive pipeline | raw grid audit or explicit exclusion |
-| P1 | PINN redesign | site-adapted clear sky/tolerance untested | constraint-ablation report |
-
-These are scientific/compute dependencies, not documentation excuses. No placeholder result is promoted to official.
-
-## Next executable sequence
-
-1. Re-fetch Previous Runs fields for 2024-02 through 2026-08 using the 18-variable contract.
-2. Regenerate clean/featured data and run temporal/semantic/missingness gates.
-3. Run `cv_nested_rolling_quantile.py` and the equal-budget DL runner on the same inner folds.
-4. Freeze features, model settings, calibration strategy and spatial design in the manifest.
-5. Retrain on final fit/early-stop slices; fit calibration on 2025-08-11–08-31.
-6. Evaluate the untouched 2025-09 through 2026-08 test once.
-7. Fetch/gate hourly Himawari truth for province candidates; then run Level 2 and density experiments.
-8. Mark and freeze the new scientific result set; website maintenance is outside the research workflow.
-
-## Reproduction commands
+2026-09-20 在本地仓库根目录执行：
 
 ```powershell
-.venv\Scripts\python.exe -m unittest discover -s tests\01_unit -p "test_*.py" -v
-.venv\Scripts\python.exe src\s04_evaluation\analysis\audit_gfs_semantics.py
-.venv\Scripts\python.exe src\s04_evaluation\analysis\audit_source_grid.py
-.venv\Scripts\python.exe scripts\06_validate\validate_project.py
+python -m pytest -q tests
+python scripts/01_validate/run.py --mode structural
+python scripts/01_validate/run.py --mode official
 ```
 
-The old full server script is not a v2 reproduction path until its month-balanced calls are replaced.
+结果为 **60 项测试通过**（含合成集成和最小端到端）；结构校验 **20/20 通过**；
+正式就绪校验 **20/25 通过、状态 `blocked`**。最后一条命令预期返回非零退出码。
+合成用例覆盖预测读写、校准、评价及正式状态拒绝，但不代表各模型真实数据训练链
+已完整跑通，更不等于官方结果已生成。
+
+## 正式重跑硬阻断
+
+1. **首外折设计可行性**：在当前三内折、10 天主隔离、独立早停和评分约束下，
+   首外折历史只有 121 天，按该设计至少需先占 124 天才有可能留下非空拟合段。
+   须输出 outer × inner × 服务点 × lead 的原始、白天、168 小时
+   序列有效及 fit/early-stop/scoring 数量，再经明确决策修订协议；代码不得自行缩窗。
+2. **服务点全集未收敛**：0.05° 单轮探针的 707 个去重 API 返回位置，按返回
+   坐标边界筛得的 654 个江苏服务点，均非最终全集。需加密探针、比较新增集合，
+   确定边界规则并冻结注册表。请求点不得参与正式空间选择和评价。
+3. **数据与真值未就绪**：本地旧缓存缺新版 18 变量版本侧车/完整再抓取审计；
+   江苏候选点的独立小时 Himawari 真值尚未通过完整时段 truth gate。
+4. **深度模型尚未逐个 validated**：需核查架构机制、张量形状、输出、损失、
+   早停和参数规模，尤其 AutoCorrelation lag 聚合；PINN 物理单位/约束未解决前
+   继续保持实验性。
+5. **正式全链路未完成**：旧训练代码与新模块并存，需完成各模型的正式接口接入、
+   集成/最小端到端验证和完整 provenance 审计。现有旧结果及图均不得升级为正式。
+
+`project_manifest.yaml` 的 `official_result_set: null` 必须保持，直至上述门槛和
+独立最终测试流程确实通过。本轮不运行全量训练、多种子实验或省域正式评价。
+
+## 下一步顺序
+
+先完成首外折样本诊断和协议决策，再完成 18 变量数据再抓取、独立真值与服务点
+收敛；随后逐模型架构核验和正式执行链接入；最后做集成/最小端到端验证。
+只有正式就绪校验通过后，才能另行批准正式重跑。

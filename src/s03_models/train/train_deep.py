@@ -5,11 +5,11 @@
   fit -> purge -> early-stop -> purge -> calibration -> final test。
 标准化：数值特征与目标的均值/标准差只用本次运行的训练子集拟合，
         验证折与测试年不参与（--subsample 只影响训练子集大小，不影响测试）。
-输入：每（station, lead）按时间排序的 33 特征 + 20 站/4 季 one-hot 静态通道，
+输入：每（station, lead）按时间排序的物理特征 + 季节通道；站点身份仅用于分组。
       窗口长度 24 h（长序列模型 168 h，--seq-len）。
 模型（--model）：mlp/lstm/cnn/tcn/transformer/dlinear/tsmixer/itransformer/patchtst/
                  autoformer/informer/fedformer/timesnet/pinn
-输出：reports/03_modeling/vX_{model}/{lite|full}/quantile/{ghi,cloud}/
+输出：reports/03_modeling/vX_{model}/{smoke|development}/prototype/{ghi,cloud}/
 """
 import argparse
 import datetime as dt
@@ -28,9 +28,12 @@ sys.path.insert(0, str(CODE_ROOT / "src" / "s03_models" / "train"))
 import train_v1 as tv  # noqa: E402
 sys.path.insert(0, str(CODE_ROOT / "src" / "s02_experiment"))  # split_protocol
 from split_protocol import default_split, split_early_stop  # noqa: E402
-from cloud_impute import impute_cloud_forecast  # noqa: E402
 sys.path.insert(0, str(CODE_ROOT / "src" / "s03_models"))
 from model_registry import deep_model_vnum  # noqa: E402
+sys.path.insert(0, str(CODE_ROOT / "src"))
+from s06_models.model_status import require_deep_execution  # noqa: E402
+from s01_core.schemas import assert_model_features  # noqa: E402
+from s01_core.config_loader import load_manifest  # noqa: E402
 
 import torch
 import torch.nn as nn
@@ -52,7 +55,6 @@ def season_of(ts):
 
 def load_groups(target):
     sites = yaml.safe_load((CODE_ROOT / "config" / "01_sites.yaml").read_text(encoding="utf-8"))["sites"]
-    code = {s["id"]: i for i, s in enumerate(sites)}
     obs = "ghi_obs_sat" if target == "ghi" else "cloud_cover_obs"
     cols = tv.FEATURES_NUM + ["station_id", "target_time_utc", obs]
     frames = []
@@ -65,23 +67,25 @@ def load_groups(target):
         frames.append(df)
     d = pd.concat(frames, ignore_index=True)
     del frames
+    # This retained prototype entry never constructs final-test sequences.
+    test_start = pd.Timestamp(load_manifest()["test_period"]["start"])
+    d = d.loc[d["target_time_utc"] < test_start].copy()
     if target == "ghi":
         d = d.query(tv.DAY_FILTER)
     d = d.dropna(subset=[obs]).copy()
-    if target == "cloud":
-        d = impute_cloud_forecast(d, feature_cols=tv.FEATURES_NUM)
+    # No full-dataset cloud imputer here. The numeric fallback below is fitted
+    # only on the fit fold; any advanced imputer must obey the same boundary.
     d = d.sort_values(["station_id", "lead_time", "target_time_utc"]).reset_index(drop=True)
     d["season"] = d["target_time_utc"].apply(season_of)
-    d["st_code"] = d["station_id"].map(code).astype(float)
     d["lead_norm"] = d["lead_time"].astype(float) / 72.0
 
-    # 深度模型类别编码：station 与 season 使用 one-hot 静态通道。
-    st = pd.get_dummies(d["station_id"].astype(str), prefix="st").astype("float32")
+    # Season is available at issue time; station identity is not a model input.
     se = pd.get_dummies(d["season"].astype(str), prefix="season").astype("float32")
-    d = pd.concat([d, st, se], axis=1)
+    d = pd.concat([d, se], axis=1)
     num_feats = tv.FEATURES_NUM + ["lead_norm"]
-    cat_feats = list(st.columns) + list(se.columns)
+    cat_feats = list(se.columns)
     feats = num_feats + cat_feats
+    assert_model_features(feats)
 
     groups, indices, y, meta = [], [], [], []
     for (sid, lead), g in d.groupby(["station_id", "lead_time"], sort=False):
@@ -361,15 +365,23 @@ def main():
                     help="训练样本按该步长抽样（仅训练集，验证/测试全量）")
     ap.add_argument("--val-subsample", type=int, default=1,
                     help="早停验证样本抽样步长，仅影响 early stopping；测试全量")
-    ap.add_argument("--smoke", action="store_true")
-    ap.add_argument("--budget", choices=["lite", "full"], default="lite")
+    ap.add_argument("--execution-level", choices=["smoke", "development", "official"],
+                    default="smoke")
     ap.add_argument("--quantile", action="store_true")
     ap.add_argument("--device", default="auto", choices=["auto", "cuda", "cpu"])
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--workers", type=int, default=0)
-    ap.add_argument("--impl", choices=["lite", "formal"], default="lite")
+    ap.add_argument("--implementation-level", choices=["prototype", "validated"],
+                    default="prototype")
     ap.add_argument("--seq-len", type=int, default=168)
     args = ap.parse_args()
+    require_deep_execution(args.model, args.implementation_level, args.execution_level)
+    # The retained trainer still uses a final calibration/test split rather
+    # than the new nested six-candidate selector. It is prototype-only until
+    # that migration is complete; no official outputs can be produced here.
+    if args.execution_level == "official":
+        raise SystemExit("official deep training is blocked pending nested tuning integration")
+    args.smoke = args.execution_level == "smoke"
 
     torch.manual_seed(args.seed); np.random.seed(args.seed)
     global SEQ_LEN
@@ -437,7 +449,7 @@ def main():
 
     d = groups[0].shape[1]
     qmode = bool(args.quantile)
-    if args.impl == "formal" and args.model in (
+    if args.implementation_level == "validated" and args.model in (
             "autoformer", "informer", "fedformer", "patchtst", "timesnet", "pinn"):
         from formal_architectures import build_formal_model
         model = build_formal_model(args.model, d, SEQ_LEN, len(TAUS) if qmode else 1)
@@ -477,6 +489,14 @@ def main():
             mva[f"q{t:g}"] = val_pred[:, i]
     else:
         mva["pred"] = val_pred
+    # Prototype/development runs may inspect only the later calibration block.
+    # The untouched final test is not predicted by this unaudited entry point.
+    out = (CODE_ROOT / "reports" / "03_modeling" / f"v{MODEL_VNUM[args.model]}_{args.model}"
+           / args.execution_level / "prototype" / args.target)
+    out.mkdir(parents=True, exist_ok=True)
+    mva.to_csv(out / "development_predictions.csv", index=False)
+    logger.info("provisional development-only output -> %s", out)
+    return
     pred = predict(model, ld_te, pinn, qmode, device) * y_std + y_mean
     cross = float(tv.crossing_rate(pred)) if qmode else 0.0
     if qmode:
@@ -495,7 +515,7 @@ def main():
     if not qmode:
         raise SystemExit("点损失协议已退役：请加 --quantile 运行分位数版本。")
     out = (CODE_ROOT / "reports" / "03_modeling" / f"v{vn}_{args.model}"
-           / args.budget / "quantile" / args.target)
+           / args.execution_level / "quantile" / args.target)
     out.mkdir(parents=True, exist_ok=True)
     mte.to_csv(out / "test_predictions.csv", index=False)
     mva.to_csv(out / "val_predictions.csv", index=False)

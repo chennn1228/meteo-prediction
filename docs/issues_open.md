@@ -1,22 +1,23 @@
-# Open issues only
+# 未解决问题
 
-Version 2.0.0-provisional | 2026-09-15
+协议 `2.0.0-provisional`；2026-09-20。这里记录**仍阻断正式重跑**或需要
+证据关闭的事项。旧问题历史保存在 `archive/docs/`，不代表已获新协议认可。
 
-Closed bugs and retired protocols are kept in `docs/archive/legacy_v11_20260915/` and are not active context.
-
-| ID | Priority | Open issue | Completion evidence |
+| ID | 优先级 | 仍需解决 | 关闭证据 |
 |---|---|---|---|
-| P0-DATA-01 | P0 | Re-fetch 2024-02–2026-08 GFS total/low/mid/high cloud under the 18-variable contract | raw completeness + semantic audit pass |
-| P0-DATA-02 | P0 | Regenerate clean/featured v2 with requested and returned coordinates separated | schema/missingness tests + feature version |
-| P0-TEMP-01 | P0 | Execute all nested outer/inner folds and 7/10/14-day gap sensitivity | OOF tables + frozen selection |
-| P0-TUNE-01 | P0 | Complete equal-budget six-trial tuning for Ridge/tree/14 DL | trial ledger + compute budget |
-| P0-CAL-01 | P0 | Recompute calibration using temporally later calibration data | calibrated OOF/test + sign/unit tests |
-| P0-SPAT-01 | P0 | Fetch and gate full-period hourly Himawari truth for province candidates | eligible-grid list + missingness/cost report |
-| P0-SPAT-02 | P0 | Run Level-1/2 evaluation and 5/10/15/20 density experiment | spatial metrics/maps + saturation analysis |
-| P1-GRID-01 | P1 | Converge the province enumeration of Open-Meteo returned service cells | stable counts at successively finer request meshes |
-| P1-GRID-02 | P1 | Decide whether a direct raw-GFS GRIB pipeline is necessary | implemented audit or explicit scoped exclusion |
-| P1-FEAT-01 | P1 | Run group ablation, grouped permutation, fold stability and confidence intervals inside development data | feature decision table |
-| P1-CAL-02 | P1 | Test weather-conditioned Mondrian only if conditional-coverage evidence persists | outer-fold comparison |
-| P1-PINN-01 | P1 | Design site-adapted clear-sky/tolerance/enhancement-aware constraint | unit-consistent loss + ablation |
-| P1-REPRO-01 | P1 | Add lock/container/deterministic runtime metadata and initialize version control | reproducible clean checkout run |
+| P0-SPLIT-01 | P0 | 首外折在现有三内折、两次隔离及独立早停/评分约束下不可行；不得静默缩窗 | outer × inner × 服务点 × lead 六类样本数诊断、明确协议决策和对应测试 |
+| P0-DATA-01 | P0 | 旧原始缓存未达到新版 18 变量/月份/版本侧车合同 | 再抓取后的完整月份、18 变量、lead、时序与坐标审计 |
+| P0-TRUTH-01 | P0 | 江苏候选服务点缺完整独立小时 Himawari 真值 | 真值覆盖、缺失率和可评价点集的 truth gate |
+| P0-SERVICE-01 | P0 | 0.05° 单轮探针的 707 个去重返回位置、边界内 654 点不是最终全集 | 加密探针各轮新增/差异、边界规则和冻结注册表 |
+| P0-MODEL-01 | P0 | 深度实现尚未逐个通过标准架构/张量/早停/损失审计；AutoCorrelation lag 聚合需专项核验 | 逐模型机制审计与针对性测试，未过者降级/改名或替换 |
+| P0-PIPE-01 | P0 | 新 `s01`–`s15` 模块与旧训练代码并存，正式链尚未完成集成/最小端到端验证 | 统一预测合同贯通各模型、无 legacy import、集成/E2E 和强校验通过 |
+| P0-SPAT-01 | P0 | 江苏 Level 1/2/3 与 5/10/15/20 密度只有设计/预检，尚无冻结服务点和正式真值 | 嵌套选点覆盖诊断、独立真值和按 lead/区域/季节/天气的概率评价 |
+| P1-FEAT-01 | P1 | 折内特征/插补无泄漏需以真实数据和旧入口迁移再审 | issue-time 可得性、折内拟合、云量插补边界与身份禁入检查 |
+| P1-INTERP-01 | P1 | 特征消融/置换/稳定性/区间估计未在新版开发期完成 | 冻结特征决策后再做 SHAP；最终测试不参与选择 |
+| P1-CAL-01 | P1 | 正式预测尚不存在，校准和按真实时间块 bootstrap 仅通过单元测试 | 后期校准集、issue-time 无泄漏验证、分组覆盖与不确定性审计 |
+| P1-FIG-01 | P1 | 论文图仍多为旧结果，正式可视化接口尚待完整输入 | 统一样式、hexbin/原生 SHAP 图及真实结果图审查 |
+| P1-PINN-01 | P1 | PINN 非负/晴空约束的物理单位和合理性未验证 | W/m² 空间约束、enhancement/tolerance 与约束消融；此前保持实验性 |
 
+这些阻断不是测试失败的掩饰。2026-09-20 的本地测试 60 项、结构检查
+20/20 已通过，但正式就绪检查 20/25、状态 `blocked`；不得因此生成或标记
+`official_result_set`。
