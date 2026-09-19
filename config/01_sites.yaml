@@ -1,0 +1,122 @@
+# 站点配置（2026-09-07 定稿：分层配额五层 + 层内最大最小距离；代码 SI/MI/MC/NI/NC）
+sites:
+  - id: changzhou_1
+    name: changzhou_1
+    lat: 31.5000
+    lon: 119.8000
+    region: 苏南内陆
+    code: SI
+  - id: nanjing_1
+    name: nanjing_1
+    lat: 31.9000
+    lon: 118.6000
+    region: 苏南内陆
+    code: SI
+  - id: suzhou_1
+    name: suzhou_1
+    lat: 31.5000
+    lon: 121.0000
+    region: 苏南内陆
+    code: SI
+  - id: wuxi_1
+    name: wuxi_1
+    lat: 31.1000
+    lon: 120.2000
+    region: 苏南内陆
+    code: SI
+  - id: nanjing_2
+    name: nanjing_2
+    lat: 31.5000
+    lon: 119.0000
+    region: 苏南内陆
+    code: SI
+  - id: taizhou_1
+    name: taizhou_1
+    lat: 32.7000
+    lon: 119.8000
+    region: 苏中内陆
+    code: MI
+  - id: taizhou_2
+    name: taizhou_2
+    lat: 32.7000
+    lon: 120.6000
+    region: 苏中内陆
+    code: MI
+  - id: nantong_1
+    name: nantong_1
+    lat: 31.9000
+    lon: 121.0000
+    region: 苏中沿海
+    code: MC
+  - id: nantong_2
+    name: nantong_2
+    lat: 31.9000
+    lon: 121.8000
+    region: 苏中沿海
+    code: MC
+  - id: suqian_1
+    name: suqian_1
+    lat: 33.9000
+    lon: 118.2000
+    region: 苏北内陆
+    code: NI
+  - id: xuzhou_1
+    name: xuzhou_1
+    lat: 34.7000
+    lon: 116.6000
+    region: 苏北内陆
+    code: NI
+  - id: huai_an_1
+    name: huai_an_1
+    lat: 33.1000
+    lon: 119.4000
+    region: 苏北内陆
+    code: NI
+  - id: huai_an_2
+    name: huai_an_2
+    lat: 33.9000
+    lon: 119.4000
+    region: 苏北内陆
+    code: NI
+  - id: xuzhou_2
+    name: xuzhou_2
+    lat: 34.3000
+    lon: 117.4000
+    region: 苏北内陆
+    code: NI
+  - id: huai_an_3
+    name: huai_an_3
+    lat: 33.1000
+    lon: 118.6000
+    region: 苏北内陆
+    code: NI
+  - id: yancheng_1
+    name: yancheng_1
+    lat: 33.9000
+    lon: 119.8000
+    region: 苏北沿海
+    code: NC
+  - id: lianyungang_1
+    name: lianyungang_1
+    lat: 34.7000
+    lon: 118.6000
+    region: 苏北沿海
+    code: NC
+  - id: yancheng_2
+    name: yancheng_2
+    lat: 33.1000
+    lon: 120.6000
+    region: 苏北沿海
+    code: NC
+  - id: yancheng_3
+    name: yancheng_3
+    lat: 33.1000
+    lon: 119.8000
+    region: 苏北沿海
+    code: NC
+  - id: lianyungang_2
+    name: lianyungang_2
+    lat: 34.7000
+    lon: 119.4000
+    region: 苏北沿海
+    code: NC

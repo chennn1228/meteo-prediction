@@ -1,0 +1,57 @@
+# 变量配置（定稿 2026-08-14，依据 docs/research.md §4）
+
+resolution: hourly        # 已定稿 1h（15 min 为插值产物，不使用）
+timezone: UTC
+tilt: 30                  # GTI 固定倾角（度），南向
+azimuth: 0                # GTI 方位角（0 = 正南）
+leads: [1, 2, 3]          # previous_day1/2/3 -> D+1/D+2/D+3
+
+models:
+  previous_runs: gfs_seamless
+  satellite: jma_jaxa_himawari
+
+# 预报端（Previous Runs API）：18 个变量，全部 × previous_day1/2/3。
+# 2026-09-15 起新增低/中/高云量；现有 raw/featured 不含这三列，须重新抓取后才可进入正式协议。
+forecast_variables:
+  - shortwave_radiation        # GHI，主订正目标
+  - diffuse_radiation          # DHI
+  - direct_normal_irradiance   # DNI
+  - global_tilted_irradiance   # GTI（需 tilt/azimuth，否则 = GHI）
+  - cloud_cover                # 总云量
+  - cloud_cover_low            # 低云量（新协议候选特征）
+  - cloud_cover_mid            # 中云量（新协议候选特征）
+  - cloud_cover_high           # 高云量（新协议候选特征）
+  - temperature_2m
+  - relative_humidity_2m
+  - dewpoint_2m
+  - wind_speed_10m
+  - wind_direction_10m
+  - surface_pressure
+  - precipitation
+  - sunshine_duration
+  - terrestrial_radiation
+  - is_day
+
+# 真值端 A：Himawari 卫星辐射（主，仅 GHI 为直接反演，其余为派生）
+satellite_variables:
+  - shortwave_radiation
+  - direct_radiation
+  - diffuse_radiation
+  - direct_normal_irradiance
+  - global_tilted_irradiance
+
+# 真值端 B+C：ERA5 辐射（备/交叉验证）+ 云量（总/低/中/高）
+era5_variables:
+  - shortwave_radiation
+  - direct_radiation
+  - diffuse_radiation
+  - direct_normal_irradiance
+  - global_tilted_irradiance
+  - cloud_cover
+  - cloud_cover_low
+  - cloud_cover_mid
+  - cloud_cover_high
+
+# 天气分型（kt 分箱，定稿 2026-08-24）：日平均晴空指数 kt = 观测GHI/晴空GHI 的日均值
+# 三个数据驱动边界。它们只定义分组诊断，不作为预先固定的物理阈值或模型选择依据。
+kt_weather_bins: [0.44, 0.73, 0.97]

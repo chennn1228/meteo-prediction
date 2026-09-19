@@ -1,0 +1,72 @@
+# Secrets and local credentials
+secrets/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*.json
+
+# Raw, cleaned and featured research data
+data/
+
+# Local environments and caches
+.venv/
+venv/
+.cache/
+.trash/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Generated deployment and data bundles
+deploy/
+artifacts/
+reports/
+literature/
+
+# Website work is outside this repository's upload scope
+website/
+NWP_website_handoff/
+handoff_templates/
+schemas/
+scripts/06_export/
+docs/archive/legacy_v11_20260915/08_website_handoff.md
+figs/00_preview/
+
+# Large model/checkpoint and tabular artifacts
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.joblib
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.npz
+
+# Large per-sample prediction exports (summary reports remain tracked)
+reports/**/lead_feature_predictions.csv
+reports/**/per_lead_predictions.csv
+reports/**/predictions.csv
+reports/**/test_predictions.csv
+reports/**/test_predictions_*.csv
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini

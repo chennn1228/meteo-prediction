@@ -1,0 +1,148 @@
+protocol_version: "2.0.0-provisional"
+data_version: "openmeteo-point-2024-02_2026-09-v1"
+feature_version: "feature-mechanism-v2-pending-retrain"
+benchmark_version: "nested-purged-rolling-v1-pending"
+schema_version: "1.0.0"
+primary_target: ghi
+primary_task: "GFS GHI probabilistic post-processing"
+status: provisional
+
+scientific_argument:
+  claim: >-
+    In Jiangsu, the project will quantify the independent value of D+1/D+2/D+3
+    GFS GHI and the incremental value of increasingly complex post-processing.
+  evidence_status: >-
+    Existing month-balanced results are diagnostic only; official evidence must
+    be regenerated under the nested purged rolling-origin protocol.
+  boundary: >-
+    Conclusions apply to the Open-Meteo location-specific GFS product and cannot
+    be generalized to raw GFS GRIB cells until a separate raw-grid audit is run.
+
+development_period:
+  start: "2024-02-01T00:00:00Z"
+  end: "2025-08-31T23:59:59Z"
+test_period:
+  start: "2025-09-01T00:00:00Z"
+  end: "2026-08-31T23:59:59Z"
+
+data_sources:
+  forecast:
+    provider: Open-Meteo Previous Runs API
+    model: gfs_seamless
+    product_class: location_specific
+    cell_selection: land
+    leads_hours: [24, 48, 72]
+    temporal_resolution: hourly
+    radiation_semantics: preceding_hour_mean
+    source_grid_id_exposed: false
+  truth:
+    primary: jma_jaxa_himawari_shortwave_radiation
+    primary_semantics: preceding_hour_mean
+    cloud_reference: era5_reanalysis
+    cloud_reference_role: supplementary_exploratory
+
+validation_protocol:
+  name: nested_purged_rolling_origin
+  maximum_sequence_lookback_hours: 168
+  maximum_lead_hours: 72
+  purge_hours: 240
+  purge_derivation: maximum_sequence_lookback_hours + maximum_lead_hours
+  gap_sensitivity_days: [7, 10, 14]
+  outer_folds:
+    - {id: outer_1, train_start: "2024-02-01", train_end: "2024-05-31", purge_start: "2024-06-01", purge_end: "2024-06-10", validation_start: "2024-06-11", validation_end: "2024-07-31"}
+    - {id: outer_2, train_start: "2024-02-01", train_end: "2024-08-31", purge_start: "2024-09-01", purge_end: "2024-09-10", validation_start: "2024-09-11", validation_end: "2024-10-31"}
+    - {id: outer_3, train_start: "2024-02-01", train_end: "2024-11-30", purge_start: "2024-12-01", purge_end: "2024-12-10", validation_start: "2024-12-11", validation_end: "2025-01-31"}
+    - {id: outer_4, train_start: "2024-02-01", train_end: "2025-02-28", purge_start: "2025-03-01", purge_end: "2025-03-10", validation_start: "2025-03-11", validation_end: "2025-04-30"}
+    - {id: outer_5, train_start: "2024-02-01", train_end: "2025-05-31", purge_start: "2025-06-01", purge_end: "2025-06-10", validation_start: "2025-06-11", validation_end: "2025-07-31"}
+  final_fit:
+    fit_end: "2025-06-20"
+    early_stop_start: "2025-07-01"
+    early_stop_end: "2025-07-31"
+    calibration_start: "2025-08-11"
+    calibration_end: "2025-08-31"
+
+quantiles: [0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95]
+selection_metric: mean_pinball
+report_metrics: [mae, rmse, bias, rmse_skill_score, mean_pinball, coverage, interval_width]
+
+feature_groups:
+  radiation: [ghi_fcst, dhi_fcst, dni_fcst, gti_fcst, terrestrial_fcst]
+  clear_sky_kt: [ghi_clear_sky, dni_clear_sky, kt_fcst, kni, ghi_fcst_minus_clear, diffuse_fraction]
+  cloud: [cloud_cover_fcst, cloud_cover_low_fcst, cloud_cover_mid_fcst, cloud_cover_high_fcst, cloud_cover_change, cloud_cover_roll1, cloud_cover_roll3]
+  meteorology: [temp_fcst, rh_fcst, dewpoint_fcst, wind_speed_fcst, wind_dir_fcst, pressure_fcst, precip_fcst, sunshine_fcst]
+  solar_geometry: [solar_elevation, solar_azimuth]
+  temporal_dynamics: [hour_local_sin, hour_local_cos, doy_sin, doy_cos, month, ghi_fcst_lag1, ghi_fcst_lag2, lead_time]
+  spatial_static: [latitude, longitude, elevation, region, source_grid_latitude, source_grid_longitude]
+  selection_evidence: [group_ablation, grouped_permutation_importance, rolling_fold_stability, confidence_interval]
+  shap_role: interpretation_only
+
+spatial_design:
+  training_sites: 20
+  province_model_forbids_station_id: true
+  level_1: stratified_spatial_holdout
+  level_2: province_wide_unseen_grid
+  level_3: regional_extrapolation_stress_test
+  training_site_density: [5, 10, 15, 20]
+  truth_gate: reliable_hourly_himawari_required
+
+models:
+  - {id: climatology, family: baseline, role: value_ladder}
+  - {id: persistence, family: baseline, role: value_ladder}
+  - {id: smart_persistence, family: baseline, role: value_ladder}
+  - {id: optimal_convex, family: baseline, role: value_ladder}
+  - {id: raw_gfs, family: raw, role: value_ladder}
+  - {id: bias_correction, family: statistical, role: value_ladder}
+  - {id: linear_mos, family: statistical, role: value_ladder}
+  - {id: ridge_mos, family: statistical, role: value_ladder}
+  - {id: lgbm, family: tree_ml, role: value_ladder}
+  - {id: xgboost, family: tree_ml, role: value_ladder}
+  - {id: mlp, family: deep, internal_version: v2}
+  - {id: cnn, family: deep, internal_version: v3}
+  - {id: tcn, family: deep, internal_version: v4}
+  - {id: lstm, family: deep, internal_version: v5}
+  - {id: transformer, family: deep, internal_version: v6}
+  - {id: autoformer, family: deep, internal_version: v7}
+  - {id: informer, family: deep, internal_version: v8}
+  - {id: fedformer, family: deep, internal_version: v9}
+  - {id: itransformer, family: deep, internal_version: v10}
+  - {id: patchtst, family: deep, internal_version: v11}
+  - {id: dlinear, family: deep, internal_version: v12}
+  - {id: timesnet, family: deep, internal_version: v13}
+  - {id: tsmixer, family: deep, internal_version: v14}
+  - {id: pinn, family: experimental_constrained, internal_version: v15}
+model_count: 24
+deep_model_count: 14
+
+tuning_budget:
+  policy: equal_budget
+  trials_per_model: 6
+  tuning_seed: 0
+  common_inner_folds: 3
+  learning_rates: [0.0005, 0.001]
+  model_scales: [small, base]
+  dropout: [0.1, 0.2]
+  final_seed_policy: {candidate_seed: 0, top_models_seeds: [0, 1, 2, 3, 4]}
+  report_compute_budget: true
+
+seed_policy:
+  tuning_seed: 0
+  candidate_seed: 0
+  final_top_model_seeds: [0, 1, 2, 3, 4]
+  current_legacy_result_seed_coverage: incomplete
+
+calibration_method:
+  primary: time_ordered_split_conformal
+  additive_quantile_residual: "residual = y - q_hat; delta_tau = quantile(residual, tau); q_cal = q_hat + delta_tau"
+  uncertainty: block_bootstrap
+  conditional_candidate: mondrian_by_weather
+
+pinn:
+  status: experimental_constrained_model
+  nonnegative_constraint: soft
+  clear_sky_upper_bound: disabled_pending_site_adaptation
+  kt_consistency_implemented: false
+
+official_result_set: null
+provisional_result_sets:
+  - {id: legacy_month_balanced_full, reason: old_noncausal_model_selection_protocol}
+  - {id: fixed_kt_robustness, reason: partial_model_subset_only}
