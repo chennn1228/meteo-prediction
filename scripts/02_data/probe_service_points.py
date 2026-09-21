@@ -18,8 +18,11 @@ def main() -> None:
     parser.add_argument("--step", type=float, required=True)
     parser.add_argument("--max-new-batches", type=int, default=0,
                         help="0 means dry run; 40 locations per new batch")
+    parser.add_argument("--batch-size", type=int, default=40,
+                        help="requested locations per API call (1–40); must match any existing cache")
     args = parser.parse_args()
-    print(json.dumps(probe_round(args.step, max_new_batches=args.max_new_batches),
+    print(json.dumps(probe_round(args.step, batch_size=args.batch_size,
+                                 max_new_batches=args.max_new_batches),
                      ensure_ascii=False, indent=2))
 
 

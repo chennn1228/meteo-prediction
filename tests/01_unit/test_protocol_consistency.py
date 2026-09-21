@@ -22,13 +22,13 @@ class ProtocolConsistencyTests(unittest.TestCase):
         self.assertTrue(all(alignment.values()), alignment)
         self.assertEqual(candidates("ridge_mos")[0], load_manifest()["tuning_search_spaces"]["ridge_mos"][0])
 
-    def test_first_outer_is_explicitly_infeasible(self):
+    def test_first_outer_retained_and_mathematically_feasible(self):
         evidence = chronological_boundaries(load_manifest())
         self.assertEqual(evidence["first_outer_prefix_days"], 121)
-        self.assertEqual(evidence["minimum_days_before_fit"], 124)
-        self.assertFalse(evidence["first_outer_has_nonempty_fit"])
-        with self.assertRaises(ProtocolError):
-            require_official_chronology(load_manifest())
+        self.assertEqual(evidence["minimum_days_before_fit"], 76)
+        self.assertTrue(evidence["first_outer_has_nonempty_fit"])
+        self.assertEqual(load_manifest()["validation_protocol"]["inner_scoring_days"], 14)
+        require_official_chronology(load_manifest())
 
     def test_data_config_contains_no_weather_selection_protocol(self):
         self.assertNotIn("kt_weather_bins", load_data_config("02_variables.yaml"))

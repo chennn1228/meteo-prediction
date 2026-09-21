@@ -113,3 +113,82 @@ class AdditiveQuantileCalibrator:
         clean["calibration_fit_end_utc"] = self.fit_end_.isoformat()
         clean["calibration_early_stop_end_utc"] = self.early_stop_end_.isoformat()
         return validate_predictions(clean, require_truth=False)
+
+
+@dataclass
+class CausalIssueQuantileCalibrator:
+    """Calibrate each forecast using only calibration truth known at its issue.
+
+    This preserves the registered 11--31 August calibration block for the
+    September test, including D+3 forecasts issued before 31 August.  The
+    calibration pool never includes a test target or truth, and no forecast
+    issued before the first available calibration truth is silently scored.
+    """
+
+    lower_bound: float | None = 0.0
+    calibration_: pd.DataFrame | None = field(default=None, init=False)
+    fit_end_: pd.Timestamp | None = field(default=None, init=False)
+    early_stop_end_: pd.Timestamp | None = field(default=None, init=False)
+    identity_: dict[str, object] = field(default_factory=dict, init=False)
+
+    def fit(self, calibration: pd.DataFrame, *, fit_end: object,
+            early_stop_end: object) -> "CausalIssueQuantileCalibrator":
+        clean = validate_predictions(calibration)
+        if (clean.prediction_type != "quantile").any():
+            raise ValueError("calibration requires seven-quantile predictions")
+        fit_boundary = _timestamp(fit_end, "fit_end")
+        stop_boundary = _timestamp(early_stop_end, "early_stop_end")
+        if fit_boundary >= stop_boundary:
+            raise ValueError("fit must end before early stopping ends")
+        if stop_boundary >= clean.target_time_utc.min():
+            raise ValueError("calibration truth must follow early stopping")
+        if stop_boundary >= clean.forecast_issue_time_utc.min():
+            raise ValueError("calibration forecast issues must follow early stopping")
+        identity_columns = ("experiment_id", "model_id", "seed", "data_version",
+                            "feature_version", "protocol_revision")
+        for column in identity_columns:
+            if clean[column].nunique(dropna=False) != 1:
+                raise ValueError(f"calibration mixes {column}")
+        self.identity_ = {column: clean[column].iloc[0] for column in identity_columns}
+        self.calibration_ = clean.sort_values("target_time_utc").reset_index(drop=True)
+        self.fit_end_ = fit_boundary
+        self.early_stop_end_ = stop_boundary
+        return self
+
+    def apply(self, predictions: pd.DataFrame) -> pd.DataFrame:
+        if self.calibration_ is None:
+            raise RuntimeError("fit the calibrator before apply")
+        clean = validate_predictions(predictions, require_truth=False)
+        if (clean.prediction_type != "quantile").any():
+            raise ValueError("calibration cannot create a distribution from point forecasts")
+        for column, value in self.identity_.items():
+            if (clean[column] != value).any():
+                raise ValueError(f"calibration and predictions disagree on {column}")
+        # The calibration block is earlier than the targets being predicted;
+        # unlike a static full-block calibrator, some D+3 issues may precede
+        # the end of that block.  Strict inequality prevents using truth from
+        # the issue instant or later.
+        if (clean.target_time_utc <= self.calibration_.target_time_utc.max()).any():
+            raise ValueError("prediction target overlaps the calibration block")
+        result = clean.copy()
+        result["calibration_available_rows"] = 0
+        result["calibration_latest_truth_utc"] = ""
+        for issue, positions in result.groupby("forecast_issue_time_utc", sort=True).indices.items():
+            available = self.calibration_.loc[self.calibration_.target_time_utc < issue]
+            if available.empty:
+                raise ValueError(f"no calibration truth known before forecast issue {issue}")
+            offsets = additive_residual_offsets(
+                available.y.to_numpy(dtype=float),
+                available.loc[:, QUANTILE_COLUMNS].to_numpy(dtype=float))
+            original = result.iloc[positions].loc[:, QUANTILE_COLUMNS].to_numpy(dtype=float)
+            calibrated = apply_additive_offsets(original, offsets,
+                                                 lower_bound=self.lower_bound)
+            result.iloc[positions, result.columns.get_indexer(QUANTILE_COLUMNS)] = calibrated
+            result.iloc[positions, result.columns.get_loc("point_prediction")] = calibrated[:, 3]
+            result.iloc[positions, result.columns.get_loc("calibration_available_rows")] = len(available)
+            result.iloc[positions, result.columns.get_loc("calibration_latest_truth_utc")] = (
+                available.target_time_utc.max().isoformat())
+        result["calibration_method"] = "causal_issue_additive_signed_residual_quantile_rearranged"
+        result["calibration_fit_end_utc"] = self.fit_end_.isoformat()
+        result["calibration_early_stop_end_utc"] = self.early_stop_end_.isoformat()
+        return validate_predictions(result, require_truth=False)

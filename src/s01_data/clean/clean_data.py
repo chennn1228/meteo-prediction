@@ -2,7 +2,7 @@
 """三源 raw JSON → 站点长表（Parquet）+ 质量报告。
 
 长表结构：一行 = 站点 × 目标时刻 × 时效（lead_time）。
-列 = 预报端 18 组（_fcst）+ 卫星真值 5（_obs_sat）+ ERA5 真值 5（_obs_era5）
+列 = 临时预报端 15 组（_fcst）+ 卫星真值 5（_obs_sat）+ ERA5 真值 5（_obs_era5）
       + ERA5 云量真值 4（_obs）。
 清洗规则：云量夹取 [0,100]；辐射负值置 0；缺失保留为 NaN 并计入质量报告。
 
@@ -219,7 +219,8 @@ def main():
         df.insert(6, "region", requested.get("region"))
         df = df.sort_values(["target_time_utc", "lead_time"]).reset_index(drop=True)
 
-        required = tuple(FCST_RENAME.values()) + tuple(SAT_RENAME.values()) + tuple(ERA5_RENAME.values())
+        required = tuple(FCST_RENAME[name] for name in cfg["forecast_variables"])
+        required += tuple(SAT_RENAME.values()) + tuple(ERA5_RENAME.values())
         required += tuple(ERA5_CLOUD_RENAME.values()) + (
             "target_time_utc", "forecast_issue_time_utc", "lead_time",
             "requested_latitude", "requested_longitude",

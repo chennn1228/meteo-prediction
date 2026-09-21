@@ -1,0 +1,43 @@
+stage,model_id,nominal_quantile,empirical_cdf,n
+uncalibrated,ridge_mos,0.05,0.040055891942244994,12882
+uncalibrated,ridge_mos,0.1,0.11131811830461108,12882
+uncalibrated,ridge_mos,0.25,0.37796925943176524,12882
+uncalibrated,ridge_mos,0.5,0.6571960875640428,12882
+uncalibrated,ridge_mos,0.75,0.8581741965533303,12882
+uncalibrated,ridge_mos,0.9,0.9355690110231331,12882
+uncalibrated,ridge_mos,0.95,0.9647570253066294,12882
+uncalibrated,lgbm,0.05,0.0912125446359261,12882
+uncalibrated,lgbm,0.1,0.16899549759354138,12882
+uncalibrated,lgbm,0.25,0.28761061946902655,12882
+uncalibrated,lgbm,0.5,0.4651451637944419,12882
+uncalibrated,lgbm,0.75,0.6644154634373545,12882
+uncalibrated,lgbm,0.9,0.75966464834653,12882
+uncalibrated,lgbm,0.95,0.8113646949231486,12882
+uncalibrated,xgboost,0.05,0.05589194224499301,12882
+uncalibrated,xgboost,0.1,0.1151995031827356,12882
+uncalibrated,xgboost,0.25,0.2662630026393417,12882
+uncalibrated,xgboost,0.5,0.4632044713553796,12882
+uncalibrated,xgboost,0.75,0.6776897997205403,12882
+uncalibrated,xgboost,0.9,0.8336438441235833,12882
+uncalibrated,xgboost,0.95,0.8779692594317653,12882
+causally calibrated,ridge_mos,0.05,0.09229933240180097,12882
+causally calibrated,ridge_mos,0.1,0.22488743983853438,12882
+causally calibrated,ridge_mos,0.25,0.4685607824871914,12882
+causally calibrated,ridge_mos,0.5,0.6707809346374787,12882
+causally calibrated,ridge_mos,0.75,0.7815556590591523,12882
+causally calibrated,ridge_mos,0.9,0.8681881695388914,12882
+causally calibrated,ridge_mos,0.95,0.9170936190032604,12882
+causally calibrated,lgbm,0.05,0.09447290793355069,12882
+causally calibrated,lgbm,0.1,0.17629250116441547,12882
+causally calibrated,lgbm,0.25,0.3486259897531439,12882
+causally calibrated,lgbm,0.5,0.5754541220307405,12882
+causally calibrated,lgbm,0.75,0.7612172022977799,12882
+causally calibrated,lgbm,0.9,0.8851110076075144,12882
+causally calibrated,lgbm,0.95,0.9415463437354448,12882
+causally calibrated,xgboost,0.05,0.09975159136780003,12882
+causally calibrated,xgboost,0.1,0.16286290948610463,12882
+causally calibrated,xgboost,0.25,0.3431144232262071,12882
+causally calibrated,xgboost,0.5,0.5533302282254309,12882
+causally calibrated,xgboost,0.75,0.8030585312839621,12882
+causally calibrated,xgboost,0.9,0.9489986027014439,12882
+causally calibrated,xgboost,0.95,0.9734513274336283,12882

@@ -10,8 +10,7 @@ from s01_core.schemas import assert_model_features
 
 FORECAST_ONLY_INPUTS = frozenset({
     "ghi_fcst", "dhi_fcst", "dni_fcst", "gti_fcst", "terrestrial_fcst",
-    "cloud_cover_fcst", "cloud_cover_low_fcst", "cloud_cover_mid_fcst",
-    "cloud_cover_high_fcst", "temp_fcst", "rh_fcst", "dewpoint_fcst",
+    "cloud_cover_fcst", "temp_fcst", "rh_fcst", "dewpoint_fcst",
     "wind_speed_fcst", "wind_dir_fcst", "pressure_fcst", "precip_fcst",
     "sunshine_fcst", "ghi_clear_sky", "dni_clear_sky", "solar_elevation",
     "solar_azimuth", "source_grid_latitude", "source_grid_longitude",

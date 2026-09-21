@@ -1,0 +1,176 @@
+{
+  "result_status": "diagnostic",
+  "official_eligible": false,
+  "site": "nanjing_1",
+  "data_version": "openmeteo-point-15var-temp-2024-02_2026-08-v1",
+  "figure_count": 16,
+  "figures": {
+    "fig_data_source_timeline": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\01_data\\fig_data_source_timeline.svg",
+        "figs\\nanjing_15var_diagnostic\\01_data\\fig_data_source_timeline.pdf",
+        "figs\\nanjing_15var_diagnostic\\01_data\\fig_data_source_timeline.png"
+      ],
+      "source_data": "fig_data_source_timeline_source.csv",
+      "n_definition": "daytime forecast rows for GFS, unique UTC hours for truth sources"
+    },
+    "fig_cloud_error_ghi_error_hexbin": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\01_data\\fig_cloud_error_ghi_error_hexbin.svg",
+        "figs\\nanjing_15var_diagnostic\\01_data\\fig_cloud_error_ghi_error_hexbin.pdf",
+        "figs\\nanjing_15var_diagnostic\\01_data\\fig_cloud_error_ghi_error_hexbin.png"
+      ],
+      "source_data": "fig_cloud_error_ghi_error_hexbin_source.csv",
+      "n_definition": "daytime site×valid-hour×lead rows with both GFS and ERA5 cloud values; ERA5 is supplementary reference"
+    },
+    "fig_feature_distribution_hexbin": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\01_data\\fig_feature_distribution_hexbin.svg",
+        "figs\\nanjing_15var_diagnostic\\01_data\\fig_feature_distribution_hexbin.pdf",
+        "figs\\nanjing_15var_diagnostic\\01_data\\fig_feature_distribution_hexbin.png"
+      ],
+      "source_data": "fig_feature_distribution_hexbin_source.csv",
+      "n_definition": "daytime site×valid-hour×lead rows with finite formal forecast features"
+    },
+    "fig_value_ladder": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_value_ladder.svg",
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_value_ladder.pdf",
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_value_ladder.png"
+      ],
+      "source_data": [
+        "all_cpu_rmse_overall.csv",
+        "all_cpu_rmse_by_fold.csv"
+      ],
+      "n_definition": "9,564 identical Nanjing site×target-hour×lead outer-score rows per model"
+    },
+    "fig_cpu_lead_performance": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_cpu_lead_performance.svg",
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_cpu_lead_performance.pdf",
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_cpu_lead_performance.png"
+      ],
+      "source_data": "fig_cpu_lead_performance_source.csv",
+      "n_definition": "3,188 identical outer-score site×target-hour rows per model per lead"
+    },
+    "fig_cpu_improvement_vs_raw": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_cpu_improvement_vs_raw.svg",
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_cpu_improvement_vs_raw.pdf",
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_cpu_improvement_vs_raw.png"
+      ],
+      "source_data": "fig_cpu_improvement_vs_raw_source.csv",
+      "n_definition": "five chronological outer-fold contrasts per model; no confidence interval claimed"
+    },
+    "fig_tuning_candidates": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_tuning_candidates.svg",
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_tuning_candidates.pdf",
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_tuning_candidates.png"
+      ],
+      "source_data": "fig_tuning_candidates_source.csv",
+      "n_definition": "270 inner trial scores = 3 models × 5 outer prefixes × 6 candidates × 3 inner folds",
+      "statistic": "unweighted mean of 15 inner-fold mean pinball values per candidate; gray lines are per-outer three-fold means"
+    },
+    "fig_quantile_case": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\04_probability\\fig_quantile_case.svg",
+        "figs\\nanjing_15var_diagnostic\\04_probability\\fig_quantile_case.pdf",
+        "figs\\nanjing_15var_diagnostic\\04_probability\\fig_quantile_case.png"
+      ],
+      "source_data": "fig_quantile_case_source.csv",
+      "n_definition": "12 observed D+1 daylight hours on selected local day",
+      "case_selection_rule": "eligible days >=8 observed D+1 hours; closest daily raw-GFS RMSE to median, earlier date breaks tie"
+    },
+    "fig_coverage_reliability": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\04_probability\\fig_coverage_reliability.svg",
+        "figs\\nanjing_15var_diagnostic\\04_probability\\fig_coverage_reliability.pdf",
+        "figs\\nanjing_15var_diagnostic\\04_probability\\fig_coverage_reliability.png"
+      ],
+      "source_data": "fig_coverage_reliability_source.csv",
+      "n_definition": "observed Nanjing test site×target-hour×lead rows per model; repeated leads are correlated"
+    },
+    "fig_coverage_width": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\04_probability\\fig_coverage_width.svg",
+        "figs\\nanjing_15var_diagnostic\\04_probability\\fig_coverage_width.pdf",
+        "figs\\nanjing_15var_diagnostic\\04_probability\\fig_coverage_width.png"
+      ],
+      "source_data": "fig_coverage_width_source.csv",
+      "n_definition": "observed Nanjing test site×target-hour×lead rows per model and interval"
+    },
+    "fig_weather_conditional_coverage": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\04_probability\\fig_weather_conditional_coverage.svg",
+        "figs\\nanjing_15var_diagnostic\\04_probability\\fig_weather_conditional_coverage.pdf",
+        "figs\\nanjing_15var_diagnostic\\04_probability\\fig_weather_conditional_coverage.png"
+      ],
+      "source_data": "fig_weather_conditional_coverage_source.csv",
+      "n_definition": "observed test rows per lead and forecast-cloud stratum; model counts match",
+      "strata": "<30%, 30–<70%, ≥70%, and explicit missing forecast cloud"
+    },
+    "fig_cpu_overall_pinball": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_cpu_overall_pinball.svg",
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_cpu_overall_pinball.pdf",
+        "figs\\nanjing_15var_diagnostic\\03_model_benchmark\\fig_cpu_overall_pinball.png"
+      ],
+      "source_data": "fig_cpu_overall_pinball_source.csv",
+      "n_definition": "9,564 identical outer-score rows per model; five fold dots and pooled diamond",
+      "statistic": "mean of seven pinball losses; raw quantile crossing rate shown, not repaired"
+    },
+    "fig_shap_beeswarm": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\05_interpretation\\fig_shap_beeswarm.svg",
+        "figs\\nanjing_15var_diagnostic\\05_interpretation\\fig_shap_beeswarm.pdf",
+        "figs\\nanjing_15var_diagnostic\\05_interpretation\\fig_shap_beeswarm.png"
+      ],
+      "source_data": [
+        "fig_shap_beeswarm_source.csv",
+        "fig_shap_beeswarm_importance.csv"
+      ],
+      "n_definition": "768 equal-stride outer-5 development forecasts; no final-test rows",
+      "model_reproduction_max_abs_diff_w_m2": 0.0,
+      "caution": "SHAP explains one frozen fitted model; it does not select features or establish causality"
+    },
+    "fig_key_feature_hexbin": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\05_interpretation\\fig_key_feature_hexbin.svg",
+        "figs\\nanjing_15var_diagnostic\\05_interpretation\\fig_key_feature_hexbin.pdf",
+        "figs\\nanjing_15var_diagnostic\\05_interpretation\\fig_key_feature_hexbin.png"
+      ],
+      "source_data": "fig_key_feature_hexbin_source.csv",
+      "n_definition": "observed development outer-score site×target-hour×lead rows across five folds",
+      "caution": "feature-residual association is not group ablation or causal contribution"
+    },
+    "fig_group_ablation": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\05_interpretation\\fig_group_ablation.svg",
+        "figs\\nanjing_15var_diagnostic\\05_interpretation\\fig_group_ablation.pdf",
+        "figs\\nanjing_15var_diagnostic\\05_interpretation\\fig_group_ablation.png"
+      ],
+      "source_data": [
+        "fig_group_ablation_source.csv",
+        "fig_group_ablation_by_outer.csv"
+      ],
+      "n_definition": "15 inner scoring blocks = 5 nested outer training prefixes × 3 inner folds; outer dots are not independent sites",
+      "statistic": "unweighted mean loss difference; positive means disruption/removal worsened pinball; no confidence interval claimed",
+      "limitation": "Fixed full-model candidate; spatial-static constant at one site; Base+cloud/kt controls still pending"
+    },
+    "fig_group_permutation": {
+      "files": [
+        "figs\\nanjing_15var_diagnostic\\05_interpretation\\fig_group_permutation.svg",
+        "figs\\nanjing_15var_diagnostic\\05_interpretation\\fig_group_permutation.pdf",
+        "figs\\nanjing_15var_diagnostic\\05_interpretation\\fig_group_permutation.png"
+      ],
+      "source_data": [
+        "fig_group_permutation_source.csv",
+        "fig_group_permutation_by_outer.csv"
+      ],
+      "n_definition": "15 inner scoring blocks = 5 nested outer training prefixes × 3 inner folds; outer dots are not independent sites",
+      "statistic": "unweighted mean loss difference; positive means disruption/removal worsened pinball; no confidence interval claimed",
+      "limitation": "Three deterministic repeats; correlated features share effects; not causal importance"
+    }
+  }
+}

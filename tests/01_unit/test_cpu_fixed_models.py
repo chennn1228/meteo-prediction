@@ -58,3 +58,11 @@ def test_raw_gfs_is_point_only_and_bias_fits_fit_rows():
     bias, _ = predict_fixed_cpu("bias_correction", fit, early, score)
     np.testing.assert_allclose(raw, score.ghi_fcst)
     np.testing.assert_allclose(bias, score.ghi_fcst + 5)
+
+
+def test_missing_latest_truth_does_not_hide_earlier_valid_persistence():
+    frame = rows()
+    fit, early, score = frame.iloc[:8], frame.iloc[8:10].copy(), frame.iloc[10:]
+    early.loc[early.index[0], "y"] = np.nan
+    prediction, _ = predict_fixed_cpu("persistence", fit, early, score)
+    assert prediction[0] == pytest.approx(frame.y.iloc[7])

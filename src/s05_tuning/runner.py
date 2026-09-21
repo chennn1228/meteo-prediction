@@ -12,7 +12,7 @@ import time
 import numpy as np
 
 from s04_splits.rolling import InnerFold, assert_gap
-from s04_splits.split_registry import manifest, purge_days, quantiles
+from s04_splits.split_registry import manifest, protocol, purge_days, quantiles
 from s09_metrics.probabilistic import probability_metrics
 
 from .search_space import candidates
@@ -27,7 +27,7 @@ class IncompleteTrialsError(RuntimeError):
 
 def run_trials(model_id: str, outer_id: str, folds: Sequence[InnerFold],
                fit_predict: Callable, *, device: str = "cpu",
-               smoke: bool = False) -> tuple[int, list[Trial]]:
+               smoke: bool = False, gap_days: int | None = None) -> tuple[int, list[Trial]]:
     """Score six parameter candidates on the same three disjoint inner folds.
 
     ``fit_predict(parameters, fit, early_stop, score, seed, quantiles)`` must
@@ -38,6 +38,9 @@ def run_trials(model_id: str, outer_id: str, folds: Sequence[InnerFold],
     an official selection.
     """
     expected = int(manifest()["tuning_budget"]["common_inner_folds"])
+    gap = purge_days() if gap_days is None else int(gap_days)
+    if gap not in tuple(int(value) for value in protocol()["gap_sensitivity_days"]):
+        raise ValueError("gap_days must be a preregistered sensitivity value")
     if not smoke and len(folds) != expected:
         raise ValueError(f"expected {expected} common inner folds, received {len(folds)}")
     seed = int(manifest()["tuning_budget"]["tuning_seed"])
@@ -48,8 +51,8 @@ def run_trials(model_id: str, outer_id: str, folds: Sequence[InnerFold],
     ledger = []
     for candidate_id, parameters in enumerate(selected_candidates):
         for fold in selected_folds:
-            assert_gap(fold.fit, fold.early_stop, purge_days())
-            assert_gap(fold.early_stop, fold.score, purge_days())
+            assert_gap(fold.fit, fold.early_stop, gap)
+            assert_gap(fold.early_stop, fold.score, gap)
             start = time.perf_counter()
             error, loss, epoch, memory, status = None, None, None, None, "ok"
             try:

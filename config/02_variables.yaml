@@ -10,17 +10,14 @@ models:
   previous_runs: gfs_seamless
   satellite: jma_jaxa_himawari
 
-# 预报端（Previous Runs API）：18 个变量，全部 × previous_day1/2/3。
-# 2026-09-15 起新增低/中/高云量；现有 raw/featured 不含这三列，须重新抓取后才可进入正式协议。
+# 临时预报端（Previous Runs API）：15 个变量，全部 × previous_day1/2/3。
+# 分层云量未归档，2026-09-20 临时排除；原 18 变量版本须单独恢复和重跑。
 forecast_variables:
   - shortwave_radiation        # GHI，主订正目标
   - diffuse_radiation          # DHI
   - direct_normal_irradiance   # DNI
   - global_tilted_irradiance   # GTI（需 tilt/azimuth，否则 = GHI）
   - cloud_cover                # 总云量
-  - cloud_cover_low            # 低云量（新协议候选特征）
-  - cloud_cover_mid            # 中云量（新协议候选特征）
-  - cloud_cover_high           # 高云量（新协议候选特征）
   - temperature_2m
   - relative_humidity_2m
   - dewpoint_2m

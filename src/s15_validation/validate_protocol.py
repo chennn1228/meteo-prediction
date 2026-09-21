@@ -16,7 +16,7 @@ def check_contract_alignment(manifest: dict, variables: dict) -> dict[str, bool]
     forecast = variables["forecast_variables"]
     searchable = ("ridge_mos", "lgbm", "xgboost", "mlp", "autoformer", "timesnet")
     return {
-        "forecast_variables_and_leads": len(forecast) == 18 and len(set(forecast)) == 18
+        "forecast_variables_and_leads": len(forecast) == 15 and len(set(forecast)) == 15
         and variables["leads"] == [1, 2, 3]
         and manifest["data_sources"]["forecast"]["leads_hours"] == [24, 48, 72],
         "prediction_quantiles": QUANTILES == registered_quantiles

@@ -10,12 +10,12 @@ from clean_data import FCST_RENAME
 
 
 class DataContractTests(unittest.TestCase):
-    def test_forecast_contract_has_cloud_levels_and_correct_count(self):
+    def test_temporary_forecast_contract_keeps_total_cloud_only(self):
         cfg = yaml.safe_load((ROOT / "config" / "02_variables.yaml").read_text(encoding="utf-8"))
-        self.assertEqual(len(cfg["forecast_variables"]), 18)
-        for field in ("cloud_cover", "cloud_cover_low", "cloud_cover_mid", "cloud_cover_high"):
-            self.assertIn(field, cfg["forecast_variables"])
-            self.assertIn(field, FCST_RENAME)
+        self.assertEqual(len(cfg["forecast_variables"]), 15)
+        self.assertIn("cloud_cover", cfg["forecast_variables"])
+        for field in ("cloud_cover_low", "cloud_cover_mid", "cloud_cover_high"):
+            self.assertNotIn(field, cfg["forecast_variables"])
 
 
 if __name__ == "__main__":

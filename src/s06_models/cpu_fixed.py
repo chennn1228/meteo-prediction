@@ -41,6 +41,9 @@ def _causal_history(fit: pd.DataFrame, early_stop: pd.DataFrame,
         raise ProtocolError(f"persistence lacks {sorted(required - set(full))}")
     history = full.loc[:, ["location_id", "target_time_utc", "y", "ghi_clear_sky"]].copy()
     history["target_time_utc"] = pd.to_datetime(history.target_time_utc, utc=True)
+    # A missing observation is not a historical truth event: allowing it into
+    # merge_asof would mask an earlier valid observation at the same local hour.
+    history = history.loc[np.isfinite(pd.to_numeric(history.y, errors="coerce"))].copy()
     if history.duplicated(["location_id", "target_time_utc"]).any():
         disagree = history.groupby(["location_id", "target_time_utc"], dropna=False).agg(
             y_unique=("y", "nunique"), clear_unique=("ghi_clear_sky", "nunique"))

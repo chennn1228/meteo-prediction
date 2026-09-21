@@ -49,15 +49,15 @@ class DataContractMigrationTests(unittest.TestCase):
             _, params, _ = fetch_data.source_request(CFG, source, site, DAY, DAY)
             self.assertEqual(params["cell_selection"], "land")
 
-    def test_rejects_legacy_15_variable_and_bad_lead_time_length(self):
+    def test_temporary_15_variable_payload_rejects_missing_and_null_total_cloud(self):
         good = payload()
         validate_raw_payload(good, source="previous_runs", cfg=CFG, start=DAY, end=DAY)
-        del good["hourly"]["cloud_cover_low_previous_day1"]
-        with self.assertRaisesRegex(DataContractError, "cloud_cover_low"):
+        del good["hourly"]["cloud_cover_previous_day1"]
+        with self.assertRaisesRegex(DataContractError, "cloud_cover_previous_day1"):
             validate_raw_payload(good, source="previous_runs", cfg=CFG, start=DAY, end=DAY)
         good = payload()
-        good["hourly"]["cloud_cover_low_previous_day1"] = [None] * 24
-        with self.assertRaisesRegex(DataContractError, "All values are null.*cloud_cover_low"):
+        good["hourly"]["cloud_cover_previous_day1"] = [None] * 24
+        with self.assertRaisesRegex(DataContractError, "All values are null.*cloud_cover"):
             validate_raw_payload(good, source="previous_runs", cfg=CFG, start=DAY, end=DAY)
         good = payload()
         good["hourly"]["time"][4] = good["hourly"]["time"][3]

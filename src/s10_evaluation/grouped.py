@@ -26,7 +26,7 @@ PROVENANCE_KEYS = (
 SAMPLE_KEYS = (
     "experiment_id", "protocol_revision", "data_version", "feature_version",
     "execution_level", "result_status", "seed", "location_id", "target_time_utc",
-    "forecast_issue_time_utc", "lead_time", "outer_fold", "inner_fold",
+    "forecast_issue_time_utc", "lead_time", "outer_fold",
 )
 
 
@@ -77,6 +77,11 @@ def evaluate_groups(frame: pd.DataFrame,
                     *, require_references: bool = False) -> EvaluationTables:
     """Return separate probability, auxiliary point, and reliability tables."""
     clean = validate_predictions(frame)
+    # inner_fold describes how a model was fitted; it is not part of the
+    # forecasted sample. Still reject two predictions for the same model and
+    # sample rather than quietly double-counting an inner/outer refit.
+    if clean.duplicated(["model_id", *SAMPLE_KEYS]).any():
+        raise ValueError("duplicate model predictions for one forecast sample")
     keys = _group_keys(clean, dimensions)
     probability_rows: list[dict[str, object]] = []
     point_rows: list[dict[str, object]] = []

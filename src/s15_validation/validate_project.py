@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 from dataclasses import asdict, dataclass
 from pathlib import Path
 import datetime as dt
@@ -20,6 +21,51 @@ ACTIVE_PACKAGES = (
     "s13_visualization", "s14_pipeline", "s15_validation",
 )
 FORBIDDEN_IMPORT_PARTS = ("legacy", "cv_month_balanced_quantile")
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _mini_e2e_receipt_valid(data_root: Path, manifest: dict) -> bool:
+    base = data_root / "05_cpu_mini_e2e"
+    receipt = base / "receipt.json"
+    if not receipt.is_file():
+        return False
+    try:
+        payload = json.loads(receipt.read_text(encoding="utf-8"))
+        expected = {
+            "status": "pass", "result_status": "diagnostic", "execution_level": "smoke",
+            "official_eligible": False, "site": "nanjing_1", "outer_fold": "outer_1",
+            "inner_fold": "inner_1", "quantile_count": 7,
+            "data_version": manifest["data_version"],
+            "feature_version": manifest["feature_version"],
+            "protocol_version": manifest["protocol_version"],
+            "daylight_definition": manifest["daylight_definition"]["formal"],
+        }
+        if any(payload.get(key) != value for key, value in expected.items()):
+            return False
+        if set(payload.get("fixed_models_tested", [])) != {
+            "climatology", "persistence", "smart_persistence", "optimal_convex",
+            "raw_gfs", "bias_correction", "linear_mos",
+        } or payload.get("quantile_models_tested") != ["ridge_mos", "lgbm", "xgboost"]:
+            return False
+        if min(payload.get("fit_rows", 0), payload.get("early_stop_rows", 0),
+               payload.get("scoring_rows", 0)) <= 0:
+            return False
+        paths = {
+            "source_feature_sha256": data_root / "03_featured" / "nanjing_1_featured_2024-02_2026-08.parquet",
+            "source_clean_sha256": data_root / "02_clean" / "nanjing_1_clean_2024-02_2026-08.parquet",
+            "prediction_sha256": base / "predictions.parquet",
+        }
+        return all(path.is_file() and payload.get(key) == _sha256(path)
+                   for key, path in paths.items())
+    except (OSError, ValueError, TypeError, KeyError):
+        return False
 
 
 @dataclass(frozen=True)
@@ -65,11 +111,15 @@ def validate_structural(root: Path | None = None) -> list[Check]:
     try:
         variables = load_data_config("02_variables.yaml", root)
         forecast = variables["forecast_variables"]
-        expected = {"cloud_cover", "cloud_cover_low", "cloud_cover_mid", "cloud_cover_high"}
-        checks.append(Check("18-variable forecast contract", len(forecast) == 18
-                            and expected <= set(forecast), f"count={len(forecast)}"))
+        expected = {"cloud_cover"}
+        excluded = {"cloud_cover_low", "cloud_cover_mid", "cloud_cover_high"}
+        checks.append(Check("temporary 15-variable forecast contract", len(forecast) == 15
+                            and len(set(forecast)) == 15 and expected <= set(forecast)
+                            and not excluded.intersection(forecast)
+                            and manifest["cpu_experiment"]["forecast_variable_count"] == 15,
+                            f"count={len(forecast)}; layered_cloud_excluded={not excluded.intersection(forecast)}"))
     except (ProtocolError, KeyError, ValueError) as exc:
-        checks.append(Check("18-variable forecast contract", False, str(exc)))
+        checks.append(Check("temporary 15-variable forecast contract", False, str(exc)))
     checks.append(Check("seven-quantile probabilistic primary objective",
                         len(manifest["quantiles"]) == 7
                         and manifest["selection_metric"] == "mean_pinball"))
@@ -141,7 +191,7 @@ def validate_data_readiness(root: Path | None = None) -> list[Check]:
                 path = data_root / "01_raw" / folder / site["id"] / f"{site['id']}_{month_key}.json"
                 if not path.is_file() or not path.with_name(path.name + ".meta.json").is_file():
                     missing.append(str(path.relative_to(root)))
-    checks.append(Check("complete 18-variable monthly raw grid with sidecars", not missing,
+    checks.append(Check("complete temporary 15-variable monthly raw grid with sidecars", not missing,
                         f"expected={len(sites)*len(months)*len(sources)} files; missing={len(missing)}; "
                         f"first={missing[:2]}", "data_ready"))
     pilot = data_root / "01_raw" / "01_gfs" / "nanjing_1" / "nanjing_1_2024-02.json"
@@ -153,18 +203,19 @@ def validate_data_readiness(root: Path | None = None) -> list[Check]:
                                   start=dt.date(2024, 2, 1), end=dt.date(2024, 2, 29),
                                   data_version=manifest["data_version"],
                                   requested_lat=site["lat"], requested_lon=site["lon"])
-            checks.append(Check("real pilot GFS satisfies strict 18-variable contract", True,
+            checks.append(Check("real pilot GFS satisfies temporary 15-variable contract", True,
                                 scope="data_ready"))
         except (ValueError, KeyError, TypeError, OSError) as exc:
-            checks.append(Check("real pilot GFS satisfies strict 18-variable contract", False,
+            checks.append(Check("real pilot GFS satisfies temporary 15-variable contract", False,
                                 str(exc), "data_ready"))
     else:
-        checks.append(Check("real pilot GFS satisfies strict 18-variable contract", False,
+        checks.append(Check("real pilot GFS satisfies temporary 15-variable contract", False,
                             "no current-protocol pilot file", "data_ready"))
     checks.append(Check("returned-service coordinate provenance complete", not missing,
                         "requires every current-protocol GFS sidecar and raw payload", "data_ready"))
-    checks.append(Check("independently audited hourly Himawari truth", False,
-                        "no province-wide hourly quality-gate receipt", "data_ready"))
+    checks.append(Check("independently audited hourly Himawari truth for fixed 20-site CPU cohort", False,
+                        "20-site current-protocol truth receipt absent; province-wide spatial gate is deferred",
+                        "data_ready"))
     return checks
 
 
@@ -178,10 +229,13 @@ def validate_cpu_readiness(root: Path | None = None) -> list[Check]:
                         f"available={chronology['first_outer_prefix_days']}d; "
                         f"minimum before nonempty fit={chronology['minimum_days_before_fit']}d",
                         "cpu_ready"))
-    registry = root / manifest["data_layout"]["root"] / "04_service_probes" / "frozen_registry.json"
-    frozen = manifest["spatial_design"]["service_registry_status"] == "frozen" and registry.is_file()
-    checks.append(Check("Jiangsu returned-service registry frozen after convergence", frozen,
-                        "0.025° probe currently partial; two zero-new rounds and boundary sensitivity required",
+    sites = load_data_config("01_sites.yaml", root)["sites"]
+    cohort_ok = (manifest["cpu_experiment"]["cohort"]
+                 == "configured_20_sites_with_returned_service_coordinates"
+                 and manifest["cpu_experiment"]["spatial_generalization"] == "deferred"
+                 and len(sites) == 20 and len({site["id"] for site in sites}) == 20)
+    checks.append(Check("fixed 20-site CPU cohort registered without spatial claim",
+                        cohort_ok, "forecast and truth must still carry verified returned coordinates",
                         "cpu_ready"))
     cpu_ids = manifest["cpu_experiment"]["model_ids"]
     models = {item["id"]: item for item in manifest["models"]}
@@ -220,16 +274,9 @@ def validate_cpu_readiness(root: Path | None = None) -> list[Check]:
                         all(callable(fn) for fn in
                             (validate_predictions, point_metrics, evaluate_predictions)),
                         "interface presence does not substitute for mini-E2E", "cpu_ready"))
-    receipt = root / manifest["data_layout"]["root"] / "05_cpu_mini_e2e" / "receipt.json"
-    receipt_ok = False
-    if receipt.is_file():
-        try:
-            payload = json.loads(receipt.read_text(encoding="utf-8"))
-            receipt_ok = payload.get("status") == "pass" and payload.get("data_version") == manifest["data_version"]
-        except (OSError, ValueError, TypeError):
-            pass
+    receipt_ok = _mini_e2e_receipt_valid(root / manifest["data_layout"]["root"], manifest)
     checks.append(Check("real-data CPU mini-E2E receipt", receipt_ok,
-                        "must be produced by current-protocol real data; no synthetic substitute",
+                        "one-site diagnostic interface test only, with matching artifact hashes; not an official score",
                         "cpu_ready"))
     from s01_core.provenance import runtime_provenance
     try:
@@ -248,6 +295,22 @@ def validate_cpu_readiness(root: Path | None = None) -> list[Check]:
     return checks
 
 
+def validate_spatial_readiness(root: Path | None = None) -> list[Check]:
+    root = root or project_root()
+    manifest = load_manifest(root / "project_manifest.yaml")
+    checks = validate_cpu_readiness(root)
+    registry = root / manifest["data_layout"]["root"] / "04_service_probes" / "frozen_registry.json"
+    frozen = manifest["spatial_design"]["service_registry_status"] == "frozen" and registry.is_file()
+    checks.append(Check("Jiangsu returned-service registry frozen after convergence", frozen,
+                        "spatial generalization deferred; province-wide probe remains partial",
+                        "spatial_ready"))
+    checks.append(Check("spatial generalization explicitly enabled",
+                        manifest["spatial_design"].get("execution_status") == "enabled",
+                        "deferred by user; no spatial-generalization results may be claimed",
+                        "spatial_ready"))
+    return checks
+
+
 def validate_deep_readiness(root: Path | None = None) -> list[Check]:
     checks = validate_cpu_readiness(root)
     manifest = load_manifest((root or project_root()) / "project_manifest.yaml")
@@ -259,7 +322,10 @@ def validate_deep_readiness(root: Path | None = None) -> list[Check]:
 
 
 def validate_official_readiness(root: Path | None = None) -> list[Check]:
-    checks = validate_deep_readiness(root)
+    checks = validate_spatial_readiness(root) + [
+        check for check in validate_deep_readiness(root)
+        if check.scope == "deep_ready"
+    ]
     checks.append(Check("official experiment result set intentionally not yet created", False,
                         "full benchmark forbidden in this preparation round", "official_full"))
     return checks
@@ -267,7 +333,8 @@ def validate_official_readiness(root: Path | None = None) -> list[Check]:
 
 def result(mode: str = "structural", root: Path | None = None) -> dict:
     modes = {"structural": validate_structural, "data_ready": validate_data_readiness,
-             "cpu_ready": validate_cpu_readiness, "deep_ready": validate_deep_readiness,
+             "cpu_ready": validate_cpu_readiness, "spatial_ready": validate_spatial_readiness,
+             "deep_ready": validate_deep_readiness,
              "official_full": validate_official_readiness, "official": validate_official_readiness}
     if mode not in modes:
         raise ProtocolError(f"invalid validation mode: {mode}")

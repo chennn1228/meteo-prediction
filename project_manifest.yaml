@@ -1,9 +1,9 @@
-protocol_version: "2.0.0-provisional"
-data_version: "openmeteo-point-2024-02_2026-09-v1"
+protocol_version: "2.0.0-provisional-15var-temporary"
+data_version: "openmeteo-point-15var-temp-2024-02_2026-08-v1"
 data_layout:
-  root: data/protocol2
+  root: data/protocol15temp
   policy: preserve_legacy_raw_and_rebuild_with_sidecars
-feature_version: "feature-mechanism-v2-pending-retrain"
+feature_version: "feature-mechanism-15var-temp-v1-pending-retrain"
 benchmark_version: "nested-purged-rolling-v1-pending"
 schema_version: "1.0.0"
 primary_target: ghi
@@ -17,6 +17,10 @@ official_gate:
   legacy_imports_forbidden: true
   official_run_requires_validation_pass: true
 cpu_experiment:
+  cohort: configured_20_sites_with_returned_service_coordinates
+  spatial_generalization: deferred
+  forecast_variable_count: 15
+  variable_scope: temporary_pending_provider_archive
   model_ids: [climatology, persistence, smart_persistence, optimal_convex, raw_gfs,
               bias_correction, linear_mos, ridge_mos, lgbm, xgboost]
   readiness_scope: declared_cpu_models_only
@@ -70,7 +74,7 @@ validation_protocol:
   gap_sensitivity_days: [7, 10, 14]
   inner_folds_per_outer: 3
   inner_early_stop_days: 14
-  inner_scoring_days: 30
+  inner_scoring_days: 14
   inner_order: [fit, purge, early_stop, purge, score]
   first_outer_insufficiency_policy: report_and_block_no_silent_window_change
   outer_folds:
@@ -101,7 +105,7 @@ probability_construction:
 feature_groups:
   radiation: [ghi_fcst, dhi_fcst, dni_fcst, gti_fcst, terrestrial_fcst]
   clear_sky_kt: [ghi_clear_sky, dni_clear_sky, kt_fcst, kni, ghi_fcst_minus_clear, diffuse_fraction]
-  cloud: [cloud_cover_fcst, cloud_cover_low_fcst, cloud_cover_mid_fcst, cloud_cover_high_fcst, cloud_cover_change, cloud_cover_roll1, cloud_cover_roll3]
+  cloud: [cloud_cover_fcst, cloud_cover_change, cloud_cover_roll1, cloud_cover_roll3]
   meteorology: [temp_fcst, rh_fcst, dewpoint_fcst, wind_speed_fcst, wind_dir_sin, wind_dir_cos, pressure_fcst, precip_fcst, sunshine_fcst]
   solar_geometry: [solar_elevation, solar_azimuth_sin, solar_azimuth_cos]
   temporal_dynamics: [hour_local_sin, hour_local_cos, doy_sin, doy_cos, month_sin, month_cos, ghi_fcst_lag1, ghi_fcst_lag2, lead_time]
@@ -122,6 +126,7 @@ feature_policy:
   cloud_imputation_predictors: [ghi_fcst, temp_fcst, rh_fcst, pressure_fcst]
 
 spatial_design:
+  execution_status: deferred_by_user
   training_sites: 20
   province_model_forbids_station_id: true
   level_1: stratified_spatial_holdout

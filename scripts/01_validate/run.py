@@ -15,7 +15,7 @@ from s15_validation.validate_project import result
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=("structural", "data_ready", "cpu_ready",
+    parser.add_argument("--mode", choices=("structural", "data_ready", "cpu_ready", "spatial_ready",
                                            "deep_ready", "official_full", "official"),
                         default="structural")
     args = parser.parse_args()

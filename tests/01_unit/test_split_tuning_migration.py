@@ -33,13 +33,32 @@ def test_gap_sensitivity_keeps_scoring_fixed(hourly):
     assert times(f7.fit).max() < times(f7.score).min()
 
 
-def test_first_outer_reports_protocol_shortage(hourly):
+def test_gap_sensitivity_inner_selector_accepts_registered_variant(hourly):
+    outer = outer_folds(hourly, gap_days=7)[0]
+    folds = inner_folds(outer, gap_days=7)
+    chosen, ledger = run_trials(
+        "ridge_mos", "outer_1_gap7", folds,
+        lambda parameters, fit, early, score, seed, taus:
+        (np.repeat(score.y.to_numpy()[:, None], len(taus), axis=1), None, None),
+        smoke=True, gap_days=7)
+    assert chosen == -1 and len(ledger) == 1 and ledger[0].status == "ok"
+    with pytest.raises(ValueError, match="preregistered sensitivity"):
+        run_trials("ridge_mos", "outer_1_gap5", folds,
+                   lambda *args: None, smoke=True, gap_days=5)
+
+
+def test_first_outer_keeps_three_independent_purged_inner_folds(hourly):
     outer = outer_folds(hourly)[0]
-    with pytest.raises(InsufficientHistoryError, match="cannot fit outer prefix"):
-        inner_folds(outer)
+    folds = inner_folds(outer)
+    assert len(folds) == 3
+    assert len(folds[0].fit) == 45 * 24
+    assert all(len(fold.score) == 14 * 24 for fold in folds)
+    for fold in folds:
+        assert times(fold.fit).max() < times(fold.early_stop).min()
+        assert times(fold.early_stop).max() < times(fold.score).min()
     report = first_outer_sample_report(hourly)
     assert len(report) == 3
-    assert not report.protocol_feasible.all()
+    assert report.protocol_feasible.all()
     assert {"raw_rows", "daytime_rows", "sequence_168_valid", "fit_rows",
             "early_stop_rows", "scoring_rows"}.issubset(report.columns)
 

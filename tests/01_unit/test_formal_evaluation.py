@@ -122,3 +122,26 @@ def test_group_api_validates_contract_and_provenance_is_not_merged():
     frame = predictions().drop(columns=["protocol_revision"])
     with pytest.raises(ValueError, match="prediction contract missing"):
         evaluate_predictions(frame)
+
+
+def test_reference_matching_ignores_training_label_but_rejects_duplicate_sample():
+    corrected = predictions().loc[lambda rows: rows.model_id == "ridge_mos"].copy()
+    corrected["inner_fold"] = "outer_refit"
+    raw = corrected.copy()
+    raw["model_id"] = "raw_gfs"
+    raw["prediction_type"] = "point"
+    raw["inner_fold"] = "fixed_no_inner"
+    raw["point_prediction"] = raw.y - 2
+    raw[list(QUANTILE_COLUMNS)] = np.nan
+    climatology = raw.copy()
+    climatology["model_id"] = "climatology"
+    climatology["point_prediction"] = climatology.y - 3
+    frame = pd.concat([corrected, raw, climatology], ignore_index=True)
+    report = evaluate_groups(frame, require_references=True)
+    statuses = report.point_secondary.set_index("model_id").rmse_skill_status
+    assert statuses["ridge_mos"] == "matched"
+    assert statuses["raw_gfs"] == "matched"
+    duplicate = corrected.iloc[[0]].copy()
+    duplicate["inner_fold"] = "another_training_label"
+    with pytest.raises(ValueError, match="duplicate model predictions"):
+        evaluate_groups(pd.concat([frame, duplicate], ignore_index=True))

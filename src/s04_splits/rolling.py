@@ -1,8 +1,8 @@
 """Expanding outer folds and fit/purge/early-stop/purge/scoring inner folds.
 
-No tuner may reuse the scoring block as its early-stop block. The first outer
-prefix can be too short under the current 3×30-day inner specification; that
-condition is deliberately reported, not silently shortened.
+No tuner may reuse the scoring block as its early-stop block. The configured
+three 14-day scoring blocks, two 10-day purges and one 14-day early-stop block
+leave a nonempty first fit prefix without changing any outer window.
 """
 from __future__ import annotations
 
@@ -94,8 +94,7 @@ def inner_folds(outer: OuterFold | pd.DataFrame, *, n_folds: int | None = None,
 
     Scoring blocks are consecutive and disjoint. The early-stop block is a
     separate earlier block, with one purge on either side. The manifest fixes
-    the number of folds and purge; durations remain explicit provisional
-    parameters until the protocol specifies them.
+    the number of folds, purge, and both block durations.
     """
     frame = outer.fit if isinstance(outer, OuterFold) else outer
     n = int(manifest()["tuning_budget"]["common_inner_folds"]) if n_folds is None else n_folds
