@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from s03_features.physics import add_returned_service_physics  # noqa: E402
 from s03_features.pipeline import prepare_formal_features  # noqa: E402
+from s03_features.physics import preceding_hour_solar_geometry  # noqa: E402
 
 
 def _clean_sample() -> pd.DataFrame:
@@ -40,6 +41,16 @@ def _clean_sample() -> pd.DataFrame:
 
 
 class ReturnedServicePhysicsTests(unittest.TestCase):
+    def test_preceding_hour_geometry_uses_midpoint_not_interval_end(self):
+        import pvlib
+        times = pd.DatetimeIndex(["2026-04-12T22:00:00Z"])
+        site = pvlib.location.Location(31.923203, 118.59375, altitude=16, tz="UTC")
+        result = preceding_hour_solar_geometry(times, site)
+        endpoint = site.get_solarposition(times)["apparent_elevation"].iloc[0]
+        midpoint = site.get_solarposition(times - pd.Timedelta(minutes=30))["apparent_elevation"].iloc[0]
+        self.assertAlmostEqual(result["solar_elevation"][0], midpoint)
+        self.assertNotAlmostEqual(result["solar_elevation"][0], endpoint)
+        self.assertGreaterEqual(result["ghi_clear_sky"][0], 0)
     def test_request_change_does_not_change_formal_physics_or_features(self):
         first = _clean_sample()
         second = first.copy()

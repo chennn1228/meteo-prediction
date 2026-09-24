@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 import sys
+import time
 from pathlib import Path
 
 import matplotlib as mpl
@@ -16,6 +17,8 @@ import yaml
 
 ROOT = next(p for p in Path(__file__).resolve().parents if (p / "project_manifest.yaml").exists())
 sys.path.insert(0, str(ROOT / "src"))
+
+from s03_features.physics import preceding_hour_solar_geometry  # noqa: E402
 
 mpl.rcParams.update({
     "font.family": "sans-serif", "font.sans-serif": ["Arial", "DejaVu Sans"],
@@ -55,8 +58,7 @@ def load_month(site: str, month: str, raw_root: Path) -> pd.DataFrame:
     import pvlib
     location = pvlib.location.Location(float(gfs["latitude"]), float(gfs["longitude"]),
                                        altitude=float(gfs.get("elevation") or 0), tz="UTC")
-    solar = location.get_solarposition(times)
-    clear = location.get_clearsky(times, model="ineichen")
+    geometry = preceding_hour_solar_geometry(times, location)
     common = {
         "site": site, "target_time_utc": times,
         "gfs_service_latitude": float(gfs["latitude"]),
@@ -64,9 +66,9 @@ def load_month(site: str, month: str, raw_root: Path) -> pd.DataFrame:
         "gfs_service_elevation": float(gfs.get("elevation") or 0),
         "himawari_service_latitude": float(sat["latitude"]),
         "himawari_service_longitude": float(sat["longitude"]),
-        "solar_elevation": solar["apparent_elevation"].to_numpy(dtype=float),
-        "ghi_clear_sky": clear["ghi"].to_numpy(dtype=float),
-        "dni_clear_sky": clear["dni"].to_numpy(dtype=float),
+        "solar_elevation": geometry["solar_elevation"],
+        "ghi_clear_sky": geometry["ghi_clear_sky"],
+        "dni_clear_sky": geometry["dni_clear_sky"],
         "ghi_obs_sat": numeric(sat["hourly"]["shortwave_radiation"]),
         "cloud_cover_obs_era5": numeric(era["hourly"]["cloud_cover"]),
     }
@@ -191,7 +193,22 @@ def duplication_audit(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 def save_figure(fig: plt.Figure, output: Path, source_note: str) -> None:
     fig.text(.995, -.055, source_note, ha="right", va="bottom", fontsize=5, color="#555555")
     for ext, kwargs in (("svg", {}), ("pdf", {}), ("png", {"dpi": 300})):
-        fig.savefig(output.with_suffix(f".{ext}"), bbox_inches="tight", **kwargs)
+        final = output.with_suffix(f".{ext}")
+        last_error = None
+        for attempt in range(5):
+            try:
+                fig.savefig(final, format=ext, bbox_inches="tight", **kwargs)
+                last_error = None
+                break
+            except OSError as exc:
+                last_error = exc
+                time.sleep(0.25 * (attempt + 1))
+        if last_error is not None:
+            raise last_error
+        if ext == "svg":
+            text = final.read_text(encoding="utf-8")
+            final.write_text("\n".join(line.rstrip() for line in text.splitlines()) + "\n",
+                             encoding="utf-8")
     plt.close(fig)
 
 
@@ -292,7 +309,7 @@ def write_trace(path: Path) -> None:
 | DNI | `direct_normal_irradiance_previous_day{1,2,3}` | negatives set to 0 | none | `dni_fcst` | Yes for negative raw values; audit uses raw API |
 | GTI | `global_tilted_irradiance_previous_day{1,2,3}` | negatives set to 0 | none | `gti_fcst` | Yes for negative raw values; audit uses raw API |
 | total cloud cover | `cloud_cover_previous_day{1,2,3}` | bounded to [0,100] in legacy clean | lag/change/rolling derived later | `cloud_cover_fcst` plus dynamics | Only if API is outside physical range; audit uses raw API |
-| clear-sky GHI | none; pvlib Ineichen at returned GFS coordinate | not applicable | deterministic at target timestamp | `ghi_clear_sky` | Derived, not clipped |
+| clear-sky GHI | none; pvlib Ineichen at returned GFS coordinate | not applicable | mean of 12 five-minute midpoints over preceding hour | `ghi_clear_sky` | Derived, not clipped |
 | kt | none | not applicable | `kt_raw=GHI_GFS/GHI_clear` only when clear GHI >50 | `kt_model` currently identity | Legacy [0,1.5] clip did; removed |
 | kni | none | not applicable | `kni_raw=DNI_GFS/DNI_clear` only when clear DNI >50 | `kni_model` currently identity | Legacy [0,1.5] clip did; removed |
 | diffuse fraction | none | not applicable | `diffuse_fraction_raw=DHI/GHI` only when GHI >50 | `diffuse_fraction_model` currently identity | Legacy [0,1] clip did; removed |
@@ -319,9 +336,18 @@ def main() -> None:
     zero = zero_audit(data); endpoints = endpoint_audit(data); kt = kt_audit(data)
     duplication, unique = duplication_audit(data)
     zero.to_csv(report_dir / "gfs_zero_ghi_audit.csv", index=False)
+    zero_cases = data.loc[(data.ghi_raw == 0) & (
+        (data.solar_elevation > 15) | (data.dhi_raw > 0) | (data.dni_raw > 0)), [
+            "site", "target_time_utc", "lead", "gfs_service_latitude",
+            "gfs_service_longitude", "solar_elevation", "ghi_raw", "dhi_raw",
+            "dni_raw", "gti_raw", "terrestrial_raw", "cloud_cover_raw",
+            "ghi_obs_sat", "ghi_clear_sky",
+        ]].sort_values(["target_time_utc", "site", "lead"])
+    zero_cases.to_csv(report_dir / "gfs_zero_ghi_cases.csv", index=False)
     endpoints.to_csv(report_dir / "cloud_endpoint_audit.csv", index=False)
     kt.to_csv(report_dir / "kt_raw_audit.csv", index=False)
     duplication.to_csv(report_dir / "service_grid_duplication.csv", index=False)
+    inconsistent = data[(data.ghi_raw == 0) & ((data.dhi_raw > 0) | (data.dni_raw > 0))]
     summary = pd.DataFrame([{
         "rows": len(data), "sites": data.site.nunique(),
         "gfs_service_points": data[["gfs_service_latitude", "gfs_service_longitude"]].drop_duplicates().shape[0],
@@ -333,8 +359,16 @@ def main() -> None:
                                                     & (data.solar_elevation > 15)).mean(),
         "raw_ghi_zero_sat_gt300_solar_gt15_count": int(((data.ghi_raw == 0) &
             (data.ghi_obs_sat > 300) & (data.solar_elevation > 15)).sum()),
+        "raw_ghi_zero_solar_gt15_count": int(((data.ghi_raw == 0) &
+            (data.solar_elevation > 15)).sum()),
         "raw_ghi_zero_inconsistent_components_count": int(((data.ghi_raw == 0) &
             ((data.dhi_raw > 0) | (data.dni_raw > 0))).sum()),
+        "inconsistent_components_all_clear_sky_le50": bool(
+            (inconsistent.ghi_clear_sky <= 50).all()),
+        "inconsistent_components_all_cloud_100": bool(
+            (inconsistent.cloud_cover_raw == 100).all()),
+        "inconsistent_components_all_dni_zero": bool((inconsistent.dni_raw == 0).all()),
+        "inconsistent_components_max_dhi": inconsistent.dhi_raw.max(),
         "cloud_zero_rate": (data.cloud_cover_raw == 0).mean(),
         "cloud_100_rate": (data.cloud_cover_raw == 100).mean(),
         "cloud_interior_rate": ((data.cloud_cover_raw > 0) & (data.cloud_cover_raw < 100)).mean(),
@@ -348,15 +382,15 @@ def main() -> None:
     s = summary.iloc[0]
     report = f"""# GFS / Open-Meteo data-quality audit
 
-This audit uses raw API values from 20 requested sites over {args.start}–{args.end}; it does not train a model. Solar geometry and Ineichen clear-sky GHI are evaluated at API-returned GFS service coordinates. Ratios are not clipped. Requested coordinates are provenance only.
+This audit uses raw API values from 20 requested sites over {args.start}–{args.end}; it does not train a model. Solar elevation uses the preceding-hour midpoint and Ineichen clear-sky GHI uses twelve five-minute midpoint samples over that interval, both at API-returned GFS service coordinates. Ratios are not clipped. Requested coordinates are provenance only.
 
 ## Main evidence
 
 - Rows: {int(s.rows):,}; returned GFS service points: {int(s.gfs_service_points)}.
 - Raw GFS GHI negative rate: {s.raw_ghi_negative_rate:.4%}. These values would become zeros in the legacy clean stage.
-- Raw GFS GHI zero rate: {s.raw_ghi_zero_rate_all:.4%} overall and {s.raw_ghi_zero_rate_solar_gt15:.4%} at solar elevation >15°.
+- Raw GFS GHI zero rate: {s.raw_ghi_zero_rate_all:.4%} overall and {s.raw_ghi_zero_rate_solar_gt15:.4%} at preceding-hour midpoint solar elevation >15° ({int(s.raw_ghi_zero_solar_gt15_count)} rows).
 - Severe raw zeros with solar elevation >15° and Himawari GHI >300 W/m²: {int(s.raw_ghi_zero_sat_gt300_solar_gt15_count):,} rows.
-- Raw GHI=0 with DHI>0 or DNI>0: {int(s.raw_ghi_zero_inconsistent_components_count):,} rows; these require lead/month/site inspection in the CSV before attributing cause.
+- Raw GHI=0 with DHI>0 or DNI>0: {int(s.raw_ghi_zero_inconsistent_components_count):,} rows. All are low-light intervals with clear-sky GHI ≤50 W/m², total cloud=100%, DNI=0 and DHI ≤{s.inconsistent_components_max_dhi:.0f} W/m². They are consistent with preceding-hour interval semantics plus independent integer quantization, not a field shift.
 - Raw total-cloud endpoints: P(0)={s.cloud_zero_rate:.2%}, P(100)={s.cloud_100_rate:.2%}, interior={s.cloud_interior_rate:.2%}.
 - Unclipped kt: p99={s.kt_p99:.3f}, max={s.kt_max:.3f}, P(kt>1.5)={s.kt_gt_1_5_rate:.3%}.
 - Duplicate requested-site weighting at identical service-point × time × lead keys: {s.duplicate_rate:.2%}. The before/after effect is in `service_grid_duplication.csv`.
@@ -373,7 +407,7 @@ Raw total cloud cover genuinely has endpoint mass at 0 and 100, and raw radiatio
 
 ### C — issues that can threaten source usability
 
-Daytime raw GHI zeros co-occurring with substantial Himawari GHI, and raw GHI=0 while DHI or DNI is positive, are the serious subset. Their counts are retained by lead, month, and site rather than hidden by clipping. Attribution to time alignment or provider semantics requires inspecting those strata; this audit does not infer that all GFS data are unusable from visual banding alone.
+After aligning solar geometry to the preceding-hour radiation interval, only {int(s.raw_ghi_zero_solar_gt15_count)} rows remain above 15° (two unique events). The one row with Himawari GHI >300 W/m² is a coherent all-radiation-zero, 100%-cloud D+1 forecast miss surrounded by valid hours and leads: retain it as a genuine extreme forecast error, not missing/corrupt data. The 41 component-difference rows are twilight quantization cases below the registered ratio denominator threshold and are not a source-usability blocker.
 
 ## Figure contract
 

@@ -7,6 +7,30 @@ import pandas as pd
 from s01_core.config_loader import ProtocolError
 
 
+def preceding_hour_solar_geometry(times: pd.DatetimeIndex, site) -> dict[str, np.ndarray]:
+    """Match Open-Meteo preceding-hour mean radiation semantics.
+
+    Solar angles use the interval midpoint. Clear-sky irradiance is the mean
+    of twelve five-minute midpoint samples over (target-1h, target].
+    """
+    times = pd.DatetimeIndex(times)
+    midpoint = times - pd.Timedelta(minutes=30)
+    solar = site.get_solarposition(midpoint)
+    offsets = pd.to_timedelta(np.arange(2.5, 60, 5), unit="min")
+    clear_ghi = []
+    clear_dni = []
+    for offset in offsets:
+        clear = site.get_clearsky(times - offset, model="ineichen")
+        clear_ghi.append(clear["ghi"].to_numpy(dtype=float))
+        clear_dni.append(clear["dni"].to_numpy(dtype=float))
+    return {
+        "solar_elevation": solar["apparent_elevation"].to_numpy(dtype=float),
+        "solar_azimuth": solar["azimuth"].to_numpy(dtype=float),
+        "ghi_clear_sky": np.mean(clear_ghi, axis=0),
+        "dni_clear_sky": np.mean(clear_dni, axis=0),
+    }
+
+
 def add_returned_service_physics(frame: pd.DataFrame) -> pd.DataFrame:
     required = {"target_time_utc", "gfs_service_latitude", "gfs_service_longitude",
                 "gfs_service_elevation"}
@@ -38,10 +62,7 @@ def add_returned_service_physics(frame: pd.DataFrame) -> pd.DataFrame:
         times = pd.DatetimeIndex(target.loc[positions])
         site = pvlib.location.Location(latitude=float(latitude), longitude=float(longitude),
                                        altitude=float(elevation), tz="UTC")
-        solar = site.get_solarposition(times)
-        clear = site.get_clearsky(times, model="ineichen")
-        data.loc[positions, "solar_elevation"] = solar["apparent_elevation"].to_numpy()
-        data.loc[positions, "solar_azimuth"] = solar["azimuth"].to_numpy()
-        data.loc[positions, "ghi_clear_sky"] = clear["ghi"].to_numpy()
-        data.loc[positions, "dni_clear_sky"] = clear["dni"].to_numpy()
+        geometry = preceding_hour_solar_geometry(times, site)
+        for column, values in geometry.items():
+            data.loc[positions, column] = values
     return data

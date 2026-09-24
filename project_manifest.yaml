@@ -118,6 +118,8 @@ feature_policy:
   identity_fields_forbidden: [station_id, location_id, source_grid_id]
   truth_fields_forbidden: [ghi_obs_sat, ghi_obs_era5, cloud_cover_obs]
   location_for_solar_geometry: gfs_service_coordinates
+  solar_geometry_time_basis: preceding_hour_interval_midpoint
+  clear_sky_time_basis: preceding_hour_mean_12x5min_midpoints
   circular_encodings: [wind_direction, solar_azimuth, hour_local, day_of_year, month]
   clear_sky_denominator_min_wm2: 50
   diffuse_denominator_min_wm2: 50

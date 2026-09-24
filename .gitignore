@@ -33,6 +33,7 @@ reports/01_data_audit/*
 !reports/01_data_audit/source_processing_trace.md
 !reports/01_data_audit/gfs_quality_summary.csv
 !reports/01_data_audit/gfs_zero_ghi_audit.csv
+!reports/01_data_audit/gfs_zero_ghi_cases.csv
 !reports/01_data_audit/cloud_endpoint_audit.csv
 !reports/01_data_audit/kt_raw_audit.csv
 !reports/01_data_audit/service_grid_duplication.csv
