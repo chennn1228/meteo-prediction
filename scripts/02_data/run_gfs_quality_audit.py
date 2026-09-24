@@ -27,6 +27,13 @@ mpl.rcParams.update({
     "legend.frameon": False,
 })
 
+AUDIT_BLUE = "#2F6FB0"
+LEAD_ALPHA = {"D+1": 0.45, "D+2": 0.70, "D+3": 0.95}
+BLUE_ALPHA_CMAP = mpl.colors.LinearSegmentedColormap.from_list(
+    "audit_blue_alpha",
+    [mpl.colors.to_rgba(AUDIT_BLUE, 0.06), mpl.colors.to_rgba(AUDIT_BLUE, 1.0)],
+)
+
 GFS_FIELDS = {
     "ghi_raw": "shortwave_radiation", "dhi_raw": "diffuse_radiation",
     "dni_raw": "direct_normal_irradiance", "gti_raw": "global_tilted_irradiance",
@@ -215,8 +222,8 @@ def save_figure(fig: plt.Figure, output: Path, source_note: str) -> None:
 def plot_figures(frame: pd.DataFrame, zero: pd.DataFrame, endpoints: pd.DataFrame,
                  out: Path) -> None:
     out.mkdir(parents=True, exist_ok=True)
-    palette = {"D+1": "#386CB0", "D+2": "#7FCDBB", "D+3": "#F28E2B"}
-    note = "Raw API values unless explicitly labelled; no model training; n shown in source CSVs"
+    note = ("Raw API values unless explicitly labelled; single-blue hue with opacity encoding; "
+            "no model training; n shown in source CSVs")
 
     order = ["all", "solar_elevation_gt_0", "solar_elevation_gt_10", "solar_elevation_gt_15"]
     summary = zero[zero.condition.isin(order)].groupby(["condition", "lead"], observed=True).apply(
@@ -225,7 +232,8 @@ def plot_figures(frame: pd.DataFrame, zero: pd.DataFrame, endpoints: pd.DataFram
     fig, ax = plt.subplots(figsize=(7.2, 3.2))
     x = np.arange(len(summary))
     for i, lead in enumerate(summary.columns):
-        ax.bar(x + (i-1)*.24, summary[lead], .22, label=lead, color=palette[lead])
+        ax.bar(x + (i-1)*.24, summary[lead], .22, label=lead,
+               color=mpl.colors.to_rgba(AUDIT_BLUE, LEAD_ALPHA[lead]))
     ax.set_xticks(x, summary.index, rotation=20, ha="right")
     ax.set_yscale("log"); ax.set_ylim(1e-6, 1)
     ax.set_ylabel("P(raw GFS GHI = 0), log scale"); ax.set_title("Raw GFS zero diagnostics")
@@ -239,10 +247,11 @@ def plot_figures(frame: pd.DataFrame, zero: pd.DataFrame, endpoints: pd.DataFram
     for ax, period in zip(axes, ("day", "night")):
         p = ep[ep.daylight == period].set_index("lead")
         bottom = np.zeros(len(p))
-        for col, label, color in (("p_cloud_eq_0", "0%", "#D9D9D9"),
-                                  ("p_cloud_between", "1–99%", "#7FCDBB"),
-                                  ("p_cloud_eq_100", "100%", "#386CB0")):
-            ax.bar(p.index, p[col], bottom=bottom, label=label, color=color)
+        for col, label, alpha in (("p_cloud_eq_0", "0%", .22),
+                                  ("p_cloud_between", "1–99%", .55),
+                                  ("p_cloud_eq_100", "100%", .92)):
+            ax.bar(p.index, p[col], bottom=bottom, label=label,
+                   color=mpl.colors.to_rgba(AUDIT_BLUE, alpha))
             bottom += p[col].to_numpy()
         ax.set_title(period.capitalize()); ax.set_ylim(0, 1); ax.set_ylabel("Proportion")
     axes[1].legend(title="Raw total cloud cover")
@@ -254,9 +263,10 @@ def plot_figures(frame: pd.DataFrame, zero: pd.DataFrame, endpoints: pd.DataFram
     fig, ax = plt.subplots(figsize=(7.2, 3.2))
     for lead in ("D+1", "D+2", "D+3"):
         xval = frame.loc[frame.lead == lead, "kt_raw"].dropna()
-        ax.hist(xval, bins=120, density=True, histtype="step", lw=1.2,
-                color=palette[lead], label=lead)
-    ax.axvline(1.5, color="#C44E52", ls="--", lw=.9, label="legacy clip boundary")
+        ax.hist(xval, bins=120, density=True, histtype="step", lw=1.4,
+                color=mpl.colors.to_rgba(AUDIT_BLUE, LEAD_ALPHA[lead]), label=lead)
+    ax.axvline(1.5, color="#555555", alpha=.75, ls="--", lw=.9,
+               label="legacy clip boundary")
     ax.set_yscale("log"); ax.set_xlim(0, cap); ax.set_xlabel(f"kt_raw (full observed range; max={cap:.2f})")
     ax.set_ylabel("Density (log)"); ax.set_title("Unclipped raw clearness-index distribution")
     ax.legend(ncol=4); save_figure(fig, out / "fig_kt_raw_distribution", note)
@@ -266,7 +276,7 @@ def plot_figures(frame: pd.DataFrame, zero: pd.DataFrame, endpoints: pd.DataFram
     for ax, band in zip(axes, ("10-30", "30-50", ">50")):
         p = sampled[(sampled.solar_bin == band) & sampled.kt_raw.notna()]
         h = ax.hexbin(p.cloud_cover_raw, p.kt_raw, gridsize=45,
-                      bins="log", mincnt=1, cmap="viridis")
+                      bins="log", mincnt=1, cmap=BLUE_ALPHA_CMAP)
         ax.set_title(f"Solar elevation {band}°"); ax.set_xlabel("Raw total cloud cover (%)")
     axes[0].set_ylabel("kt_raw (unclipped)")
     fig.colorbar(h, ax=axes, label="log10 count", fraction=.025, pad=.03)
@@ -278,7 +288,7 @@ def plot_figures(frame: pd.DataFrame, zero: pd.DataFrame, endpoints: pd.DataFram
         p = sampled[(sampled.lead == lead) & sampled.cloud_cover_error.notna()
                     & sampled.ghi_error.notna()]
         h = ax.hexbin(p.cloud_cover_error, p.ghi_error, gridsize=45, bins="log",
-                      mincnt=1, cmap="magma", extent=(-100, 100, -800, 800))
+                      mincnt=1, cmap=BLUE_ALPHA_CMAP, extent=(-100, 100, -800, 800))
         ax.axhline(0, color="white", lw=.5); ax.axvline(0, color="white", lw=.5)
         ax.set_title(lead); ax.set_xlabel("GFS total cloud − ERA5 cloud (pp)")
     axes[0].set_ylabel("Raw GFS GHI − Himawari GHI (W m$^{-2}$)")
@@ -290,7 +300,7 @@ def plot_figures(frame: pd.DataFrame, zero: pd.DataFrame, endpoints: pd.DataFram
     for ax, lead in zip(axes, ("D+1", "D+2", "D+3")):
         p = sampled[(sampled.lead == lead) & sampled.ghi_raw.notna() & sampled.ghi_obs_sat.notna()]
         h = ax.hexbin(p.ghi_obs_sat, p.ghi_raw, gridsize=48, bins="log", mincnt=1,
-                      cmap="viridis", extent=(0, 1200, 0, 1200))
+                      cmap=BLUE_ALPHA_CMAP, extent=(0, 1200, 0, 1200))
         ax.plot([0, 1200], [0, 1200], color="white", lw=.6, ls="--")
         ax.set_title(lead); ax.set_xlabel("Himawari GHI (W m$^{-2}$)")
     axes[0].set_ylabel("Raw GFS GHI (W m$^{-2}$)")
