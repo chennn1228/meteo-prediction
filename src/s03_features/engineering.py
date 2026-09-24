@@ -68,11 +68,17 @@ def build_forecast_features(frame: pd.DataFrame) -> pd.DataFrame:
     config = load_manifest()
     threshold = float(config["feature_policy"]["clear_sky_denominator_min_wm2"])
     diffuse_threshold = float(config["feature_policy"]["diffuse_denominator_min_wm2"])
-    data["kt_fcst"] = np.clip(_ratio(data["ghi_fcst"], data["ghi_clear_sky"], threshold), 0, 1.5)
-    data["kni"] = np.clip(_ratio(data["dni_fcst"], data["dni_clear_sky"], threshold), 0, 1.5)
-    data["diffuse_fraction"] = np.clip(
-        _ratio(data["dhi_fcst"], data["ghi_fcst"], diffuse_threshold), 0, 1
+    # Diagnostic ratios are never clipped: endpoint piles must remain visible.
+    data["kt_raw"] = _ratio(data["ghi_fcst"], data["ghi_clear_sky"], threshold)
+    data["kni_raw"] = _ratio(data["dni_fcst"], data["dni_clear_sky"], threshold)
+    data["diffuse_fraction_raw"] = _ratio(
+        data["dhi_fcst"], data["ghi_fcst"], diffuse_threshold
     )
+    # No robust transform is currently justified.  Separate model columns keep
+    # a future fold-fitted transform from ever overwriting diagnostic values.
+    data["kt_model"] = data["kt_raw"]
+    data["kni_model"] = data["kni_raw"]
+    data["diffuse_fraction_model"] = data["diffuse_fraction_raw"]
     data["ghi_fcst_minus_clear"] = data["ghi_fcst"] - data["ghi_clear_sky"]
     for source, prefix in (("wind_dir_fcst", "wind_dir"), ("solar_azimuth", "solar_azimuth")):
         radians = np.deg2rad(pd.to_numeric(data[source], errors="coerce"))

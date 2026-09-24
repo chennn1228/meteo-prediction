@@ -10,8 +10,9 @@ models:
   previous_runs: gfs_seamless
   satellite: jma_jaxa_himawari
 
-# 临时预报端（Previous Runs API）：15 个变量，全部 × previous_day1/2/3。
-# 分层云量未归档，2026-09-20 临时排除；原 18 变量版本须单独恢复和重跑。
+# Previous Runs 历史档案正式合同：15 个变量，全部 × previous_day1/2/3。
+# 官方确认历史档案只保存总云量；low/mid/high 不属于该产品的可用历史字段。
+# 删除分层云量不是为了绕过训练门槛，不允许 ERA5 回填、插补或 Single Runs 拼接。
 forecast_variables:
   - shortwave_radiation        # GHI，主订正目标
   - diffuse_radiation          # DHI

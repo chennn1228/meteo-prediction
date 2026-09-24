@@ -27,11 +27,10 @@ LEADS = [24, 48, 72]
 
 FEATURES_NUM = [
     "ghi_fcst", "dhi_fcst", "dni_fcst", "gti_fcst", "cloud_cover_fcst",
-    "cloud_cover_low_fcst", "cloud_cover_mid_fcst", "cloud_cover_high_fcst",
     "temp_fcst", "rh_fcst", "dewpoint_fcst", "wind_speed_fcst", "wind_dir_fcst",
     "pressure_fcst", "precip_fcst", "sunshine_fcst", "terrestrial_fcst",
     "solar_elevation", "solar_azimuth", "ghi_clear_sky", "dni_clear_sky",
-    "kt_fcst", "kni", "ghi_fcst_minus_clear", "diffuse_fraction",
+    "kt_model", "kni_model", "ghi_fcst_minus_clear", "diffuse_fraction_model",
     "hour_local_sin", "hour_local_cos", "doy_sin", "doy_cos", "month",
     "cloud_cover_change", "cloud_cover_roll1", "cloud_cover_roll3",
     "ghi_fcst_lag1", "ghi_fcst_lag2", "lead_time",

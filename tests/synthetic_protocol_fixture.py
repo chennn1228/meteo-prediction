@@ -42,7 +42,7 @@ def synthetic_feature_and_prediction_rows():
         "cloud_cover_fcst": [20., 30., 40., 50., 60., 70., 80., 90.],
     })
     features = build_forecast_features(input_frame)
-    columns = ("ghi_fcst", "kt_fcst", "wind_dir_sin")
+    columns = ("ghi_fcst", "kt_model", "wind_dir_sin")
     processor = FoldPreprocessor(columns).fit(features.iloc[:2],
                                               fit_end_utc="2025-01-02T00:00:00Z")
     manifest = load_manifest()

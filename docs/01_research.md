@@ -148,8 +148,9 @@ product**，不是直接下载的 raw GFS GRIB grid。API 返回的经纬度和�
 
 ### 5.3 Forecast variables
 
-旧 raw 有 15 个预报变量。v2 配置增加 low/mid/high cloud，共 18 个；现有 raw/featured
-缺少新增 9 个 lead-specific 字段，正式重训前必须重新抓取、清洗和生成特征。
+Previous Runs 历史档案正式使用 15 个预报变量。Open-Meteo 已确认历史档案只保存
+`cloud_cover`，不保存 `cloud_cover_low/mid/high`。因此分层云量不属于历史主线必需变量，
+不得用 ERA5 回填、插补或用仅覆盖 2026-04 左右以后的 Single Runs 拼接主研究。
 
 ### 5.4 Truth
 
@@ -162,7 +163,7 @@ product**，不是直接下载的 raw GFS GRIB grid。API 返回的经纬度和�
 
 Cloud 不再是与 GHI 平级的主产品。
 
-1. **物理输入**：GFS total/low/mid/high cloud 是候选特征；
+1. **物理输入**：GFS total cloud cover 是历史主线云量特征；
 2. **误差机制**：解释 clear / partly cloudy / overcast、cloud change 和 GHI error；
 3. **辅助实验**：已有 ERA5-cloud correction 标为 supplementary exploratory experiment。
 
@@ -306,7 +307,7 @@ uncertainty 评估完成前，PINN 只称 experimental constrained model。
 
 ### Must retrain or recompute
 
-1. 重新抓取 total/low/mid/high cloud 后生成 v2 featured；
+1. 按历史可用的 15 变量合同生成 featured；raw ratio 与模型变换列必须分离；
 2. nested outer/inner 的 baseline、MOS、tree 和 14 DL equal-budget benchmark；
 3. 全部 OOF predictions、5-seed top models 与不确定性；
 4. time-ordered calibration 和候选 Mondrian；

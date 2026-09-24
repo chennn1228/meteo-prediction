@@ -113,13 +113,13 @@ def validate_structural(root: Path | None = None) -> list[Check]:
         forecast = variables["forecast_variables"]
         expected = {"cloud_cover"}
         excluded = {"cloud_cover_low", "cloud_cover_mid", "cloud_cover_high"}
-        checks.append(Check("temporary 15-variable forecast contract", len(forecast) == 15
+        checks.append(Check("archive-aligned 15-variable forecast contract", len(forecast) == 15
                             and len(set(forecast)) == 15 and expected <= set(forecast)
                             and not excluded.intersection(forecast)
                             and manifest["cpu_experiment"]["forecast_variable_count"] == 15,
                             f"count={len(forecast)}; layered_cloud_excluded={not excluded.intersection(forecast)}"))
     except (ProtocolError, KeyError, ValueError) as exc:
-        checks.append(Check("temporary 15-variable forecast contract", False, str(exc)))
+        checks.append(Check("archive-aligned 15-variable forecast contract", False, str(exc)))
     checks.append(Check("seven-quantile probabilistic primary objective",
                         len(manifest["quantiles"]) == 7
                         and manifest["selection_metric"] == "mean_pinball"))
@@ -191,7 +191,7 @@ def validate_data_readiness(root: Path | None = None) -> list[Check]:
                 path = data_root / "01_raw" / folder / site["id"] / f"{site['id']}_{month_key}.json"
                 if not path.is_file() or not path.with_name(path.name + ".meta.json").is_file():
                     missing.append(str(path.relative_to(root)))
-    checks.append(Check("complete temporary 15-variable monthly raw grid with sidecars", not missing,
+    checks.append(Check("complete archive-aligned monthly raw grid with sidecars", not missing,
                         f"expected={len(sites)*len(months)*len(sources)} files; missing={len(missing)}; "
                         f"first={missing[:2]}", "data_ready"))
     pilot = data_root / "01_raw" / "01_gfs" / "nanjing_1" / "nanjing_1_2024-02.json"
@@ -203,13 +203,13 @@ def validate_data_readiness(root: Path | None = None) -> list[Check]:
                                   start=dt.date(2024, 2, 1), end=dt.date(2024, 2, 29),
                                   data_version=manifest["data_version"],
                                   requested_lat=site["lat"], requested_lon=site["lon"])
-            checks.append(Check("real pilot GFS satisfies temporary 15-variable contract", True,
+            checks.append(Check("real pilot GFS satisfies archive-aligned 15-variable contract", True,
                                 scope="data_ready"))
         except (ValueError, KeyError, TypeError, OSError) as exc:
-            checks.append(Check("real pilot GFS satisfies temporary 15-variable contract", False,
+            checks.append(Check("real pilot GFS satisfies archive-aligned 15-variable contract", False,
                                 str(exc), "data_ready"))
     else:
-        checks.append(Check("real pilot GFS satisfies temporary 15-variable contract", False,
+        checks.append(Check("real pilot GFS satisfies archive-aligned 15-variable contract", False,
                             "no current-protocol pilot file", "data_ready"))
     checks.append(Check("returned-service coordinate provenance complete", not missing,
                         "requires every current-protocol GFS sidecar and raw payload", "data_ready"))

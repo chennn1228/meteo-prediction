@@ -123,14 +123,14 @@ def hexbin_cloud_error(frame: pd.DataFrame, destination: Path) -> dict:
 
 def feature_distribution(frame: pd.DataFrame, destination: Path) -> dict:
     selected = frame.loc[(frame.solar_elevation > 0)
-                         & frame[["cloud_cover_fcst", "kt_fcst", "ghi_fcst", "ghi_clear_sky"]]
+                         & frame[["cloud_cover_fcst", "kt_raw", "ghi_fcst", "ghi_clear_sky"]]
                          .notna().all(axis=1),
-                         ["lead_time", "cloud_cover_fcst", "kt_fcst", "ghi_fcst", "ghi_clear_sky"]].copy()
+                         ["lead_time", "cloud_cover_fcst", "kt_raw", "ghi_fcst", "ghi_clear_sky"]].copy()
     selected.to_csv(destination / "fig_feature_distribution_hexbin_source.csv", index=False)
     fig, axes = plt.subplots(1, 2, figsize=(183 / 25.4, 73 / 25.4))
-    h0 = axes[0].hexbin(selected.cloud_cover_fcst, selected.kt_fcst, gridsize=42,
-                        extent=(0, 100, 0, 1.5), mincnt=1, bins="log", cmap="Blues")
-    axes[0].set(xlabel="GFS total cloud cover (%)", ylabel="GFS forecast clear-sky index")
+    h0 = axes[0].hexbin(selected.cloud_cover_fcst, selected.kt_raw, gridsize=42,
+                        extent=(0, 100, 0, 3), mincnt=1, bins="log", cmap="Blues")
+    axes[0].set(xlabel="GFS total cloud cover (%)", ylabel="Raw unclipped GFS clear-sky index")
     h1 = axes[1].hexbin(selected.ghi_clear_sky, selected.ghi_fcst, gridsize=42,
                         extent=(0, 1200, 0, 1200), mincnt=1, bins="log", cmap="Blues")
     axes[1].plot([0, 1200], [0, 1200], color=AMBER, lw=0.7, ls="--")

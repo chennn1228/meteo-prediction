@@ -2,7 +2,7 @@
 """三源 raw JSON → 站点长表（Parquet）+ 质量报告。
 
 长表结构：一行 = 站点 × 目标时刻 × 时效（lead_time）。
-列 = 临时预报端 15 组（_fcst）+ 卫星真值 5（_obs_sat）+ ERA5 真值 5（_obs_era5）
+列 = Previous Runs 历史可用的 15 组预报变量（_fcst）+ 卫星真值 5（_obs_sat）+ ERA5 真值 5（_obs_era5）
       + ERA5 云量真值 4（_obs）。
 清洗规则：云量夹取 [0,100]；辐射负值置 0；缺失保留为 NaN 并计入质量报告。
 
@@ -41,9 +41,6 @@ FCST_RENAME = {
     "direct_normal_irradiance": "dni_fcst",
     "global_tilted_irradiance": "gti_fcst",
     "cloud_cover": "cloud_cover_fcst",
-    "cloud_cover_low": "cloud_cover_low_fcst",
-    "cloud_cover_mid": "cloud_cover_mid_fcst",
-    "cloud_cover_high": "cloud_cover_high_fcst",
     "temperature_2m": "temp_fcst",
     "relative_humidity_2m": "rh_fcst",
     "dewpoint_2m": "dewpoint_fcst",
@@ -83,7 +80,7 @@ RADIATION_COLS = [
     "terrestrial_fcst", "sunshine_fcst",
 ]
 CLOUD_COLS = [
-    "cloud_cover_fcst", "cloud_cover_low_fcst", "cloud_cover_mid_fcst", "cloud_cover_high_fcst",
+    "cloud_cover_fcst",
     "cloud_cover_obs", "cloud_cover_low_obs", "cloud_cover_mid_obs", "cloud_cover_high_obs",
 ]
 

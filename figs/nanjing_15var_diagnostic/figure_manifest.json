@@ -24,6 +24,8 @@
       "n_definition": "daytime site×valid-hour×lead rows with both GFS and ERA5 cloud values; ERA5 is supplementary reference"
     },
     "fig_feature_distribution_hexbin": {
+      "evidence_status": "provisional_legacy_clipped_do_not_cite",
+      "superseded_by": "figs/01_data_audit/fig_cloud_kt_hexbin",
       "files": [
         "figs\\nanjing_15var_diagnostic\\01_data\\fig_feature_distribution_hexbin.svg",
         "figs\\nanjing_15var_diagnostic\\01_data\\fig_feature_distribution_hexbin.pdf",

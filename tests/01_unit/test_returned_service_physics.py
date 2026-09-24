@@ -29,8 +29,7 @@ def _clean_sample() -> pd.DataFrame:
     })
     forecast = {
         "ghi_fcst": 700., "dhi_fcst": 100., "dni_fcst": 800., "gti_fcst": 650.,
-        "cloud_cover_fcst": 20., "cloud_cover_low_fcst": 10.,
-        "cloud_cover_mid_fcst": 15., "cloud_cover_high_fcst": 5.,
+        "cloud_cover_fcst": 20.,
         "temp_fcst": 25., "rh_fcst": 60., "dewpoint_fcst": 16.,
         "wind_speed_fcst": 3., "wind_dir_fcst": 350., "pressure_fcst": 1010.,
         "precip_fcst": 0., "sunshine_fcst": 3600., "terrestrial_fcst": 300.,

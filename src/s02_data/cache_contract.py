@@ -2,7 +2,7 @@
 
 Raw API JSON is kept unchanged. A separate sidecar ties it to the active
 protocol data version and complete request; a legacy file without this
-sidecar cannot silently satisfy the temporary 15-variable forecast contract.
+sidecar cannot silently satisfy the archive-aligned 15-variable contract.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ def expected_hourly_fields(source: str, cfg: Mapping) -> tuple[str, ...]:
     if source == "previous_runs":
         variables = tuple(cfg["forecast_variables"])
         if len(variables) != 15 or len(set(variables)) != 15:
-            raise DataContractError("Temporary forecast contract requires 15 distinct variables")
+            raise DataContractError("Previous Runs archive contract requires 15 distinct variables")
         leads = tuple(cfg["leads"])
         if leads != (1, 2, 3):
             raise DataContractError("Forecast contract requires D+1/D+2/D+3")

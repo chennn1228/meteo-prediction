@@ -1,9 +1,9 @@
-protocol_version: "2.0.0-provisional-15var-temporary"
-data_version: "openmeteo-point-15var-temp-2024-02_2026-08-v1"
+protocol_version: "2.1.0-provisional-15var-archive-aligned"
+data_version: "openmeteo-point-15var-archive-aligned-2024-02_2026-08-v1"
 data_layout:
   root: data/protocol15temp
   policy: preserve_legacy_raw_and_rebuild_with_sidecars
-feature_version: "feature-mechanism-15var-temp-v1-pending-retrain"
+feature_version: "feature-mechanism-raw-ratios-v2-pending-retrain"
 benchmark_version: "nested-purged-rolling-v1-pending"
 schema_version: "1.0.0"
 primary_target: ghi
@@ -20,7 +20,7 @@ cpu_experiment:
   cohort: configured_20_sites_with_returned_service_coordinates
   spatial_generalization: deferred
   forecast_variable_count: 15
-  variable_scope: temporary_pending_provider_archive
+  variable_scope: official_previous_runs_archive_availability
   model_ids: [climatology, persistence, smart_persistence, optimal_convex, raw_gfs,
               bias_correction, linear_mos, ridge_mos, lgbm, xgboost]
   readiness_scope: declared_cpu_models_only
@@ -104,7 +104,7 @@ probability_construction:
 
 feature_groups:
   radiation: [ghi_fcst, dhi_fcst, dni_fcst, gti_fcst, terrestrial_fcst]
-  clear_sky_kt: [ghi_clear_sky, dni_clear_sky, kt_fcst, kni, ghi_fcst_minus_clear, diffuse_fraction]
+  clear_sky_kt: [ghi_clear_sky, dni_clear_sky, kt_model, kni_model, ghi_fcst_minus_clear, diffuse_fraction_model]
   cloud: [cloud_cover_fcst, cloud_cover_change, cloud_cover_roll1, cloud_cover_roll3]
   meteorology: [temp_fcst, rh_fcst, dewpoint_fcst, wind_speed_fcst, wind_dir_sin, wind_dir_cos, pressure_fcst, precip_fcst, sunshine_fcst]
   solar_geometry: [solar_elevation, solar_azimuth_sin, solar_azimuth_cos]
@@ -121,6 +121,10 @@ feature_policy:
   circular_encodings: [wind_direction, solar_azimuth, hour_local, day_of_year, month]
   clear_sky_denominator_min_wm2: 50
   diffuse_denominator_min_wm2: 50
+  diagnostic_ratio_columns: [kt_raw, kni_raw, diffuse_fraction_raw]
+  diagnostic_ratio_clipping: forbidden
+  model_ratio_columns: [kt_model, kni_model, diffuse_fraction_model]
+  model_ratio_transform: identity_pending_fold_fitted_justification
   fit_preprocessing_on: current_training_fold_only
   lag_source: prior_available_forecasts_by_issue_time
   cloud_imputation_predictors: [ghi_fcst, temp_fcst, rh_fcst, pressure_fcst]

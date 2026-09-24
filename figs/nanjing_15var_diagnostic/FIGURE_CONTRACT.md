@@ -7,7 +7,7 @@
 |---|---|---|
 | `fig_data_source_timeline` | 南京正式窗口三源月缓存覆盖完整，但可用数值存在真实缺口；按月展示三源白天有效比例和缺失小时数。 | quantitative grid；不可把“文件在”写成“数值全有效”。 |
 | `fig_cloud_error_ghi_error_hexbin` | 预报云量偏差与 GHI 偏差有可量化联系；各 lead 独立 hexbin。 | quantitative grid；ERA5 云量仅为补充参考，不能称独立云真值。 |
-| `fig_feature_distribution_hexbin` | 晴空指数与总云量的联合分布显示输入覆盖范围；真实特征密度。 | quantitative grid；重复 lead/小时相关，不将每点当独立样本。 |
+| `fig_feature_distribution_hexbin` | **Provisional/legacy：不得继续作为数据质量证据。** 该版本使用曾被截到 1.5 的 `kt_fcst`；正式证据已迁移到 `figs/01_data_audit/fig_cloud_kt_hexbin` 的未截断 `kt_raw`。 | 旧处理制造边界；仅保留审计溯源。 |
 | `fig_value_ladder` | 单站五外折的七个固定与三个调参 CPU 模型呈现 RMSE 分层；每模型总体与逐折评分。 | quantitative grid；五折不是独立站点，不称省域正式阶梯。 |
 | `fig_cpu_overall_pinball` | 三个分位数模型在五外折共同样本上的平均 pinball 和原始分位交叉率一并报告。 | quantitative grid；不得把点预测基线伪装为概率模型。 |
 | `fig_cpu_lead_performance` | 十个 CPU 模型的 D+1/2/3 RMSE 明确分开；按相同评分样本计算。 | quantitative grid；不同模型必须共用同一目标时间集合。 |
