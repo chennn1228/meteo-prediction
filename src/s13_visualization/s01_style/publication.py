@@ -51,7 +51,7 @@ def apply_publication_style() -> None:
     mpl.rcParams.update({
         "font.family": "sans-serif",
         "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "sans-serif"],
-        "svg.fonttype": "none", "pdf.fonttype": 42,
+        "svg.fonttype": "none",
         "font.size": 7, "axes.linewidth": 0.8,
         "axes.spines.right": False, "axes.spines.top": False,
         "legend.frameon": False, "figure.facecolor": "white",
@@ -69,8 +69,8 @@ def panel_label(ax, label: str) -> None:
 def save_formal_figure(fig, stem: Path, contract: FigureContract, *, dpi: int = 600) -> tuple[Path, ...]:
     contract.validate()
     stem.parent.mkdir(parents=True, exist_ok=True)
-    paths = tuple(stem.with_suffix(f".{suffix}") for suffix in ("svg", "pdf", "tiff"))
+    paths = tuple(stem.with_suffix(f".{suffix}") for suffix in ("svg", "png"))
     for path in paths:
-        fig.savefig(path, bbox_inches="tight", dpi=dpi if path.suffix == ".tiff" else None)
+        fig.savefig(path, bbox_inches="tight", dpi=dpi if path.suffix == ".png" else None)
     plt.close(fig)
     return paths

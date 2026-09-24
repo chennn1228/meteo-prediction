@@ -71,7 +71,7 @@ def main() -> None:
              ha="right", va="top", fontsize=6, color="#8C959A")
     fig.subplots_adjust(left=0.10, right=0.98, bottom=0.24, top=0.78, wspace=0.30)
     files = []
-    for extension in ("svg", "pdf", "png"):
+    for extension in ("svg", "png"):
         target = output / f"fig_tuning_candidates.{extension}"
         fig.savefig(target, dpi=300 if extension == "png" else None,
                     bbox_inches="tight", facecolor="white")

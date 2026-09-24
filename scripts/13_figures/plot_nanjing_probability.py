@@ -32,7 +32,7 @@ SCOPE = "Nanjing only | 15-variable diagnostic | not official 20-site evidence"
 
 def save_figure(fig, output: Path, name: str) -> list[str]:
     files = []
-    for extension in ("svg", "pdf", "png"):
+    for extension in ("svg", "png"):
         destination = output / f"{name}.{extension}"
         fig.savefig(destination, dpi=300 if extension == "png" else None,
                     bbox_inches="tight", facecolor="white")

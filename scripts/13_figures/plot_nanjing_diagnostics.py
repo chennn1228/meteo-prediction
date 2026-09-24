@@ -40,7 +40,7 @@ def save(fig, folder: Path, stem: str) -> list[str]:
     folder.mkdir(parents=True, exist_ok=True)
     fig.text(0.995, 0.995, SCOPE, ha="right", va="top", fontsize=6, color=GRAY)
     paths = []
-    for extension in ("svg", "pdf", "png"):
+    for extension in ("svg", "png"):
         path = folder / f"{stem}.{extension}"
         fig.savefig(path, dpi=300 if extension == "png" else None,
                     bbox_inches="tight", facecolor="white")

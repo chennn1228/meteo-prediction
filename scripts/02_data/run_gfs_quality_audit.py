@@ -199,7 +199,7 @@ def duplication_audit(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 def save_figure(fig: plt.Figure, output: Path, source_note: str) -> None:
     fig.text(.995, -.055, source_note, ha="right", va="bottom", fontsize=5, color="#555555")
-    for ext, kwargs in (("svg", {}), ("pdf", {}), ("png", {"dpi": 300})):
+    for ext, kwargs in (("svg", {}), ("png", {"dpi": 300})):
         final = output.with_suffix(f".{ext}")
         last_error = None
         for attempt in range(5):
@@ -421,7 +421,7 @@ After aligning solar geometry to the preceding-hour radiation interval, only {in
 
 ## Figure contract
 
-Core conclusion: separate processing-created boundaries from raw product structure before judging data-source suitability. Evidence chain: raw-zero stratification → cloud endpoints → unclipped kt tail → solar-angle-stratified cloud–kt density → lead-specific error coupling. Archetype: quantitative grid. Exports: editable SVG/PDF plus PNG previews, with CSV source data.
+Core conclusion: separate processing-created boundaries from raw product structure before judging data-source suitability. Evidence chain: raw-zero stratification → cloud endpoints → unclipped kt tail → solar-angle-stratified cloud–kt density → lead-specific error coupling. Archetype: quantitative grid. Exports: editable SVG plus PNG previews, with CSV source data.
 """
     (report_dir / "gfs_quality_audit.md").write_text(report, encoding="utf-8")
     tracked = sorted(list(report_dir.glob("*")) + list(fig_dir.glob("*")))

@@ -37,7 +37,7 @@ QCOLS = [f"q{tau:.2f}" for tau in TAUS]
 def save(fig, directory: Path, name: str) -> list[str]:
     fig.text(0.995, 0.995, SCOPE, ha="right", va="top", fontsize=6, color="#8C959A")
     paths = []
-    for extension in ("svg", "pdf", "png"):
+    for extension in ("svg", "png"):
         path = directory / f"{name}.{extension}"
         fig.savefig(path, dpi=300 if extension == "png" else None,
                     bbox_inches="tight", facecolor="white")

@@ -29,4 +29,4 @@ After aligning solar geometry to the preceding-hour radiation interval, only 3 r
 
 ## Figure contract
 
-Core conclusion: separate processing-created boundaries from raw product structure before judging data-source suitability. Evidence chain: raw-zero stratification → cloud endpoints → unclipped kt tail → solar-angle-stratified cloud–kt density → lead-specific error coupling. Archetype: quantitative grid. Exports: editable SVG/PDF plus PNG previews, with CSV source data.
+Core conclusion: separate processing-created boundaries from raw product structure before judging data-source suitability. Evidence chain: raw-zero stratification → cloud endpoints → unclipped kt tail → solar-angle-stratified cloud–kt density → lead-specific error coupling. Archetype: quantitative grid. Exports: editable SVG plus PNG previews, with CSV source data.

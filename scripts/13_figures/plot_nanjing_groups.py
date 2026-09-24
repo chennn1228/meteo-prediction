@@ -24,7 +24,7 @@ SCOPE = "Nanjing only | development inner folds | diagnostic, not 20-site eviden
 def save(fig, output: Path, name: str) -> list[str]:
     fig.text(0.995, 0.995, SCOPE, ha="right", va="top", fontsize=6, color="#8C959A")
     files = []
-    for extension in ("svg", "pdf", "png"):
+    for extension in ("svg", "png"):
         path = output / f"{name}.{extension}"
         fig.savefig(path, dpi=300 if extension == "png" else None,
                     bbox_inches="tight", facecolor="white")
