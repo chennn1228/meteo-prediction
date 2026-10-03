@@ -1,0 +1,23 @@
+profiles:
+  nanjing_cpu_diagnostic:
+    execution: development
+    sites: {type: set, value: diagnostic_nanjing}
+    models: {group: cpu_main}
+    spatial: false
+  cpu_20site:
+    execution: development
+    cohort: configured_20_sites_with_returned_service_coordinates
+    sites: {type: set, value: training_20, selector: density}
+    models: {group: cpu_main}
+    spatial: false
+  spatial_density:
+    execution: development
+    sites: {selector: density, n_sites: 10}
+    models: {group: selected_models}
+    spatial: true
+  official_cpu_20site:
+    execution: official
+    sites: {type: set, value: training_20, selector: density}
+    models: {group: cpu_main}
+    spatial: false
+    locked_config_hash: null

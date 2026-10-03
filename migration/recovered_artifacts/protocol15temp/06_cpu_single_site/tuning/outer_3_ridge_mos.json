@@ -1,0 +1,394 @@
+{
+  "status": "pass",
+  "scope": "one_real_site_inner_selection_not_official_benchmark",
+  "official_eligible": false,
+  "site": "nanjing_1",
+  "outer_fold": "outer_3",
+  "model_id": "ridge_mos",
+  "data_version": "openmeteo-point-15var-temp-2024-02_2026-08-v1",
+  "source_feature_sha256": "7e715c19bce955196f1f44b15da49c1dc6a693ba7d0acfedcb3a0b5efad5b43e",
+  "manifest_sha256": "2ec983298075e68e1f152c1d118092abb385a8b247f496508c5b5a623cd1a9b4",
+  "selected_candidate": 5,
+  "inner_fold_counts": [
+    {
+      "inner_fold": "inner_1",
+      "fit": 8853,
+      "early_stop": 471,
+      "score": 462
+    },
+    {
+      "inner_fold": "inner_2",
+      "fit": 9375,
+      "early_stop": 462,
+      "score": 462
+    },
+    {
+      "inner_fold": "inner_3",
+      "fit": 9837,
+      "early_stop": 462,
+      "score": 456
+    }
+  ],
+  "trials": [
+    {
+      "model": "ridge_mos",
+      "candidate": 0,
+      "parameters": {
+        "alpha": 1e-05
+      },
+      "outer": "outer_3",
+      "inner": "inner_1",
+      "seed": 0,
+      "fit_rows": 8853,
+      "early_stop_rows": 471,
+      "scoring_rows": 462,
+      "mean_pinball": 21.926243175109324,
+      "wall_seconds": 0.5585464999894612,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 0,
+      "parameters": {
+        "alpha": 1e-05
+      },
+      "outer": "outer_3",
+      "inner": "inner_2",
+      "seed": 0,
+      "fit_rows": 9375,
+      "early_stop_rows": 462,
+      "scoring_rows": 462,
+      "mean_pinball": 24.865164040091944,
+      "wall_seconds": 0.5380963999778032,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 0,
+      "parameters": {
+        "alpha": 1e-05
+      },
+      "outer": "outer_3",
+      "inner": "inner_3",
+      "seed": 0,
+      "fit_rows": 9837,
+      "early_stop_rows": 462,
+      "scoring_rows": 456,
+      "mean_pinball": 24.14689192578498,
+      "wall_seconds": 0.48143139999592677,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 1,
+      "parameters": {
+        "alpha": 0.001
+      },
+      "outer": "outer_3",
+      "inner": "inner_1",
+      "seed": 0,
+      "fit_rows": 8853,
+      "early_stop_rows": 471,
+      "scoring_rows": 462,
+      "mean_pinball": 21.92615314544276,
+      "wall_seconds": 0.4570919999969192,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 1,
+      "parameters": {
+        "alpha": 0.001
+      },
+      "outer": "outer_3",
+      "inner": "inner_2",
+      "seed": 0,
+      "fit_rows": 9375,
+      "early_stop_rows": 462,
+      "scoring_rows": 462,
+      "mean_pinball": 24.86498419713539,
+      "wall_seconds": 0.46257520001381636,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 1,
+      "parameters": {
+        "alpha": 0.001
+      },
+      "outer": "outer_3",
+      "inner": "inner_3",
+      "seed": 0,
+      "fit_rows": 9837,
+      "early_stop_rows": 462,
+      "scoring_rows": 456,
+      "mean_pinball": 24.14682696461588,
+      "wall_seconds": 0.4604939999990165,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 2,
+      "parameters": {
+        "alpha": 0.1
+      },
+      "outer": "outer_3",
+      "inner": "inner_1",
+      "seed": 0,
+      "fit_rows": 8853,
+      "early_stop_rows": 471,
+      "scoring_rows": 462,
+      "mean_pinball": 21.91707310085728,
+      "wall_seconds": 0.4976989999995567,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 2,
+      "parameters": {
+        "alpha": 0.1
+      },
+      "outer": "outer_3",
+      "inner": "inner_2",
+      "seed": 0,
+      "fit_rows": 9375,
+      "early_stop_rows": 462,
+      "scoring_rows": 462,
+      "mean_pinball": 24.847122767929786,
+      "wall_seconds": 0.46592729998519644,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 2,
+      "parameters": {
+        "alpha": 0.1
+      },
+      "outer": "outer_3",
+      "inner": "inner_3",
+      "seed": 0,
+      "fit_rows": 9837,
+      "early_stop_rows": 462,
+      "scoring_rows": 456,
+      "mean_pinball": 24.138766663772202,
+      "wall_seconds": 0.4920060000149533,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 3,
+      "parameters": {
+        "alpha": 1.0
+      },
+      "outer": "outer_3",
+      "inner": "inner_1",
+      "seed": 0,
+      "fit_rows": 8853,
+      "early_stop_rows": 471,
+      "scoring_rows": 462,
+      "mean_pinball": 21.852687836021097,
+      "wall_seconds": 0.44646950002061203,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 3,
+      "parameters": {
+        "alpha": 1.0
+      },
+      "outer": "outer_3",
+      "inner": "inner_2",
+      "seed": 0,
+      "fit_rows": 9375,
+      "early_stop_rows": 462,
+      "scoring_rows": 462,
+      "mean_pinball": 24.688600922586932,
+      "wall_seconds": 0.5928401999990456,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 3,
+      "parameters": {
+        "alpha": 1.0
+      },
+      "outer": "outer_3",
+      "inner": "inner_3",
+      "seed": 0,
+      "fit_rows": 9837,
+      "early_stop_rows": 462,
+      "scoring_rows": 456,
+      "mean_pinball": 24.060840816625504,
+      "wall_seconds": 0.7521195000153966,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 4,
+      "parameters": {
+        "alpha": 10.0
+      },
+      "outer": "outer_3",
+      "inner": "inner_1",
+      "seed": 0,
+      "fit_rows": 8853,
+      "early_stop_rows": 471,
+      "scoring_rows": 462,
+      "mean_pinball": 21.534280897856807,
+      "wall_seconds": 0.6179808999877423,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 4,
+      "parameters": {
+        "alpha": 10.0
+      },
+      "outer": "outer_3",
+      "inner": "inner_2",
+      "seed": 0,
+      "fit_rows": 9375,
+      "early_stop_rows": 462,
+      "scoring_rows": 462,
+      "mean_pinball": 23.979579102514666,
+      "wall_seconds": 0.4765078999917023,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 4,
+      "parameters": {
+        "alpha": 10.0
+      },
+      "outer": "outer_3",
+      "inner": "inner_3",
+      "seed": 0,
+      "fit_rows": 9837,
+      "early_stop_rows": 462,
+      "scoring_rows": 456,
+      "mean_pinball": 23.70225771812671,
+      "wall_seconds": 0.46356980002019554,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 5,
+      "parameters": {
+        "alpha": 1000.0
+      },
+      "outer": "outer_3",
+      "inner": "inner_1",
+      "seed": 0,
+      "fit_rows": 8853,
+      "early_stop_rows": 471,
+      "scoring_rows": 462,
+      "mean_pinball": 21.14434607401776,
+      "wall_seconds": 0.46038960001897067,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 5,
+      "parameters": {
+        "alpha": 1000.0
+      },
+      "outer": "outer_3",
+      "inner": "inner_2",
+      "seed": 0,
+      "fit_rows": 9375,
+      "early_stop_rows": 462,
+      "scoring_rows": 462,
+      "mean_pinball": 22.344793845077874,
+      "wall_seconds": 0.4828230999992229,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    },
+    {
+      "model": "ridge_mos",
+      "candidate": 5,
+      "parameters": {
+        "alpha": 1000.0
+      },
+      "outer": "outer_3",
+      "inner": "inner_3",
+      "seed": 0,
+      "fit_rows": 9837,
+      "early_stop_rows": 462,
+      "scoring_rows": 456,
+      "mean_pinball": 20.85696002400524,
+      "wall_seconds": 0.4849932999932207,
+      "device": "cpu",
+      "peak_memory_bytes": null,
+      "epoch": null,
+      "status": "ok",
+      "error_reason": null
+    }
+  ]
+}

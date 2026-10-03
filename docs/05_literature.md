@@ -1,26 +1,26 @@
-# Literature evidence status
+# Literature evidence
 
-Version 2.0.0-provisional | 2026-09-15
+This file records evidence themes and verification rules; it does not duplicate
+the bibliography or invent citations.
 
-This file records evidence needs and the local library. It does not invent citations. Bibliographic metadata must be verified from the original paper before manuscript submission.
+## Evidence themes
 
-## Evidence required by the v2 argument
+- GFS product resolution, radiation semantics, and Previous Runs behavior.
+- Solar forecasting baselines, MOS, and nonlinear post-processing.
+- Purged rolling-origin validation for dependent time series.
+- Quantile forecasting, conformal calibration, conditional coverage, and
+  reliability diagnostics.
+- Himawari GHI retrieval uncertainty and validation in comparable regimes.
+- Clear-sky model uncertainty, cloud enhancement, and physical feature design.
+- Spatial generalization, returned-service-point sampling, and density design.
+- Fair statistical/ML/DL comparison under fixed selection and compute budgets.
 
-1. GFS surface temporal/spatial resolution and radiation variable semantics.
-2. Persistence, smart persistence, climatology and convex baselines for solar forecasting.
-3. MOS and nonlinear post-processing for NWP irradiance.
-4. Purged rolling-origin validation for dependent time series.
-5. Spatial generalization and station-density design.
-6. Quantile forecasting, conformal calibration, conditional coverage and Mondrian variants.
-7. Himawari GHI retrieval uncertainty and validation in East Asia/Jiangsu-like regimes.
-8. Clear-sky model uncertainty and cloud enhancement above nominal clear-sky irradiance.
-9. Fair ML/DL comparison under fixed compute budgets.
+## Index and verification
 
-## Local source library
-
-The verified index remains `literature/00_index.md`; PDFs are stored under `literature/`. They are not duplicated into active docs. Before citation, verify title, authors, venue, year, DOI and the exact claim supported.
-
-## Authoring rule
-
-Use external literature to position the problem and methods, not to overwrite local evidence. Current numeric project claims must trace to versioned local reports; method definitions must cite the primary source actually read.
+The bibliographic index is `literature/00_index.md`; local source files remain
+under `literature/`. Before manuscript use, verify title, authors, venue,
+publication year, DOI, exact supported claim, and whether the cited source was
+actually read. External literature supports method choice and positioning;
+numeric project claims must trace to a run and may not be replaced by a paper's
+result.
 

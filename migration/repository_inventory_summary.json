@@ -1,0 +1,31 @@
+{
+  "freeze_tag": "pre-nwp-refactor-20261002",
+  "freeze_commit": "09230bce481bca561aef94b64f0d9a02479b41ae",
+  "generated_at": "2026-10-03T16:40:57+08:00",
+  "scope": "project-owned files; runtime/tooling environments excluded",
+  "excluded_directory_names": [
+    ".cache",
+    ".git",
+    ".pytest_cache",
+    ".venv",
+    "__pycache__"
+  ],
+  "excluded_directory_prefixes": [
+    ".pytest-"
+  ],
+  "self_outputs_omitted_from_csv": [
+    "migration/repository_inventory.csv",
+    "migration/repository_inventory_summary.json"
+  ],
+  "row_count": 7127,
+  "present_count": 6810,
+  "missing_count": 317,
+  "present_bytes": 1377613821,
+  "repository_state_counts": {
+    "IGNORED_LOCAL": 6418,
+    "MISSING_PRE_REFACTOR_LOCAL_ARTIFACT": 282,
+    "MISSING_TRACKED_AT_FREEZE": 35,
+    "TRACKED": 310,
+    "UNTRACKED": 82
+  }
+}

@@ -1,0 +1,30 @@
+registry:
+  changzhou_1: {lat: 31.5000, lon: 119.8000, region: 苏南内陆, code: SI}
+  nanjing_1: {lat: 31.9000, lon: 118.6000, region: 苏南内陆, code: SI}
+  suzhou_1: {lat: 31.5000, lon: 121.0000, region: 苏南内陆, code: SI}
+  wuxi_1: {lat: 31.1000, lon: 120.2000, region: 苏南内陆, code: SI}
+  nanjing_2: {lat: 31.5000, lon: 119.0000, region: 苏南内陆, code: SI}
+  taizhou_1: {lat: 32.7000, lon: 119.8000, region: 苏中内陆, code: MI}
+  taizhou_2: {lat: 32.7000, lon: 120.6000, region: 苏中内陆, code: MI}
+  nantong_1: {lat: 31.9000, lon: 121.0000, region: 苏中沿海, code: MC}
+  nantong_2: {lat: 31.9000, lon: 121.8000, region: 苏中沿海, code: MC}
+  suqian_1: {lat: 33.9000, lon: 118.2000, region: 苏北内陆, code: NI}
+  xuzhou_1: {lat: 34.7000, lon: 116.6000, region: 苏北内陆, code: NI}
+  huai_an_1: {lat: 33.1000, lon: 119.4000, region: 苏北内陆, code: NI}
+  huai_an_2: {lat: 33.9000, lon: 119.4000, region: 苏北内陆, code: NI}
+  xuzhou_2: {lat: 34.3000, lon: 117.4000, region: 苏北内陆, code: NI}
+  huai_an_3: {lat: 33.1000, lon: 118.6000, region: 苏北内陆, code: NI}
+  yancheng_1: {lat: 33.9000, lon: 119.8000, region: 苏北沿海, code: NC}
+  lianyungang_1: {lat: 34.7000, lon: 118.6000, region: 苏北沿海, code: NC}
+  yancheng_2: {lat: 33.1000, lon: 120.6000, region: 苏北沿海, code: NC}
+  yancheng_3: {lat: 33.1000, lon: 119.8000, region: 苏北沿海, code: NC}
+  lianyungang_2: {lat: 34.7000, lon: 119.4000, region: 苏北沿海, code: NC}
+sets:
+  training_20: [changzhou_1, nanjing_1, suzhou_1, wuxi_1, nanjing_2, taizhou_1, taizhou_2, nantong_1, nantong_2, suqian_1, xuzhou_1, huai_an_1, huai_an_2, xuzhou_2, huai_an_3, yancheng_1, lianyungang_1, yancheng_2, yancheng_3, lianyungang_2]
+  diagnostic_nanjing: [nanjing_1]
+selectors:
+  density:
+    method: region_balanced_farthest_point
+    source_set: training_20
+    allowed_counts: [5, 10, 15, 20]
+    region_quotas: {5: 1, 10: 2, 15: 3, 20: 4}

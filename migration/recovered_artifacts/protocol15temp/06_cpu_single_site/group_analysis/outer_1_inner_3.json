@@ -1,0 +1,275 @@
+{
+  "status": "pass",
+  "official_eligible": false,
+  "scope": "nanjing_one_site_development_inner_only_group_diagnostic",
+  "outer_fold": "outer_1",
+  "inner_fold": "inner_3",
+  "selected_candidate": 0,
+  "parameters": {
+    "learning_rate": 0.05,
+    "num_leaves": 31,
+    "max_depth": -1,
+    "subsample": 0.9,
+    "colsample_bytree": 0.9
+  },
+  "feature_sha256": "7e715c19bce955196f1f44b15da49c1dc6a693ba7d0acfedcb3a0b5efad5b43e",
+  "manifest_sha256": "2ec983298075e68e1f152c1d118092abb385a8b247f496508c5b5a623cd1a9b4",
+  "tuning_ledger_sha256": "5b3c8c096471714ce81ecc05164bc3dacc826b6c048e390cc99c4245e1cb614c",
+  "fit_rows": 2595,
+  "early_stop_rows": 546,
+  "score_rows": 570,
+  "baseline_mean_pinball": 35.91833259902701,
+  "baseline_rounds_by_quantile": [
+    88,
+    79,
+    119,
+    117,
+    67,
+    95,
+    118
+  ],
+  "preprocessing": {
+    "formal_feature_columns": [
+      "ghi_fcst",
+      "dhi_fcst",
+      "dni_fcst",
+      "gti_fcst",
+      "terrestrial_fcst",
+      "ghi_clear_sky",
+      "dni_clear_sky",
+      "kt_fcst",
+      "kni",
+      "ghi_fcst_minus_clear",
+      "diffuse_fraction",
+      "cloud_cover_fcst",
+      "cloud_cover_change",
+      "cloud_cover_roll1",
+      "cloud_cover_roll3",
+      "temp_fcst",
+      "rh_fcst",
+      "dewpoint_fcst",
+      "wind_speed_fcst",
+      "wind_dir_sin",
+      "wind_dir_cos",
+      "pressure_fcst",
+      "precip_fcst",
+      "sunshine_fcst",
+      "solar_elevation",
+      "solar_azimuth_sin",
+      "solar_azimuth_cos",
+      "hour_local_sin",
+      "hour_local_cos",
+      "doy_sin",
+      "doy_cos",
+      "month_sin",
+      "month_cos",
+      "ghi_fcst_lag1",
+      "ghi_fcst_lag2",
+      "lead_time",
+      "source_grid_latitude",
+      "source_grid_longitude",
+      "source_grid_elevation"
+    ],
+    "cloud_imputation": {
+      "model_version": "fold-cloud-lgbm-v2",
+      "fit_start_utc": "2024-01-29T00:00:00+00:00",
+      "fit_end_utc": "2024-04-12T23:00:00+00:00",
+      "imputed_fraction": 0.0,
+      "method": "lightgbm"
+    },
+    "preprocessing_fit_end_utc": "2024-04-12T23:00:00+00:00",
+    "preprocessing_fit_rows": 2595
+  },
+  "ablation": [
+    {
+      "group": "radiation",
+      "dropped_features": [
+        "ghi_fcst",
+        "dhi_fcst",
+        "dni_fcst",
+        "gti_fcst",
+        "terrestrial_fcst"
+      ],
+      "mean_pinball": 39.10980754514563,
+      "delta_vs_full": 3.1914749461186176
+    },
+    {
+      "group": "clear_sky_kt",
+      "dropped_features": [
+        "ghi_clear_sky",
+        "dni_clear_sky",
+        "kt_fcst",
+        "kni",
+        "ghi_fcst_minus_clear",
+        "diffuse_fraction"
+      ],
+      "mean_pinball": 36.37367612885505,
+      "delta_vs_full": 0.45534352982804194
+    },
+    {
+      "group": "cloud",
+      "dropped_features": [
+        "cloud_cover_fcst",
+        "cloud_cover_change",
+        "cloud_cover_roll1",
+        "cloud_cover_roll3"
+      ],
+      "mean_pinball": 37.289637022975626,
+      "delta_vs_full": 1.3713044239486152
+    },
+    {
+      "group": "meteorology",
+      "dropped_features": [
+        "temp_fcst",
+        "rh_fcst",
+        "dewpoint_fcst",
+        "wind_speed_fcst",
+        "wind_dir_sin",
+        "wind_dir_cos",
+        "pressure_fcst",
+        "precip_fcst",
+        "sunshine_fcst"
+      ],
+      "mean_pinball": 41.73126109635104,
+      "delta_vs_full": 5.81292849732403
+    },
+    {
+      "group": "solar_geometry",
+      "dropped_features": [
+        "solar_elevation",
+        "solar_azimuth_sin",
+        "solar_azimuth_cos"
+      ],
+      "mean_pinball": 37.48323788114279,
+      "delta_vs_full": 1.564905282115781
+    },
+    {
+      "group": "temporal_dynamics",
+      "dropped_features": [
+        "hour_local_sin",
+        "hour_local_cos",
+        "doy_sin",
+        "doy_cos",
+        "month_sin",
+        "month_cos",
+        "ghi_fcst_lag1",
+        "ghi_fcst_lag2",
+        "lead_time"
+      ],
+      "mean_pinball": 32.067601334222246,
+      "delta_vs_full": -3.8507312648047645
+    }
+  ],
+  "permutation": [
+    {
+      "group": "radiation",
+      "repeat": 0,
+      "mean_pinball": 93.05114951563957,
+      "delta_vs_full": 57.132816916612555
+    },
+    {
+      "group": "radiation",
+      "repeat": 1,
+      "mean_pinball": 100.93838549059133,
+      "delta_vs_full": 65.02005289156432
+    },
+    {
+      "group": "radiation",
+      "repeat": 2,
+      "mean_pinball": 100.52767360285279,
+      "delta_vs_full": 64.60934100382578
+    },
+    {
+      "group": "clear_sky_kt",
+      "repeat": 0,
+      "mean_pinball": 38.598030600020174,
+      "delta_vs_full": 2.679698000993163
+    },
+    {
+      "group": "clear_sky_kt",
+      "repeat": 1,
+      "mean_pinball": 38.91911360879906,
+      "delta_vs_full": 3.000781009772048
+    },
+    {
+      "group": "clear_sky_kt",
+      "repeat": 2,
+      "mean_pinball": 38.80755380670857,
+      "delta_vs_full": 2.889221207681558
+    },
+    {
+      "group": "cloud",
+      "repeat": 0,
+      "mean_pinball": 36.36133635730726,
+      "delta_vs_full": 0.4430037582802484
+    },
+    {
+      "group": "cloud",
+      "repeat": 1,
+      "mean_pinball": 36.40933638647338,
+      "delta_vs_full": 0.49100378744636686
+    },
+    {
+      "group": "cloud",
+      "repeat": 2,
+      "mean_pinball": 36.215170535692145,
+      "delta_vs_full": 0.2968379366651348
+    },
+    {
+      "group": "meteorology",
+      "repeat": 0,
+      "mean_pinball": 42.757161488164485,
+      "delta_vs_full": 6.838828889137474
+    },
+    {
+      "group": "meteorology",
+      "repeat": 1,
+      "mean_pinball": 42.417376460424634,
+      "delta_vs_full": 6.499043861397624
+    },
+    {
+      "group": "meteorology",
+      "repeat": 2,
+      "mean_pinball": 43.35220973624281,
+      "delta_vs_full": 7.433877137215802
+    },
+    {
+      "group": "solar_geometry",
+      "repeat": 0,
+      "mean_pinball": 37.723505334755906,
+      "delta_vs_full": 1.8051727357288954
+    },
+    {
+      "group": "solar_geometry",
+      "repeat": 1,
+      "mean_pinball": 37.58765283380567,
+      "delta_vs_full": 1.6693202347786595
+    },
+    {
+      "group": "solar_geometry",
+      "repeat": 2,
+      "mean_pinball": 37.11378657985327,
+      "delta_vs_full": 1.195453980826258
+    },
+    {
+      "group": "temporal_dynamics",
+      "repeat": 0,
+      "mean_pinball": 37.95202424105894,
+      "delta_vs_full": 2.0336916420319326
+    },
+    {
+      "group": "temporal_dynamics",
+      "repeat": 1,
+      "mean_pinball": 37.848504225807126,
+      "delta_vs_full": 1.9301716267801154
+    },
+    {
+      "group": "temporal_dynamics",
+      "repeat": 2,
+      "mean_pinball": 38.26186055249462,
+      "delta_vs_full": 2.343527953467607
+    }
+  ],
+  "excluded_group": "spatial_static constant at one site",
+  "controls_not_included": "Base+cloud and Base+kt add-back controls"
+}

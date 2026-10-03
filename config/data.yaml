@@ -1,0 +1,31 @@
+version: openmeteo-point-15var-archive-aligned-2024-02_2026-08-v1
+forecast:
+  provider: Open-Meteo Previous Runs API
+  model: gfs_seamless
+  product_class: location_specific
+  cell_selection: land
+  source_grid_id_exposed: false
+  resolution: hourly
+  leads: [24, 48, 72]
+  variables: [shortwave_radiation, diffuse_radiation, direct_normal_irradiance, global_tilted_irradiance, cloud_cover, temperature_2m, relative_humidity_2m, dewpoint_2m, wind_speed_10m, wind_direction_10m, surface_pressure, precipitation, sunshine_duration, terrestrial_radiation, is_day]
+truth:
+  primary:
+    provider: jma_jaxa_himawari_shortwave_radiation
+    model: jma_jaxa_himawari
+    semantics: preceding_hour_mean
+    variables: [shortwave_radiation, direct_radiation, diffuse_radiation, direct_normal_irradiance, global_tilted_irradiance]
+  supplementary:
+    provider: era5_reanalysis
+    role: supplementary_exploratory
+    variables: [shortwave_radiation, direct_radiation, diffuse_radiation, direct_normal_irradiance, global_tilted_irradiance, cloud_cover, cloud_cover_low, cloud_cover_mid, cloud_cover_high]
+radiation_semantics: preceding_hour_mean
+requested_coordinates_role: provenance_only
+timezone: UTC
+tilt: 30
+azimuth: 0
+storage:
+  raw_partitioning: [source, site, month]
+  clean_partitioning: [clean_hash, site, month]
+  feature_partitioning: [feature_hash, site, month]
+  raw_overwrite_forbidden: true
+receipt_required: true

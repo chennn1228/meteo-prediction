@@ -1,0 +1,23 @@
+{
+  "scope": "one_real_site_one_inner_fold_diagnostic_only",
+  "mean_pinball": {
+    "lgbm": 41.86294065076183,
+    "xgboost": 43.830055413548784,
+    "ridge_mos": 60.17208971624564
+  },
+  "crossing_rate": {
+    "lgbm": 0.5018315018315018,
+    "xgboost": 0.6336996336996337,
+    "ridge_mos": 0.0
+  },
+  "fixed_point_models": {
+    "climatology": "fit_block_month_local_hour_mean",
+    "persistence": "latest_same_local_hour_truth_before_issue",
+    "smart_persistence": "issue_safe_clear_sky_scaled_persistence",
+    "optimal_convex": "fit_block_closed_form_convex_raw_and_smart_persistence",
+    "raw_gfs": "uncorrected_GFS_point",
+    "bias_correction": "fit_block_mean_additive_bias",
+    "linear_mos": "unregularized_linear_all_formal_features"
+  },
+  "score_rows_per_model": 546
+}

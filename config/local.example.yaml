@@ -1,0 +1,5 @@
+# Copy to config/local.yaml only for machine-specific, non-scientific paths.
+# config/local.yaml is ignored by Git and never changes the scientific protocol.
+paths:
+  data_root: data
+  outputs_root: outputs

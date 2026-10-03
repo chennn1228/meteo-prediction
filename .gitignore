@@ -1,55 +1,43 @@
 # Secrets and local credentials
-secrets/
+/secrets/
 .env
 .env.*
 !.env.example
 *.pem
 *.key
 credentials*.json
+/config/local.yaml
 
 # Raw, cleaned and featured research data
-data/
+/data/
 
 # Local environments and caches
 .venv/
-venv/
-.cache/
-.trash/
+/venv/
+/.cache/
+/.trash/
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 
-# Generated deployment and data bundles
-deploy/
-artifacts/
-reports/
-!reports/
-reports/*
-!reports/protocol_migration_audit.md
-!reports/01_data_audit/
-reports/01_data_audit/*
-!reports/01_data_audit/source_processing_trace.md
-!reports/01_data_audit/gfs_quality_summary.csv
-!reports/01_data_audit/gfs_zero_ghi_audit.csv
-!reports/01_data_audit/gfs_zero_ghi_cases.csv
-!reports/01_data_audit/cloud_endpoint_audit.csv
-!reports/01_data_audit/kt_raw_audit.csv
-!reports/01_data_audit/service_grid_duplication.csv
-!reports/01_data_audit/gfs_quality_audit.md
-!reports/01_data_audit/receipt.json
-literature/
+# Generated deployment and run bundles
+/deploy/
+/artifacts/
+/reports/
+/outputs/
+/literature/
 
 # Website work is outside this repository's upload scope
-website/
-NWP_website_handoff/
-handoff_templates/
-schemas/
-scripts/06_export/
+/website/
+/NWP_website_handoff/
+/handoff_templates/
+/schemas/
+/scripts/06_export/
 docs/archive/legacy_v11_20260915/08_website_handoff.md
 archive/docs/legacy_v11_20260915/08_website_handoff.md
-figs/00_preview/
+/figs/
 
 # Large model/checkpoint and tabular artifacts
 *.parquet

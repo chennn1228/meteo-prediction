@@ -1,1 +1,0 @@
-"""Single Python publication style."""

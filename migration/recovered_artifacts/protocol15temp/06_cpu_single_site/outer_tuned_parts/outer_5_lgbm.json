@@ -1,0 +1,203 @@
+{
+  "scope": "nanjing_one_site_outer_refit_diagnostic_only",
+  "official_eligible": false,
+  "model_id": "lgbm",
+  "outer_fold": "outer_5",
+  "selected_candidate": 0,
+  "selected_parameters": {
+    "learning_rate": 0.05,
+    "num_leaves": 31,
+    "max_depth": -1,
+    "subsample": 0.9,
+    "colsample_bytree": 0.9
+  },
+  "source_feature_sha256": "7e715c19bce955196f1f44b15da49c1dc6a693ba7d0acfedcb3a0b5efad5b43e",
+  "manifest_sha256": "2ec983298075e68e1f152c1d118092abb385a8b247f496508c5b5a623cd1a9b4",
+  "inner_ledger_sha256": "783216f86e4826862bf5cbfc6dbef2b6b6f0decf97d15ee2d9bf4324d0ecab5e",
+  "prediction_sha256": "182324c79b66d468978be72ab1cfc03be88f519e48c1e84990ff389e0402ac27",
+  "fit_receipt": {
+    "algorithm": "lgbm",
+    "parameters": {
+      "learning_rate": 0.05,
+      "num_leaves": 31,
+      "max_depth": -1,
+      "subsample": 0.9,
+      "colsample_bytree": 0.9
+    },
+    "seed": 0,
+    "round_selection_rule": "median_of_three_inner_best_rounds_per_quantile",
+    "refit_rounds_by_quantile": {
+      "0.05": 263,
+      "0.1": 359,
+      "0.25": 207,
+      "0.5": 125,
+      "0.75": 207,
+      "0.9": 267,
+      "0.95": 535
+    },
+    "outer_fit_rows": 17751,
+    "outer_score_rows": 2142,
+    "outer_fit_max_target_utc": "2025-05-31T23:00:00+00:00",
+    "preprocessing": {
+      "formal_feature_columns": [
+        "ghi_fcst",
+        "dhi_fcst",
+        "dni_fcst",
+        "gti_fcst",
+        "terrestrial_fcst",
+        "ghi_clear_sky",
+        "dni_clear_sky",
+        "kt_fcst",
+        "kni",
+        "ghi_fcst_minus_clear",
+        "diffuse_fraction",
+        "cloud_cover_fcst",
+        "cloud_cover_change",
+        "cloud_cover_roll1",
+        "cloud_cover_roll3",
+        "temp_fcst",
+        "rh_fcst",
+        "dewpoint_fcst",
+        "wind_speed_fcst",
+        "wind_dir_sin",
+        "wind_dir_cos",
+        "pressure_fcst",
+        "precip_fcst",
+        "sunshine_fcst",
+        "solar_elevation",
+        "solar_azimuth_sin",
+        "solar_azimuth_cos",
+        "hour_local_sin",
+        "hour_local_cos",
+        "doy_sin",
+        "doy_cos",
+        "month_sin",
+        "month_cos",
+        "ghi_fcst_lag1",
+        "ghi_fcst_lag2",
+        "lead_time",
+        "source_grid_latitude",
+        "source_grid_longitude",
+        "source_grid_elevation"
+      ],
+      "cloud_imputation": {
+        "model_version": "fold-cloud-lgbm-v2",
+        "fit_start_utc": "2024-01-29T00:00:00+00:00",
+        "fit_end_utc": "2025-05-30T23:00:00+00:00",
+        "imputed_fraction": 0.0,
+        "method": "lightgbm"
+      },
+      "preprocessing_fit_end_utc": "2025-05-30T23:00:00+00:00",
+      "preprocessing_fit_rows": 17751
+    },
+    "reproduced_selected_inner_pinball": {
+      "inner_1": 21.302092667115698,
+      "inner_2": 24.985831143681523,
+      "inner_3": 26.0905028191721
+    },
+    "selected_inner_round_receipts": [
+      {
+        "algorithm": "lgbm",
+        "parameters": {
+          "learning_rate": 0.05,
+          "num_leaves": 31,
+          "max_depth": -1,
+          "subsample": 0.9,
+          "colsample_bytree": 0.9
+        },
+        "seed": 0,
+        "quantiles": [
+          0.05,
+          0.1,
+          0.25,
+          0.5,
+          0.75,
+          0.9,
+          0.95
+        ],
+        "best_rounds": [
+          263,
+          192,
+          207,
+          125,
+          239,
+          267,
+          535
+        ],
+        "fit_max_target_utc": "2025-03-16T23:00:00+00:00",
+        "early_start_target_utc": "2025-03-27T00:00:00+00:00",
+        "early_max_target_utc": "2025-04-09T23:00:00+00:00",
+        "score_start_target_utc": "2025-04-20T00:00:00+00:00",
+        "score_max_target_utc": "2025-05-03T23:00:00+00:00"
+      },
+      {
+        "algorithm": "lgbm",
+        "parameters": {
+          "learning_rate": 0.05,
+          "num_leaves": 31,
+          "max_depth": -1,
+          "subsample": 0.9,
+          "colsample_bytree": 0.9
+        },
+        "seed": 0,
+        "quantiles": [
+          0.05,
+          0.1,
+          0.25,
+          0.5,
+          0.75,
+          0.9,
+          0.95
+        ],
+        "best_rounds": [
+          256,
+          359,
+          184,
+          112,
+          146,
+          327,
+          547
+        ],
+        "fit_max_target_utc": "2025-03-30T23:00:00+00:00",
+        "early_start_target_utc": "2025-04-10T00:00:00+00:00",
+        "early_max_target_utc": "2025-04-23T23:00:00+00:00",
+        "score_start_target_utc": "2025-05-04T00:00:00+00:00",
+        "score_max_target_utc": "2025-05-17T23:00:00+00:00"
+      },
+      {
+        "algorithm": "lgbm",
+        "parameters": {
+          "learning_rate": 0.05,
+          "num_leaves": 31,
+          "max_depth": -1,
+          "subsample": 0.9,
+          "colsample_bytree": 0.9
+        },
+        "seed": 0,
+        "quantiles": [
+          0.05,
+          0.1,
+          0.25,
+          0.5,
+          0.75,
+          0.9,
+          0.95
+        ],
+        "best_rounds": [
+          2572,
+          381,
+          488,
+          136,
+          207,
+          229,
+          391
+        ],
+        "fit_max_target_utc": "2025-04-13T23:00:00+00:00",
+        "early_start_target_utc": "2025-04-24T00:00:00+00:00",
+        "early_max_target_utc": "2025-05-07T23:00:00+00:00",
+        "score_start_target_utc": "2025-05-18T00:00:00+00:00",
+        "score_max_target_utc": "2025-05-31T23:00:00+00:00"
+      }
+    ]
+  }
+}

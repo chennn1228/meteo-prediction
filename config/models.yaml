@@ -1,0 +1,55 @@
+registry:
+  climatology: {family: baseline, role: value_ladder, implementation: climatology, device: cpu, tuning: false, implementation_status: pending_validation, official_eligible: false}
+  persistence: {family: baseline, role: value_ladder, implementation: persistence, device: cpu, tuning: false, implementation_status: pending_validation, official_eligible: false}
+  smart_persistence: {family: baseline, role: value_ladder, implementation: smart_persistence, device: cpu, tuning: false, implementation_status: pending_validation, official_eligible: false}
+  optimal_convex: {family: baseline, role: value_ladder, implementation: optimal_convex, device: cpu, tuning: false, implementation_status: pending_validation, official_eligible: false}
+  raw_gfs: {family: raw, role: value_ladder, implementation: raw_gfs, device: cpu, tuning: false, implementation_status: validated, official_eligible: true}
+  bias_correction: {family: statistical, role: value_ladder, implementation: bias_correction, device: cpu, tuning: false, implementation_status: pending_validation, official_eligible: false}
+  linear_mos: {family: statistical, role: value_ladder, implementation: linear, device: cpu, tuning: false, implementation_status: pending_validation, official_eligible: false}
+  ridge_mos: {family: statistical, role: value_ladder, implementation: ridge, quantile_adapter: ridge, device: cpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  lgbm: {family: tree_ml, role: value_ladder, implementation: lightgbm, quantile_adapter: tree, algorithm: lgbm, device: cpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  xgboost: {family: tree_ml, role: value_ladder, implementation: xgboost, quantile_adapter: tree, algorithm: xgboost, device: cpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  mlp: {family: deep, internal_version: v2, implementation: mlp, device: gpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  cnn: {family: deep, internal_version: v3, implementation: cnn, device: gpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  tcn: {family: deep, internal_version: v4, implementation: tcn, device: gpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  lstm: {family: deep, internal_version: v5, implementation: lstm, device: gpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  transformer: {family: deep, internal_version: v6, implementation: transformer, device: gpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  autoformer: {family: deep, internal_version: v7, implementation: autoformer, device: gpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  informer: {family: deep, internal_version: v8, implementation: informer, device: gpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  fedformer: {family: deep, internal_version: v9, implementation: fedformer, device: gpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  itransformer: {family: deep, internal_version: v10, implementation: itransformer, device: gpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  patchtst: {family: deep, internal_version: v11, implementation: patchtst, device: gpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  dlinear: {family: deep, internal_version: v12, implementation: dlinear, device: gpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  timesnet: {family: deep, internal_version: v13, implementation: timesnet, device: gpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  tsmixer: {family: deep, internal_version: v14, implementation: tsmixer, device: gpu, tuning: true, implementation_status: pending_validation, official_eligible: false}
+  pinn:
+    family: experimental_constrained
+    internal_version: v15
+    implementation: pinn
+    device: gpu
+    tuning: false
+    implementation_status: experimental
+    official_eligible: false
+    constraints:
+      nonnegative: soft
+      clear_sky_upper_bound: disabled_pending_site_adaptation
+      kt_consistency_implemented: false
+groups:
+  cpu_baselines: [climatology, persistence, smart_persistence, optimal_convex, raw_gfs, bias_correction, linear_mos]
+  cpu_main: [climatology, persistence, smart_persistence, optimal_convex, raw_gfs, bias_correction, linear_mos, ridge_mos, lgbm, xgboost]
+  selected_models: [raw_gfs, ridge_mos, lgbm, xgboost]
+  deep_benchmark: [mlp, cnn, tcn, lstm, transformer, autoformer, informer, fedformer, itransformer, patchtst, dlinear, timesnet, tsmixer]
+  deep_all: [mlp, cnn, tcn, lstm, transformer, autoformer, informer, fedformer, itransformer, patchtst, dlinear, timesnet, tsmixer, pinn]
+search:
+  budget:
+    trials_per_model: 6
+    equal_budget: true
+    report_compute_budget: true
+    trial_definition: distinct_preregistered_hyperparameter_candidate
+    outer_validation_forbidden_during_selection: true
+    final_test_forbidden_during_selection: true
+  spaces:
+    ridge_mos: [{alpha: 0.00001}, {alpha: 0.001}, {alpha: 0.1}, {alpha: 1.0}, {alpha: 10.0}, {alpha: 1000.0}]
+    lgbm: [{learning_rate: 0.05, num_leaves: 31, max_depth: -1, subsample: 0.9, colsample_bytree: 0.9}, {learning_rate: 0.05, num_leaves: 63, max_depth: 8, subsample: 0.8, colsample_bytree: 0.8}, {learning_rate: 0.1, num_leaves: 31, max_depth: 8, subsample: 0.9, colsample_bytree: 0.8}, {learning_rate: 0.1, num_leaves: 63, max_depth: -1, subsample: 0.8, colsample_bytree: 0.9}, {learning_rate: 0.05, num_leaves: 127, max_depth: 12, subsample: 0.7, colsample_bytree: 0.7}, {learning_rate: 0.03, num_leaves: 63, max_depth: 10, subsample: 0.9, colsample_bytree: 0.9}]
+    xgboost: [{learning_rate: 0.05, max_depth: 6, subsample: 0.9, colsample_bytree: 0.9}, {learning_rate: 0.1, max_depth: 6, subsample: 0.8, colsample_bytree: 0.8}, {learning_rate: 0.05, max_depth: 8, subsample: 0.8, colsample_bytree: 0.7}, {learning_rate: 0.1, max_depth: 8, subsample: 0.9, colsample_bytree: 0.8}, {learning_rate: 0.08, max_depth: 7, subsample: 0.85, colsample_bytree: 0.8}, {learning_rate: 0.03, max_depth: 5, subsample: 0.9, colsample_bytree: 0.9}]
+    deep_shared_prototype: [{learning_rate: 0.0005, model_scale: small, dropout: 0.1}, {learning_rate: 0.001, model_scale: small, dropout: 0.1}, {learning_rate: 0.0005, model_scale: base, dropout: 0.1}, {learning_rate: 0.001, model_scale: base, dropout: 0.1}, {learning_rate: 0.0005, model_scale: small, dropout: 0.2}, {learning_rate: 0.001, model_scale: base, dropout: 0.2}]
