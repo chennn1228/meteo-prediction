@@ -22,25 +22,26 @@ CONFIG_NAMES = ("protocol", "data", "features", "sites", "models", "experiments"
 CONFIG_PATHS = {name: f"config/{name}.yaml" for name in CONFIG_NAMES}
 CONFIG_ROOT_KEYS = {
     "protocol": {
-        "target", "task", "status", "schema_version", "benchmark_version",
-        "scientific_argument", "development_period", "test_period", "validation",
+        "target", "development_period", "test_period", "validation",
         "probability", "evaluation", "daylight_definition", "execution_gate",
-        "seed_policy", "spatial_design", "evidence",
+        "seed_policy", "spatial_design",
     },
     "data": {
         "version", "forecast", "truth", "radiation_semantics",
         "requested_coordinates_role", "timezone", "tilt", "azimuth", "storage",
-        "receipt_required",
+        "receipt_required", "clean_contract",
     },
-    "features": {
-        "version", "feature_groups", "derived_features", "analysis_evidence",
-        "diagnostics", "policy",
-    },
+    "features": {"build", "analysis"},
     "sites": {"registry", "sets", "selectors"},
     "models": {"registry", "groups", "search"},
     "experiments": {"profiles"},
 }
 _SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
+
+
+def _tuning_enabled(record: Mapping[str, Any]) -> bool:
+    tuning = record.get("tuning")
+    return bool(tuning.get("enabled")) if isinstance(tuning, Mapping) else False
 
 
 class _UniqueKeyLoader(yaml.SafeLoader):
@@ -78,6 +79,22 @@ def _read_yaml(path: Path) -> dict[str, Any]:
     return value
 
 
+def read_resolved_run_config(path: Path) -> dict[str, Any]:
+    """Read a persisted resolved snapshot through the sole YAML parser."""
+    return _read_yaml(Path(path))
+
+
+def write_resolved_run_config(path: Path, config: "RunConfig") -> None:
+    """Create, never overwrite, one resolved run snapshot."""
+    path = Path(path)
+    if path.exists():
+        raise ConfigError(f"resolved configuration already exists: {path}")
+    path.write_text(
+        yaml.safe_dump(config.as_dict(), allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+
 def load_local_paths(root: Path | None = None) -> Mapping[str, Path]:
     """Resolve optional machine-only roots through the sole YAML reader."""
     root = (root or project_root()).resolve()
@@ -85,7 +102,8 @@ def load_local_paths(root: Path | None = None) -> Mapping[str, Path]:
     values: Mapping[str, Any] = {}
     if local_path.exists():
         local = _read_yaml(local_path)
-        if set(local) != {"paths"} or set(local["paths"]) - {"data_root", "outputs_root"}:
+        if (set(local) != {"paths"} or not isinstance(local.get("paths"), Mapping)
+                or set(local["paths"]) - {"data_root", "outputs_root"}):
             raise ConfigError("config/local.yaml may contain only paths.data_root and paths.outputs_root")
         values = local["paths"]
     resolved: dict[str, Path] = {}
@@ -126,19 +144,32 @@ def load_bundle(root_text: str | None = None) -> Mapping[str, Any]:
 def _validate_bundle(bundle: Mapping[str, Any]) -> None:
     manifest = bundle["manifest"]
     for name, expected in CONFIG_ROOT_KEYS.items():
+        if not isinstance(bundle[name], Mapping):
+            raise ConfigError(f"{name}.yaml must contain a mapping")
         actual = set(bundle[name])
         if actual != expected:
             raise ConfigError(
                 f"{name}.yaml top-level keys must be exactly {sorted(expected)}; "
                 f"missing={sorted(expected - actual)}, extra={sorted(actual - expected)}"
             )
-    protocol, data, features = bundle["protocol"], bundle["data"], bundle["features"]
+    protocol, data = bundle["protocol"], bundle["data"]
+    features = bundle["features"]["build"]
+    for value, label in ((manifest.get("project_id"), "project ID"),):
+        if not isinstance(value, str) or not _SAFE_ID.fullmatch(value):
+            raise ConfigError(f"unsafe {label}: {value!r}")
+    for section, label in ((bundle["sites"].get("registry"), "site"),
+                           (bundle["sites"].get("sets"), "site set"),
+                           (bundle["sites"].get("selectors"), "site selector"),
+                           (bundle["models"].get("registry"), "model"),
+                           (bundle["models"].get("groups"), "model group"),
+                           (bundle["experiments"].get("profiles"), "profile")):
+        if not isinstance(section, Mapping):
+            raise ConfigError(f"{label} registry must be a mapping")
+        unsafe = [key for key in section if not isinstance(key, str) or not _SAFE_ID.fullmatch(key)]
+        if unsafe:
+            raise ConfigError(f"unsafe {label} ID: {unsafe[0]!r}")
     if not isinstance(protocol.get("target"), str) or not protocol["target"]:
         raise ConfigError("protocol target must be declared")
-    if manifest["official_result_set"] is not None and protocol["status"] != "official":
-        raise ConfigError("an official result set cannot be registered under a non-official protocol")
-    if not all(isinstance(protocol.get(key), str) and protocol[key] for key in ("task", "schema_version", "benchmark_version")):
-        raise ConfigError("task and protocol artifact versions must be declared")
     if not isinstance(data.get("version"), str) or not data["version"]:
         raise ConfigError("data version must be declared in data.yaml")
     if not isinstance(features.get("version"), str) or not features["version"]:
@@ -171,6 +202,13 @@ def _validate_bundle(bundle: Mapping[str, Any]) -> None:
     if protocol.get("daylight_definition", {}).get("formal") != "solar_elevation_gt_0":
         raise ConfigError("formal daylight definition must be solar_elevation_gt_0")
     forecast = data.get("forecast", {})
+    if not isinstance(forecast, Mapping):
+        raise ConfigError("forecast must be a mapping")
+    expected_forecast = {"provider", "model", "product_class", "cell_selection", "source_grid_id_exposed", "resolution", "leads", "variables"}
+    if set(forecast) != expected_forecast:
+        raise ConfigError("forecast contains unknown or missing keys")
+    if forecast.get("cell_selection") not in {"land"} or forecast.get("resolution") not in {"hourly"}:
+        raise ConfigError("invalid forecast enum")
     if not forecast.get("variables") or len(forecast["variables"]) != len(set(forecast["variables"])):
         raise ConfigError("forecast variables must be declared in data.yaml")
     leads = forecast.get("leads", [])
@@ -212,7 +250,7 @@ def _validate_bundle(bundle: Mapping[str, Any]) -> None:
         raise ConfigError("search budget must define a positive trials_per_model")
     spaces = search.get("spaces", {})
     for model_id, spec in registry.items():
-        if not spec.get("tuning"):
+        if not _tuning_enabled(spec):
             continue
         space_id = model_id if model_id in spaces else "deep_shared_prototype" if spec.get("family") == "deep" else None
         if space_id is None or len(spaces[space_id]) != trials:
@@ -309,10 +347,17 @@ class RunConfig:
     protocol: Mapping[str, Any]
     data: Mapping[str, Any]
     features: Mapping[str, Any]
+    analysis: Mapping[str, Any]
     sites: Mapping[str, Any]
     models: Mapping[str, Any]
     selected_sites: tuple[str, ...]
     selected_models: tuple[str, ...]
+    selected_site_records: Mapping[str, Any]
+    selected_model_records: Mapping[str, Any]
+    selected_search_spaces: Mapping[str, Any]
+    scope: Mapping[str, Any]
+    site_registry_hash: str
+    model_registry_hash: str
     overrides: Mapping[str, Any]
     official_result_set: str | None
     locked_config_hash: str | None
@@ -323,8 +368,16 @@ class RunConfig:
             "project_id": self.project_id, "protocol_version": self.protocol_version,
             "profile": self.profile, "execution": self.execution,
             "protocol": self.protocol, "data": self.data, "features": self.features,
+            "analysis": self.analysis,
             "sites": self.sites, "models": self.models, "selected_sites": self.selected_sites,
-            "selected_models": self.selected_models, "overrides": self.overrides,
+            "selected_models": self.selected_models,
+            "selected_site_records": self.selected_site_records,
+            "selected_model_records": self.selected_model_records,
+            "selected_search_spaces": self.selected_search_spaces,
+            "scope": self.scope,
+            "site_registry_hash": self.site_registry_hash,
+            "model_registry_hash": self.model_registry_hash,
+            "overrides": self.overrides,
             "official_result_set": self.official_result_set,
             "locked_config_hash": self.locked_config_hash,
             "config_hash": self.config_hash,
@@ -343,8 +396,8 @@ def resolve_config(profile: str | None, *, root: Path | None = None, models: str
     raw_overrides = {key: value for key, value in {"models": models, "sites": sites, "site_set": site_set, "n_sites": n_sites, "gap_days": gap_days, "seed": seed}.items() if value is not None}
     if execution == "official" and raw_overrides:
         raise ConfigError("official runs prohibit CLI scientific overrides")
-    if sites is not None and (site_set is not None or n_sites is not None):
-        raise ConfigError("--sites cannot be combined with --site-set or --n-sites")
+    if sum(value is not None for value in (sites, site_set, n_sites)) > 1:
+        raise ConfigError("--sites, --site-set, and --n-sites cannot be combined")
     if n_sites is not None and int(n_sites) < 1:
         raise ConfigError("n_sites must be a positive integer")
     if seed is not None and int(seed) < 0:
@@ -394,6 +447,26 @@ def resolve_config(profile: str | None, *, root: Path | None = None, models: str
         protocol["validation"]["gap_days"] = protocol["validation"]["purge_hours"] // 24
     if seed is not None:
         protocol["seed_policy"]["run_seed"] = int(seed)
+    selected_site_records = {item: _plain(registry[item]) for item in chosen_sites}
+    selected_model_records = {item: _plain(model_registry[item]) for item in chosen_models}
+    all_spaces = bundle["models"]["search"]["spaces"]
+    selected_search_spaces = {
+        item: _plain(all_spaces[item] if item in all_spaces else
+                     all_spaces["deep_shared_prototype"])
+        for item in chosen_models
+        if _tuning_enabled(model_registry[item])
+    }
+    selected_models_config = {
+        "registry": selected_model_records,
+        "groups": {"selected": list(chosen_models)},
+        "search": {"budget": _plain(bundle["models"]["search"]["budget"]),
+                   "spaces": selected_search_spaces},
+    }
+    selector_id = (dict(chosen["sites"]).get("selector")
+                   if n_sites is not None or dict(chosen["sites"]).get("n_sites") is not None
+                   else None)
+    resolved_site_set = (site_set or dict(chosen["sites"]).get("value")
+                         if sites is None else None)
     payload = {
         "project_id": bundle["manifest"]["project_id"],
         "protocol_version": bundle["manifest"]["protocol_version"],
@@ -401,18 +474,33 @@ def resolve_config(profile: str | None, *, root: Path | None = None, models: str
         "execution": execution,
         "protocol": protocol,
         "data": _plain(bundle["data"]),
-        "features": _plain(bundle["features"]),
-        "sites": _plain(bundle["sites"]),
-        "models": _plain(bundle["models"]),
+        "features": _plain(bundle["features"]["build"]),
+        "analysis": _plain(bundle["features"]["analysis"]),
+        "sites": {"registry": selected_site_records},
+        "models": selected_models_config,
         "selected_sites": chosen_sites,
         "selected_models": chosen_models,
+        "selected_site_records": selected_site_records,
+        "selected_model_records": selected_model_records,
+        "selected_search_spaces": selected_search_spaces,
+        "scope": {
+            "site_set": resolved_site_set,
+            "selector": selector_id,
+            "selector_parameters": ({"n_sites": len(chosen_sites)} if selector_id else {}),
+            "model_group": dict(chosen["models"]).get("group"),
+            "spatial": bool(chosen.get("spatial", False)),
+        },
         "overrides": _plain(raw_overrides),
+    }
+    registry_hashes = {
+        "site_registry_hash": content_hash(_plain(bundle["sites"]["registry"]), length=64),
+        "model_registry_hash": content_hash(_plain(bundle["models"]["registry"]), length=64),
     }
     return RunConfig(
         config_hash=content_hash(payload),
         official_result_set=bundle["manifest"]["official_result_set"],
         locked_config_hash=chosen.get("locked_config_hash"),
-        **_freeze(payload),
+        **_freeze(payload), **registry_hashes,
     )
 
 

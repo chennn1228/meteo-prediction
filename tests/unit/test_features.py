@@ -36,7 +36,7 @@ class CoreFeatureMigrationTests(unittest.TestCase):
         for name in ("station_id", "location_id", "station_nanjing", "ghi_obs_sat"):
             with self.assertRaises(ProtocolError):
                 assert_model_features(
-                    ["ghi_fcst", name], BUNDLE["features"]["policy"])
+                    ["ghi_fcst", name], BUNDLE["features"]["build"]["policy"])
 
     def test_issue_time_and_circular_and_sunrise_stability(self):
         targets = pd.to_datetime(["2025-01-01T00:00:00Z", "2025-01-01T01:00:00Z",
@@ -59,14 +59,14 @@ class CoreFeatureMigrationTests(unittest.TestCase):
         })
         assert_forecast_issue_semantics(frame, BUNDLE["data"])
         result = build_forecast_features(
-            frame, data_config=BUNDLE["data"], feature_config=BUNDLE["features"]
+            frame, data_config=BUNDLE["data"], feature_config=BUNDLE["features"]["build"]
         )
         self.assertTrue(np.isnan(result.loc[0, "kt_raw"]))
         self.assertAlmostEqual(result.loc[1, "kt_raw"], 0.5)
         self.assertAlmostEqual(result.loc[1, "kt_model"], 0.5)
         frame.loc[1, "ghi_fcst"] = 400.0
         unbounded = build_forecast_features(
-            frame, data_config=BUNDLE["data"], feature_config=BUNDLE["features"]
+            frame, data_config=BUNDLE["data"], feature_config=BUNDLE["features"]["build"]
         )
         self.assertAlmostEqual(unbounded.loc[1, "kt_raw"], 2.0)
         self.assertAlmostEqual(unbounded.loc[1, "kt_model"], 2.0)
@@ -89,7 +89,7 @@ class CoreFeatureMigrationTests(unittest.TestCase):
             "forecast_issue_time_utc": pd.to_datetime(["2024-04-01T00:00:00Z"]),
             "ghi_fcst": [10000.0],
         })
-        prep = FoldPreprocessor(("ghi_fcst",), BUNDLE["features"]["policy"]).fit(
+        prep = FoldPreprocessor(("ghi_fcst",), BUNDLE["features"]["build"]["policy"]).fit(
             train, fit_end_utc="2024-03-02"
         )
         self.assertEqual(prep.train_rows, 2)
@@ -97,7 +97,7 @@ class CoreFeatureMigrationTests(unittest.TestCase):
         self.assertGreater(prep.transform(later).iloc[0, 0], 1000)
         with self.assertRaises(ProtocolError):
             FoldPreprocessor(
-                ("ghi_fcst",), BUNDLE["features"]["policy"]
+                ("ghi_fcst",), BUNDLE["features"]["build"]["policy"]
             ).fit(pd.concat([train, later]), fit_end_utc="2024-03-02")
 
 

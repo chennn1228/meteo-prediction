@@ -9,8 +9,9 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
-from nwp.core.config import ConfigError, load_bundle, project_root, to_plain
+from nwp.core.config import ConfigError, load_bundle, load_local_paths, project_root, to_plain
 from nwp.core.hashing import file_sha256
+from nwp.core.fingerprints import stable_object_hash
 from nwp.core.paths import RunPaths
 from nwp.core.provenance import read_receipt
 from nwp.core.schema import ContractError, assert_model_features
@@ -133,9 +134,9 @@ def validate_structural(root: Path | None = None) -> list[Check]:
     try:
         bundle = to_plain(load_bundle(str(root)))
         features = [
-            feature for values in bundle["features"]["feature_groups"].values()
+            feature for values in bundle["features"]["build"]["feature_groups"].values()
             for feature in values]
-        assert_model_features(features, bundle["features"]["policy"])
+        assert_model_features(features, bundle["features"]["build"]["policy"])
         require_official_chronology(bundle["protocol"])
     except (ConfigError, KeyError, TypeError, ValueError) as exc:
         return [Check("configuration and scientific invariants", False, str(exc))]
@@ -226,7 +227,7 @@ def validate_cpu_readiness(root: Path | None = None) -> list[Check]:
         "declared CPU models validated and official-eligible", not pending,
         f"pending={pending}", "cpu_ready"))
     accepted = [
-        path for path in (root / "outputs" / "development").glob("*/09_report/report.receipt.json")
+        path for path in (load_local_paths(root)["outputs_root"] / "development").glob("*/09_report/report.receipt.json")
         if path.is_file()]
     checks.append(Check(
         "receipt-backed real-data development mini-E2E accepted", bool(accepted),
@@ -307,4 +308,40 @@ def readiness_result(mode: str, root: Path | None = None) -> dict[str, Any]:
         "checks": [asdict(check) for check in checks],
         "passed": sum(check.passed for check in checks),
         "total": len(checks),
+    }
+
+
+def official_readiness_receipt(config: Any, root: Path | None = None) -> dict[str, Any]:
+    root = (root or project_root()).resolve()
+    checks = validate_official_readiness(root)
+    by_scope: dict[str, bool] = {}
+    for scope in ("structural", "data_ready", "cpu_ready", "deep_ready", "spatial_ready"):
+        scoped = [check.passed for check in checks if check.scope == scope]
+        by_scope[scope] = bool(scoped) and all(scoped)
+    bundle = to_plain(load_bundle(str(root)))
+    eligibility = {
+        model_id: bool(record["official_eligible"] and record["implementation_status"] == "validated")
+        for model_id, record in bundle["models"]["registry"].items()
+        if model_id in config.selected_models
+    }
+    registered = bundle["manifest"]["official_result_set"] is not None
+    provenance_ready = all(check.passed for check in checks
+                           if "provenance" in check.name or "receipt" in check.name)
+    environment_ready = all(check.passed for check in checks
+                            if "runtime" in check.name or "environment" in check.name)
+    overall = (all(by_scope.values()) and registered and provenance_ready
+               and environment_ready and all(eligibility.values()))
+    return {
+        "scientific_run_hash": stable_object_hash(config.protocol),
+        "structural_ready": by_scope["structural"],
+        "data_ready": by_scope["data_ready"],
+        "cpu_ready": by_scope["cpu_ready"],
+        "deep_ready": by_scope["deep_ready"],
+        "spatial_ready": by_scope["spatial_ready"],
+        "official_result_registered": registered,
+        "model_eligibility": eligibility,
+        "environment_ready": environment_ready,
+        "provenance_ready": provenance_ready,
+        "overall_ready": overall,
+        "checked_at": dt.datetime.now(dt.timezone.utc).isoformat(),
     }

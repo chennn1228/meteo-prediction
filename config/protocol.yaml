@@ -1,18 +1,4 @@
 target: ghi
-task: GFS GHI probabilistic post-processing
-status: provisional
-schema_version: 1.0.0
-benchmark_version: nested-purged-rolling-v1-pending
-scientific_argument:
-  claim: >-
-    In Jiangsu, the project will quantify the independent value of D+1/D+2/D+3
-    GFS GHI and the incremental value of increasingly complex post-processing.
-  evidence_status: >-
-    Existing month-balanced results are diagnostic only; official evidence must
-    be regenerated under the nested purged rolling-origin protocol.
-  boundary: >-
-    Conclusions apply to the Open-Meteo location-specific GFS product and cannot
-    be generalized to raw GFS GRIB cells until a separate raw-grid audit is run.
 development_period:
   start: "2024-02-01T00:00:00Z"
   end: "2025-08-31T23:59:59Z"
@@ -97,8 +83,5 @@ spatial_design:
   study_object: open_meteo_returned_service_points
   service_registry_status: empirical_probe_not_frozen
   empirical_probe_step_degrees: 0.05
-  empirical_probe_returned_distinct_count: 707
-  empirical_probe_returned_inside_jiangsu_count: 654
-  empirical_probe_returned_outside_jiangsu_count: 53
+  service_probe_registry: data/registry/service_probes/historical_summary.json
   convergence_required_before_official: true
-evidence: {}

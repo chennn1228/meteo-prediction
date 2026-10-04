@@ -17,7 +17,8 @@ from nwp.features.preprocessing import FoldCloudImputer, impute_cloud_forecast  
 
 
 CONFIG = to_plain(load_bundle())
-FEATURE_POLICY = CONFIG["features"]["policy"]
+FEATURE_CONFIG = CONFIG["features"]["build"]
+FEATURE_POLICY = FEATURE_CONFIG["policy"]
 
 
 def test_topk_lags_use_independent_shifts():
@@ -46,15 +47,15 @@ def test_all_registered_deep_architectures_build_and_emit_seven_quantiles():
 
 
 def test_identity_never_in_tree_or_linear_features():
-    names = [name for group in CONFIG["features"]["feature_groups"].values()
+    names = [name for group in FEATURE_CONFIG["feature_groups"].values()
              for name in group]
     frame = pd.DataFrame({name: [1., 2.] for name in names})
     frame["station_id"] = ["A", "B"]
     frame["location_id"] = ["x", "y"]
     frame["source_grid_id"] = ["g1", "g2"]
-    columns = formal_feature_columns(frame, CONFIG["features"])
+    columns = formal_feature_columns(frame, FEATURE_CONFIG)
     assert not any("station" in c or "location" in c or "grid_id" in c for c in columns)
-    assert not set(CONFIG["features"]["policy"]["identity_fields_forbidden"]) & set(columns)
+    assert not set(FEATURE_POLICY["identity_fields_forbidden"]) & set(columns)
 
 
 def test_whole_dataset_cloud_imputer_blocked_and_fit_boundary():

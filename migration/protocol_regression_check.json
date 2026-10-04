@@ -1,0 +1,10 @@
+{
+  "development_period": true,
+  "test_period": true,
+  "validation": true,
+  "probability": true,
+  "evaluation": true,
+  "daylight_definition": true,
+  "spatial_three_levels": true,
+  "spatial_semantics": true
+}

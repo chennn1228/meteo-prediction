@@ -48,7 +48,7 @@ class ServiceProbeRateLimitTests(unittest.TestCase):
             self.assertEqual(result["stopped_reason"], "provider_http_429")
             self.assertEqual(result["completed_batches"], 1)
             self.assertFalse(result["frozen"])
-            cached = Path(directory) / "04_service_probes" / "step_0.025" / "batch_00000.json"
+            cached = Path(directory) / "registry" / "service_probes" / "step_0.025" / "batch_00000.json"
             self.assertEqual(json.loads(cached.read_text(encoding="utf-8"))["returns"], [point])
             self.assertFalse(cached.with_name("batch_00001.json").exists())
 

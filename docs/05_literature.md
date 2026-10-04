@@ -17,7 +17,7 @@ the bibliography or invent citations.
 
 ## Index and verification
 
-The bibliographic index is `literature/00_index.md`; local source files remain
+The bibliographic index is [literature/00_index.md](../literature/00_index.md); local source files remain
 under `literature/`. Before manuscript use, verify title, authors, venue,
 publication year, DOI, exact supported claim, and whether the cited source was
 actually read. External literature supports method choice and positioning;

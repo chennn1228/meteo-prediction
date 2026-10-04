@@ -6,13 +6,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 from nwp.core.config import (
     ConfigError, assert_official_ready, load_bundle, load_local_paths,
-    project_root, resolve_config)
+    project_root, read_resolved_run_config, resolve_config)
 from nwp.core.context import RunContext
-from nwp.core.validation import readiness_result
+from nwp.core.lifecycle import transition
+from nwp.core.provenance import write_provenance
+from nwp.core.validation import official_readiness_receipt, readiness_result
 from nwp.data.audit import inventory_data, probe_service_round
 from nwp.workflow.pipeline import ALIASES, STAGES, run_pipeline
 
@@ -40,9 +40,8 @@ def _resume_config(run_id: str):
     if len(matches) != 1:
         raise ConfigError(
             f"run_id must resolve to exactly one development/official run: {run_id}")
-    saved = yaml.safe_load(
-        (matches[0] / "00_meta" / "resolved_config.yaml").read_text(
-            encoding="utf-8"))
+    saved = read_resolved_run_config(
+        matches[0] / "00_meta" / "resolved_config.yaml")
     if not isinstance(saved, dict) or not isinstance(saved.get("overrides"), dict):
         raise ConfigError("saved resolved configuration is malformed")
     overrides = saved["overrides"]
@@ -62,7 +61,6 @@ def _run(args: argparse.Namespace) -> int:
         raise ConfigError(f"nwp {args.command} requires --run-id")
     config = (_resume_config(args.run_id)
               if getattr(args, "run_id", None) else _resolve(args))
-    assert_official_ready(config)
     context = (RunContext.resume(
         project_root(), config, run_id=args.run_id,
         allow_model_execution=args.execute_model_stages)
@@ -70,6 +68,17 @@ def _run(args: argparse.Namespace) -> int:
         else RunContext.create(
             project_root(), config,
             allow_model_execution=args.execute_model_stages))
+    if config.execution == "official" and context.lifecycle_state == "CREATED":
+        receipt = official_readiness_receipt(config, project_root())
+        write_provenance(context.paths.meta_dir / "readiness_receipt.json", receipt)
+        if not receipt["overall_ready"]:
+            transition(context.paths.meta_dir / "status.json", "BLOCKED")
+            print(json.dumps({"run_id": context.run_id, "status": "BLOCKED",
+                              "readiness": receipt}, ensure_ascii=False, indent=2))
+            return 2
+        transition(context.paths.meta_dir / "status.json", "RUNNING")
+        context.lifecycle_state = "RUNNING"
+        assert_official_ready(config, readiness_passed=True)
     statuses = run_pipeline(context, from_stage=args.from_stage, to_stage=args.to_stage)
     print(json.dumps({"run_id": context.run_id, "run_path": str(context.paths.run_root), "stages": {key: value["status"] for key, value in statuses.items()}}, ensure_ascii=False, indent=2))
     acceptable = {"success", "reused", "skipped"}
@@ -92,7 +101,6 @@ def main(argv: list[str] | None = None) -> int:
     data = sub.add_parser("data", help="data catalog and audit operations")
     data_sub = data.add_subparsers(dest="data_command", required=True)
     inventory = data_sub.add_parser("inventory", help="hash and classify every data file")
-    inventory.add_argument("--quarantine-unknown", action="store_true")
     probe = data_sub.add_parser(
         "probe-service", help="run a budgeted returned-service-point probe")
     probe.add_argument("--step", type=float, required=True)
@@ -125,9 +133,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "data":
             root = project_root()
             if args.data_command == "inventory":
-                payload = inventory_data(
-                    root / "data",
-                    quarantine_unknown=args.quarantine_unknown)
+                payload = inventory_data(root / "data")
             else:
                 bundle = load_bundle(str(root))
                 payload = probe_service_round(
@@ -135,8 +141,8 @@ def main(argv: list[str] | None = None) -> int:
                     max_new_batches=args.max_new_batches,
                     data_root=root / "data",
                     boundary_path=(
-                        args.boundary or root / "data" / "00_geo" /
-                        "jiangsu.geojson"),
+                        args.boundary or load_local_paths(root)["data_root"] /
+                        "registry" / "geography" / "jiangsu.geojson"),
                     model=bundle["data"]["forecast"]["model"])
             print(json.dumps(payload, ensure_ascii=False, indent=2))
             return 0
@@ -147,7 +153,7 @@ def main(argv: list[str] | None = None) -> int:
             args.to_stage = args.command
             return _run(args)
         bundle = load_bundle(str(project_root()))
-        print(json.dumps({"profiles": sorted(bundle["experiments"]["profiles"]), "outputs_root": str(project_root() / "outputs")}, ensure_ascii=False, indent=2))
+        print(json.dumps({"profiles": sorted(bundle["experiments"]["profiles"]), "outputs_root": str(load_local_paths(project_root())["outputs_root"])}, ensure_ascii=False, indent=2))
         return 0
     except (ConfigError, ValueError) as exc:
         parser.error(str(exc))

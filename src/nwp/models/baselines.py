@@ -12,19 +12,6 @@ from nwp.features.preprocessing import fit_fold_preprocessing
 from .base import BaseModel, ModelError
 
 
-FIXED_MODEL_IDS = frozenset(
-    {
-        "climatology",
-        "persistence",
-        "smart_persistence",
-        "optimal_convex",
-        "raw_gfs",
-        "bias_correction",
-        "linear_mos",
-    }
-)
-
-
 def _hour_month(frame: pd.DataFrame) -> pd.DataFrame:
     target = pd.to_datetime(frame["target_time_utc"], utc=True).dt.tz_convert(
         "Asia/Shanghai"
@@ -126,10 +113,8 @@ def predict_fixed_cpu(
     feature_config: Mapping[str, Any],
 ) -> tuple[np.ndarray, dict[str, Any]]:
     """Return fixed predictions and transparent fit metadata."""
-    if model_id not in FIXED_MODEL_IDS:
-        raise ModelError(f"not a fixed CPU model: {model_id}")
     entry = model_config["registry"][model_id]
-    if entry["tuning"]:
+    if entry["tuning"]["enabled"]:
         raise ModelError("fixed model cannot require candidate tuning")
     if fit.empty or score.empty or "y" not in fit:
         raise ModelError("nonempty fit/score and fit truth required")
@@ -279,3 +264,11 @@ class UnavailableBaseline(BaseModel):
 
     def predict(self, features: Any) -> np.ndarray:
         raise ModelError(f"{self.model_id} has no validated unified implementation")
+
+
+BASELINE_IMPLEMENTATIONS = {
+    name: FixedBaselineModel for name in (
+        "climatology", "persistence", "smart_persistence", "optimal_convex",
+        "raw_gfs", "bias_correction", "linear",
+    )
+}

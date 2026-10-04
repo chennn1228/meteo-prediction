@@ -51,7 +51,9 @@ def test_site_override_forms_cannot_conflict():
         resolve_config("cpu_20site", sites="nanjing_1", n_sites=1)
     with pytest.raises(ConfigError, match="cannot be combined"):
         resolve_config("cpu_20site", sites="nanjing_1", site_set="training_20")
-    selected = resolve_config("nanjing_cpu_diagnostic", site_set="training_20", n_sites=5)
+    with pytest.raises(ConfigError, match="cannot be combined"):
+        resolve_config("nanjing_cpu_diagnostic", site_set="training_20", n_sites=5)
+    selected = resolve_config("cpu_20site", n_sites=5)
     assert len(selected.selected_sites) == 5
 
 
@@ -68,8 +70,7 @@ def test_official_cli_scientific_override_and_unlocked_profile_are_rejected():
         resolve_config("official_cpu_20site", models="raw_gfs")
     with pytest.raises(ConfigError, match="locked_config_hash"):
         assert_official_ready(resolve_config("official_cpu_20site"))
-    with pytest.raises(SystemExit):
-        main(["run", "--profile", "official_cpu_20site", "--to-stage", "selection"])
+    assert main(["run", "--profile", "official_cpu_20site", "--to-stage", "selection"]) == 2
 
 
 def test_official_gate_requires_validated_models_readiness_and_result_registration():

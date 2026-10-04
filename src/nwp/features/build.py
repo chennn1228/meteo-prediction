@@ -7,6 +7,7 @@ from typing import Any, Mapping
 import pandas as pd
 
 from nwp.core.hashing import content_hash, file_sha256
+from nwp.core.fingerprints import environment_fingerprint, source_files_fingerprint
 from nwp.core.paths import RunPaths
 from nwp.core.provenance import make_receipt, read_receipt, write_receipt
 from nwp.core.schema import ContractError
@@ -32,7 +33,9 @@ def prepare_formal_features(
         raise ContractError(
             "issue-time alias is unsupported; use forecast_issue_time_utc"
         )
-    physical = add_returned_service_physics(cleaned)
+    physical = add_returned_service_physics(
+        cleaned, clear_sky_model=str(feature_config["clear_sky"]["model"])
+    )
     featured = build_forecast_features(
         physical, data_config=data_config, feature_config=feature_config
     )
@@ -139,6 +142,15 @@ def build_feature_month(
         data_version=data_config["version"],
         issue_time_field="forecast_issue_time_utc",
         physical_coordinate_basis="gfs_service_coordinates",
+        upstream_artifact_ids=[clean_record.dataset_id],
+        upstream_sha256=input_hashes,
+        dependency_fingerprint=dependency_hash,
+        implementation_fingerprint=source_files_fingerprint(
+            paths.root, ("src/nwp/features/build.py", "src/nwp/features/engineering.py",
+                         "src/nwp/features/physics.py", "src/nwp/features/preprocessing.py")),
+        environment_fingerprint=environment_fingerprint(
+            ("numpy", "pandas", "pyarrow", "pvlib")),
+        output_sha256=output_hash,
     )
     write_receipt(receipt_path, receipt)
     record = DatasetRecord(

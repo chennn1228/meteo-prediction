@@ -50,7 +50,7 @@ class ReturnedServicePhysicsTests(unittest.TestCase):
         import pvlib
         times = pd.DatetimeIndex(["2026-04-12T22:00:00Z"])
         site = pvlib.location.Location(31.923203, 118.59375, altitude=16, tz="UTC")
-        result = preceding_hour_solar_geometry(times, site)
+        result = preceding_hour_solar_geometry(times, site, clear_sky_model="ineichen")
         endpoint = site.get_solarposition(times)["apparent_elevation"].iloc[0]
         midpoint = site.get_solarposition(times - pd.Timedelta(minutes=30))["apparent_elevation"].iloc[0]
         self.assertAlmostEqual(result["solar_elevation"][0], midpoint)
@@ -63,10 +63,10 @@ class ReturnedServicePhysicsTests(unittest.TestCase):
         second["requested_longitude"] = 119.5
         try:
             left, names = prepare_formal_features(
-                first, data_config=BUNDLE["data"], feature_config=BUNDLE["features"]
+                first, data_config=BUNDLE["data"], feature_config=BUNDLE["features"]["build"]
             )
             right, same_names = prepare_formal_features(
-                second, data_config=BUNDLE["data"], feature_config=BUNDLE["features"]
+                second, data_config=BUNDLE["data"], feature_config=BUNDLE["features"]["build"]
             )
         except ModuleNotFoundError as exc:
             if exc.name == "pvlib":
@@ -81,7 +81,7 @@ class ReturnedServicePhysicsTests(unittest.TestCase):
     def test_no_requested_coordinate_fallback(self):
         frame = _clean_sample().drop(columns=["gfs_service_latitude"])
         with self.assertRaisesRegex(ValueError, "returned GFS"):
-            add_returned_service_physics(frame)
+            add_returned_service_physics(frame, clear_sky_model="ineichen")
 
 
 if __name__ == "__main__":

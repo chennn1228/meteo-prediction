@@ -29,3 +29,8 @@ storage:
   feature_partitioning: [feature_hash, site, month]
   raw_overwrite_forbidden: true
 receipt_required: true
+clean_contract:
+  radiation_negative_policy: clip_to_zero
+  cloud_range: [0, 100]
+  missing_policy: preserve_and_report
+  row_unit: site_target_time_lead

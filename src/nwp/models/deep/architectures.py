@@ -9,7 +9,7 @@ import torch.nn.functional as F
 
 
 class MLP(nn.Module):
-    def __init__(self, c_in, out_dim=7, seq_len=168):
+    def __init__(self, c_in, out_dim=None, seq_len=None):
         super().__init__()
         self.net = nn.Sequential(
             nn.Flatten(), nn.Linear(seq_len * c_in, 256), nn.ReLU(),
@@ -21,7 +21,7 @@ class MLP(nn.Module):
 
 
 class LSTM(nn.Module):
-    def __init__(self, c_in, out_dim=7, seq_len=168):
+    def __init__(self, c_in, out_dim=None, seq_len=None):
         super().__init__()
         del seq_len
         self.rnn = nn.LSTM(c_in, 64, num_layers=2, batch_first=True,
@@ -34,7 +34,7 @@ class LSTM(nn.Module):
 
 
 class CNN(nn.Module):
-    def __init__(self, c_in, out_dim=7, seq_len=168):
+    def __init__(self, c_in, out_dim=None, seq_len=None):
         super().__init__()
         del seq_len
         self.net = nn.Sequential(
@@ -48,7 +48,7 @@ class CNN(nn.Module):
 
 
 class TCN(nn.Module):
-    def __init__(self, c_in, out_dim=7, seq_len=168):
+    def __init__(self, c_in, out_dim=None, seq_len=None):
         super().__init__()
         del seq_len
         self.net = nn.Sequential(
@@ -63,7 +63,7 @@ class TCN(nn.Module):
 
 
 class Transformer(nn.Module):
-    def __init__(self, c_in, out_dim=7, seq_len=168, n_heads=4, layers=2):
+    def __init__(self, c_in, out_dim=None, seq_len=None, n_heads=4, layers=2):
         super().__init__()
         self.proj = nn.Linear(c_in, 64)
         self.pos = nn.Parameter(torch.zeros(1, seq_len, 64))
@@ -77,7 +77,7 @@ class Transformer(nn.Module):
 
 
 class DLinear(nn.Module):
-    def __init__(self, c_in, out_dim=7, seq_len=168):
+    def __init__(self, c_in, out_dim=None, seq_len=None):
         super().__init__()
         self.trend = nn.Linear(seq_len, 1)
         self.season = nn.Linear(seq_len, 1)
@@ -91,7 +91,7 @@ class DLinear(nn.Module):
 
 
 class TSMixer(nn.Module):
-    def __init__(self, c_in, out_dim=7, seq_len=168):
+    def __init__(self, c_in, out_dim=None, seq_len=None):
         super().__init__()
         self.time = nn.Sequential(nn.Linear(seq_len, 32), nn.ReLU(),
                                   nn.Linear(32, seq_len))
@@ -107,7 +107,7 @@ class TSMixer(nn.Module):
 
 
 class ITransformer(nn.Module):
-    def __init__(self, c_in, out_dim=7, seq_len=168):
+    def __init__(self, c_in, out_dim=None, seq_len=None):
         super().__init__()
         self.proj = nn.Linear(seq_len, 64)
         layer = nn.TransformerEncoderLayer(
@@ -191,8 +191,8 @@ class AutoformerLayer(nn.Module):
 
 
 class Autoformer(nn.Module):
-    def __init__(self, c_in, out_dim=7, d_model=64, layers=2,
-                 n_heads=4, seq_len=168):
+    def __init__(self, c_in, out_dim=None, d_model=64, layers=2,
+                 n_heads=4, seq_len=None):
         super().__init__()
         self.proj = nn.Linear(c_in, d_model)
         self.pos = nn.Parameter(torch.zeros(1, seq_len, d_model))
@@ -249,8 +249,8 @@ class Distill(nn.Module):
 
 
 class Informer(nn.Module):
-    def __init__(self, c_in, out_dim=7, d_model=64, layers=2,
-                 n_heads=4, seq_len=168):
+    def __init__(self, c_in, out_dim=None, d_model=64, layers=2,
+                 n_heads=4, seq_len=None):
         super().__init__()
         self.proj = nn.Linear(c_in, d_model)
         self.pos = nn.Parameter(torch.zeros(1, seq_len, d_model))
@@ -290,7 +290,7 @@ class FrequencyBlock(nn.Module):
 
 
 class FEDformer(nn.Module):
-    def __init__(self, c_in, out_dim=7, d_model=64, layers=2, seq_len=168):
+    def __init__(self, c_in, out_dim=None, d_model=64, layers=2, seq_len=None):
         super().__init__()
         self.proj = nn.Linear(c_in, d_model)
         self.pos = nn.Parameter(torch.zeros(1, seq_len, d_model))
@@ -310,8 +310,8 @@ class FEDformer(nn.Module):
 
 
 class PatchTST(nn.Module):
-    def __init__(self, c_in, out_dim=7, patch=16, stride=8, d_model=128,
-                 layers=3, n_heads=8, seq_len=168):
+    def __init__(self, c_in, out_dim=None, patch=16, stride=8, d_model=128,
+                 layers=3, n_heads=8, seq_len=None):
         super().__init__()
         del seq_len
         self.patch, self.stride = patch, stride
@@ -343,8 +343,8 @@ class InceptionBlock(nn.Module):
 
 
 class TimesNet(nn.Module):
-    def __init__(self, c_in, out_dim=7, k_periods=3, d_model=32,
-                 seq_len=168):
+    def __init__(self, c_in, out_dim=None, k_periods=3, d_model=32,
+                 seq_len=None):
         super().__init__()
         del d_model, seq_len
         self.periods, self.channels = k_periods, c_in
@@ -374,7 +374,7 @@ class TimesNet(nn.Module):
 
 
 class PINN(nn.Module):
-    def __init__(self, c_in, out_dim=7, hidden=256, seq_len=168):
+    def __init__(self, c_in, out_dim=None, hidden=256, seq_len=None):
         super().__init__()
         self.net = nn.Sequential(
             nn.Flatten(), nn.Linear(seq_len * c_in, hidden), nn.GELU(),
@@ -398,8 +398,7 @@ ARCHITECTURES = {
 }
 
 
-def build_deep_model(name: str, c_in: int, *, seq_len: int = 168,
-                     out_dim: int = 7):
+def build_deep_model(name: str, c_in: int, *, seq_len: int, out_dim: int):
     try:
         architecture = ARCHITECTURES[name]
     except KeyError as exc:

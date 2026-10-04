@@ -1,0 +1,484 @@
+{
+  "groups": {
+    "cpu_baselines": [
+      "climatology",
+      "persistence",
+      "smart_persistence",
+      "optimal_convex",
+      "raw_gfs",
+      "bias_correction",
+      "linear_mos"
+    ],
+    "cpu_main": [
+      "climatology",
+      "persistence",
+      "smart_persistence",
+      "optimal_convex",
+      "raw_gfs",
+      "bias_correction",
+      "linear_mos",
+      "ridge_mos",
+      "lgbm",
+      "xgboost"
+    ],
+    "deep_all": [
+      "mlp",
+      "cnn",
+      "tcn",
+      "lstm",
+      "transformer",
+      "autoformer",
+      "informer",
+      "fedformer",
+      "itransformer",
+      "patchtst",
+      "dlinear",
+      "timesnet",
+      "tsmixer",
+      "pinn"
+    ],
+    "deep_benchmark": [
+      "mlp",
+      "cnn",
+      "tcn",
+      "lstm",
+      "transformer",
+      "autoformer",
+      "informer",
+      "fedformer",
+      "itransformer",
+      "patchtst",
+      "dlinear",
+      "timesnet",
+      "tsmixer"
+    ],
+    "selected_models": [
+      "raw_gfs",
+      "ridge_mos",
+      "lgbm",
+      "xgboost"
+    ]
+  },
+  "registry": {
+    "autoformer": {
+      "device": "gpu",
+      "family": "deep",
+      "implementation": "autoformer",
+      "implementation_status": "pending_validation",
+      "internal_version": "v7",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "bias_correction": {
+      "device": "cpu",
+      "family": "statistical",
+      "implementation": "bias_correction",
+      "implementation_status": "pending_validation",
+      "official_eligible": false,
+      "role": "value_ladder",
+      "tuning": {
+        "enabled": false
+      }
+    },
+    "climatology": {
+      "device": "cpu",
+      "family": "baseline",
+      "implementation": "climatology",
+      "implementation_status": "pending_validation",
+      "official_eligible": false,
+      "role": "value_ladder",
+      "tuning": {
+        "enabled": false
+      }
+    },
+    "cnn": {
+      "device": "gpu",
+      "family": "deep",
+      "implementation": "cnn",
+      "implementation_status": "pending_validation",
+      "internal_version": "v3",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "dlinear": {
+      "device": "gpu",
+      "family": "deep",
+      "implementation": "dlinear",
+      "implementation_status": "pending_validation",
+      "internal_version": "v12",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "fedformer": {
+      "device": "gpu",
+      "family": "deep",
+      "implementation": "fedformer",
+      "implementation_status": "pending_validation",
+      "internal_version": "v9",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "informer": {
+      "device": "gpu",
+      "family": "deep",
+      "implementation": "informer",
+      "implementation_status": "pending_validation",
+      "internal_version": "v8",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "itransformer": {
+      "device": "gpu",
+      "family": "deep",
+      "implementation": "itransformer",
+      "implementation_status": "pending_validation",
+      "internal_version": "v10",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "lgbm": {
+      "algorithm": "lgbm",
+      "device": "cpu",
+      "family": "tree_ml",
+      "implementation": "lightgbm",
+      "implementation_status": "pending_validation",
+      "official_eligible": false,
+      "quantile_adapter": "tree",
+      "role": "value_ladder",
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "linear_mos": {
+      "device": "cpu",
+      "family": "statistical",
+      "implementation": "linear",
+      "implementation_status": "pending_validation",
+      "official_eligible": false,
+      "role": "value_ladder",
+      "tuning": {
+        "enabled": false
+      }
+    },
+    "lstm": {
+      "device": "gpu",
+      "family": "deep",
+      "implementation": "lstm",
+      "implementation_status": "pending_validation",
+      "internal_version": "v5",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "mlp": {
+      "device": "gpu",
+      "family": "deep",
+      "implementation": "mlp",
+      "implementation_status": "pending_validation",
+      "internal_version": "v2",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "optimal_convex": {
+      "device": "cpu",
+      "family": "baseline",
+      "implementation": "optimal_convex",
+      "implementation_status": "pending_validation",
+      "official_eligible": false,
+      "role": "value_ladder",
+      "tuning": {
+        "enabled": false
+      }
+    },
+    "patchtst": {
+      "device": "gpu",
+      "family": "deep",
+      "implementation": "patchtst",
+      "implementation_status": "pending_validation",
+      "internal_version": "v11",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "persistence": {
+      "device": "cpu",
+      "family": "baseline",
+      "implementation": "persistence",
+      "implementation_status": "pending_validation",
+      "official_eligible": false,
+      "role": "value_ladder",
+      "tuning": {
+        "enabled": false
+      }
+    },
+    "pinn": {
+      "constraints": {
+        "clear_sky_upper_bound": "disabled_pending_site_adaptation",
+        "kt_consistency_implemented": false,
+        "nonnegative": "soft"
+      },
+      "device": "gpu",
+      "family": "experimental_constrained",
+      "implementation": "pinn",
+      "implementation_status": "experimental",
+      "internal_version": "v15",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": false
+      }
+    },
+    "raw_gfs": {
+      "device": "cpu",
+      "family": "raw",
+      "implementation": "raw_gfs",
+      "implementation_status": "validated",
+      "official_eligible": true,
+      "role": "value_ladder",
+      "tuning": {
+        "enabled": false
+      }
+    },
+    "ridge_mos": {
+      "device": "cpu",
+      "family": "statistical",
+      "implementation": "ridge",
+      "implementation_status": "pending_validation",
+      "official_eligible": false,
+      "quantile_adapter": "ridge",
+      "role": "value_ladder",
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "smart_persistence": {
+      "device": "cpu",
+      "family": "baseline",
+      "implementation": "smart_persistence",
+      "implementation_status": "pending_validation",
+      "official_eligible": false,
+      "role": "value_ladder",
+      "tuning": {
+        "enabled": false
+      }
+    },
+    "tcn": {
+      "device": "gpu",
+      "family": "deep",
+      "implementation": "tcn",
+      "implementation_status": "pending_validation",
+      "internal_version": "v4",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "timesnet": {
+      "device": "gpu",
+      "family": "deep",
+      "implementation": "timesnet",
+      "implementation_status": "pending_validation",
+      "internal_version": "v13",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "transformer": {
+      "device": "gpu",
+      "family": "deep",
+      "implementation": "transformer",
+      "implementation_status": "pending_validation",
+      "internal_version": "v6",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "tsmixer": {
+      "device": "gpu",
+      "family": "deep",
+      "implementation": "tsmixer",
+      "implementation_status": "pending_validation",
+      "internal_version": "v14",
+      "official_eligible": false,
+      "tuning": {
+        "enabled": true
+      }
+    },
+    "xgboost": {
+      "algorithm": "xgboost",
+      "device": "cpu",
+      "family": "tree_ml",
+      "implementation": "xgboost",
+      "implementation_status": "pending_validation",
+      "official_eligible": false,
+      "quantile_adapter": "tree",
+      "role": "value_ladder",
+      "tuning": {
+        "enabled": true
+      }
+    }
+  },
+  "search": {
+    "budget": {
+      "equal_budget": true,
+      "final_test_forbidden_during_selection": true,
+      "outer_validation_forbidden_during_selection": true,
+      "report_compute_budget": true,
+      "trial_definition": "distinct_preregistered_hyperparameter_candidate",
+      "trials_per_model": 6
+    },
+    "spaces": {
+      "deep_shared_prototype": [
+        {
+          "dropout": 0.1,
+          "learning_rate": 0.0005,
+          "model_scale": "small"
+        },
+        {
+          "dropout": 0.1,
+          "learning_rate": 0.001,
+          "model_scale": "small"
+        },
+        {
+          "dropout": 0.1,
+          "learning_rate": 0.0005,
+          "model_scale": "base"
+        },
+        {
+          "dropout": 0.1,
+          "learning_rate": 0.001,
+          "model_scale": "base"
+        },
+        {
+          "dropout": 0.2,
+          "learning_rate": 0.0005,
+          "model_scale": "small"
+        },
+        {
+          "dropout": 0.2,
+          "learning_rate": 0.001,
+          "model_scale": "base"
+        }
+      ],
+      "lgbm": [
+        {
+          "colsample_bytree": 0.9,
+          "learning_rate": 0.05,
+          "max_depth": -1,
+          "num_leaves": 31,
+          "subsample": 0.9
+        },
+        {
+          "colsample_bytree": 0.8,
+          "learning_rate": 0.05,
+          "max_depth": 8,
+          "num_leaves": 63,
+          "subsample": 0.8
+        },
+        {
+          "colsample_bytree": 0.8,
+          "learning_rate": 0.1,
+          "max_depth": 8,
+          "num_leaves": 31,
+          "subsample": 0.9
+        },
+        {
+          "colsample_bytree": 0.9,
+          "learning_rate": 0.1,
+          "max_depth": -1,
+          "num_leaves": 63,
+          "subsample": 0.8
+        },
+        {
+          "colsample_bytree": 0.7,
+          "learning_rate": 0.05,
+          "max_depth": 12,
+          "num_leaves": 127,
+          "subsample": 0.7
+        },
+        {
+          "colsample_bytree": 0.9,
+          "learning_rate": 0.03,
+          "max_depth": 10,
+          "num_leaves": 63,
+          "subsample": 0.9
+        }
+      ],
+      "ridge_mos": [
+        {
+          "alpha": 1e-05
+        },
+        {
+          "alpha": 0.001
+        },
+        {
+          "alpha": 0.1
+        },
+        {
+          "alpha": 1.0
+        },
+        {
+          "alpha": 10.0
+        },
+        {
+          "alpha": 1000.0
+        }
+      ],
+      "xgboost": [
+        {
+          "colsample_bytree": 0.9,
+          "learning_rate": 0.05,
+          "max_depth": 6,
+          "subsample": 0.9
+        },
+        {
+          "colsample_bytree": 0.8,
+          "learning_rate": 0.1,
+          "max_depth": 6,
+          "subsample": 0.8
+        },
+        {
+          "colsample_bytree": 0.7,
+          "learning_rate": 0.05,
+          "max_depth": 8,
+          "subsample": 0.8
+        },
+        {
+          "colsample_bytree": 0.8,
+          "learning_rate": 0.1,
+          "max_depth": 8,
+          "subsample": 0.9
+        },
+        {
+          "colsample_bytree": 0.8,
+          "learning_rate": 0.08,
+          "max_depth": 7,
+          "subsample": 0.85
+        },
+        {
+          "colsample_bytree": 0.9,
+          "learning_rate": 0.03,
+          "max_depth": 5,
+          "subsample": 0.9
+        }
+      ]
+    }
+  }
+}

@@ -192,13 +192,19 @@ def read_receipt(path: Path) -> dict[str, Any]:
     return receipt
 
 
-def write_run_provenance(path: Path, *, root: Path, run_id: str, config_hash: str, execution_level: str) -> dict[str, Any]:
+def write_run_provenance(path: Path, *, root: Path, run_id: str, config_hash: str,
+                         execution_level: str, parent_run_id: str | None = None,
+                         change_reason: str | None = None,
+                         changed_dependencies: list[str] | None = None) -> dict[str, Any]:
     if not run_id:
         raise ContractError("run_id is required for run provenance")
     payload = {
         "run_id": run_id,
         "config_hash": config_hash,
         "execution_level": execution_level,
+        "parent_run_id": parent_run_id,
+        "change_reason": change_reason,
+        "changed_dependencies": list(changed_dependencies or []),
         **runtime_provenance(root),
     }
     _write_new_json(path, payload)

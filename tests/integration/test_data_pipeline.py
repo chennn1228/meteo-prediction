@@ -104,7 +104,7 @@ def test_three_source_month_builds_receipted_clean_partition(tmp_path):
         month="2024-02",
         clean_config_hash=record.config_hash,
         data_config=data_config,
-        feature_config=bundle["features"],
+        feature_config=bundle["features"]["build"],
         paths=paths,
         catalog=catalog,
     )
@@ -121,7 +121,7 @@ def test_three_source_month_builds_receipted_clean_partition(tmp_path):
         month="2024-02",
         clean_config_hash=record.config_hash,
         data_config=data_config,
-        feature_config=bundle["features"],
+        feature_config=bundle["features"]["build"],
         paths=paths,
         catalog=catalog,
     ) == feature_record

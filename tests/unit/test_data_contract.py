@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import inspect
 
 import pytest
 
@@ -91,8 +92,7 @@ def test_inventory_hashes_and_classifies_without_deletion(tmp_path):
     assert counts["KEEP"] == 1
     assert raw.exists()
     assert (root / "data_inventory.csv").exists()
-    with pytest.raises(ContractError, match="automatic quarantine is disabled"):
-        inventory_data(root, quarantine_unknown=True)
+    assert "quarantine_unknown" not in inspect.signature(inventory_data).parameters
 
 
 def test_inventory_marks_numbered_layout_for_move_and_registry_for_keep(tmp_path):
@@ -185,8 +185,11 @@ def test_fetch_writes_and_reuses_immutable_raw_receipt_pair(tmp_path):
     assert not first.reused
     assert len(calls) == 1
     receipt = json.loads(first.receipt_path.read_text(encoding="utf-8"))
-    assert receipt["requested_site"]["site_id"] == "nanjing_1"
-    assert receipt["returned_coordinates"]["latitude"] == payload["latitude"]
+    assert receipt["requested_latitude"] == site["lat"]
+    assert receipt["requested_longitude"] == site["lon"]
+    assert receipt["returned_service_latitude"] == payload["latitude"]
+    assert receipt["returned_service_longitude"] == payload["longitude"]
+    assert receipt["returned_service_latitude"] == payload["latitude"]
     assert receipt["row_count"] == 24
     assert receipt["data_sha256"] == first.sha256
 

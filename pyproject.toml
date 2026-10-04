@@ -6,6 +6,21 @@ build-backend = "setuptools.build_meta"
 name = "nwp-postprocessing"
 version = "0.1.0"
 requires-python = ">=3.10"
+dependencies = [
+  "numpy",
+  "pandas",
+  "scipy",
+  "pyarrow",
+  "pvlib",
+  "matplotlib",
+  "PyYAML",
+  "shapely",
+]
+
+[project.optional-dependencies]
+cpu = ["scikit-learn", "lightgbm", "xgboost", "shap"]
+deep = ["torch"]
+dev = ["pytest"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

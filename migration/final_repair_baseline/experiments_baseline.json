@@ -1,0 +1,52 @@
+{
+  "profiles": {
+    "cpu_20site": {
+      "cohort": "configured_20_sites_with_returned_service_coordinates",
+      "execution": "development",
+      "models": {
+        "group": "cpu_main"
+      },
+      "sites": {
+        "selector": "density",
+        "type": "set",
+        "value": "training_20"
+      },
+      "spatial": false
+    },
+    "nanjing_cpu_diagnostic": {
+      "execution": "development",
+      "models": {
+        "group": "cpu_main"
+      },
+      "sites": {
+        "type": "set",
+        "value": "diagnostic_nanjing"
+      },
+      "spatial": false
+    },
+    "official_cpu_20site": {
+      "execution": "official",
+      "locked_config_hash": null,
+      "models": {
+        "group": "cpu_main"
+      },
+      "sites": {
+        "selector": "density",
+        "type": "set",
+        "value": "training_20"
+      },
+      "spatial": false
+    },
+    "spatial_density": {
+      "execution": "development",
+      "models": {
+        "group": "selected_models"
+      },
+      "sites": {
+        "n_sites": 10,
+        "selector": "density"
+      },
+      "spatial": true
+    }
+  }
+}

@@ -6,8 +6,7 @@ profiles:
     spatial: false
   cpu_20site:
     execution: development
-    cohort: configured_20_sites_with_returned_service_coordinates
-    sites: {type: set, value: training_20, selector: density}
+    sites: {type: set, value: training_20}
     models: {group: cpu_main}
     spatial: false
   spatial_density:
@@ -17,7 +16,7 @@ profiles:
     spatial: true
   official_cpu_20site:
     execution: official
-    sites: {type: set, value: training_20, selector: density}
+    sites: {type: set, value: training_20}
     models: {group: cpu_main}
     spatial: false
     locked_config_hash: null

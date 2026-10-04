@@ -2,8 +2,8 @@
 
 | date | change | commit/tag | summary |
 |---|---|---|---|
-| 2026-10-02 | pre-refactor freeze | `pre-nwp-refactor-20261002` | Tracked source, configuration, documentation, figures, and reports before the unified refactor. |
-| 2026-10-03 | unified repository refactor | `codex/nwp-unified-refactor` | Configuration, core, data, features, splits, models, experiment, workflow, evaluation, visualization, data/catalog migration, and artifact inventories. No formal/full training. |
+| 2026-10-02 | pre-refactor freeze | tag `pre-nwp-refactor-20261002` / commit `09230bce481bca561aef94b64f0d9a02479b41ae` | Tracked state before the unified refactor. |
+| 2026-10-04 | pre-final-repair freeze | tag `pre-final-repair-20261004` / commit `1a60bdc9b9ff1e21f79c9943161aac95e0621e74` | Immutable starting point for the final repair pass. |
 
 Use Git commits and tags to recover prior tracked material. This document is
 only an index; it is not a copied archive.

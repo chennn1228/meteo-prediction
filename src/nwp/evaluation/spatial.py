@@ -553,7 +553,7 @@ def validate_spatial_preflight(
 
 
 def validate_returned_coordinates(columns: set[str]) -> None:
-    required = {"source_grid_latitude", "source_grid_longitude"}
+    required = {"gfs_service_latitude", "gfs_service_longitude"}
     if missing := required - columns:
         raise ValueError(
             f"returned service coordinates missing: {sorted(missing)}")

@@ -13,10 +13,14 @@ ROOT = next(p for p in Path(__file__).resolve().parents
 sys.path.insert(0, str(ROOT / "src"))
 
 from nwp.core.config import load_bundle, to_plain  # noqa: E402
-from nwp.models.baselines import FIXED_MODEL_IDS, predict_fixed_cpu  # noqa: E402
+from nwp.models.baselines import predict_fixed_cpu  # noqa: E402
 
 
 CONFIG = to_plain(load_bundle())
+FIXED_MODEL_IDS = {
+    model_id for model_id, record in CONFIG["models"]["registry"].items()
+    if not record["tuning"]["enabled"] and record["device"] == "cpu"
+}
 
 
 def predict(model_id, fit, early, score):
@@ -26,7 +30,7 @@ def predict(model_id, fit, early, score):
         early,
         score,
         model_config=CONFIG["models"],
-        feature_config=CONFIG["features"],
+        feature_config=CONFIG["features"]["build"],
     )
 
 
@@ -45,7 +49,7 @@ def rows() -> pd.DataFrame:
 
 def test_fixed_status_does_not_require_six_candidates():
     registry = CONFIG["models"]["registry"]
-    assert all(not registry[name]["tuning"] for name in FIXED_MODEL_IDS)
+    assert all(not registry[name]["tuning"]["enabled"] for name in FIXED_MODEL_IDS)
     fit, early, score = rows().iloc[:8], rows().iloc[8:10], rows().iloc[10:]
     for name in FIXED_MODEL_IDS - {"linear_mos"}:
         prediction, receipt = predict(name, fit, early, score)

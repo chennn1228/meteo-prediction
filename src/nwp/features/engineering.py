@@ -100,6 +100,11 @@ def build_forecast_features(
     ).copy()
     grouped = ordered.groupby(["location_id", "lead_time"], sort=False)
     if derived.get("lag_features"):
+        prior_issue = grouped["forecast_issue_time_utc"].shift(1)
+        current_issue = pd.to_datetime(ordered["forecast_issue_time_utc"], utc=True)
+        if (pd.to_datetime(prior_issue, utc=True).notna()
+                & (pd.to_datetime(prior_issue, utc=True) >= current_issue)).any():
+            raise ContractError("lag information timestamp is not before issue-time boundary")
         for lag in (1, 2):
             ordered[f"ghi_fcst_lag{lag}"] = grouped["ghi_fcst"].shift(lag)
     if derived.get("cloud_change"):
@@ -109,6 +114,19 @@ def build_forecast_features(
                 lambda values: values.rolling(window, min_periods=1).mean()
             )
     return ordered.sort_index()
+
+
+def adapt_imported_service_coordinates(frame: pd.DataFrame) -> pd.DataFrame:
+    """Map legacy source_grid labels in memory; historical files stay untouched."""
+    aliases = {
+        "source_grid_latitude": "gfs_service_latitude",
+        "source_grid_longitude": "gfs_service_longitude",
+        "source_grid_elevation": "gfs_service_elevation",
+    }
+    conflicts = [old for old, new in aliases.items() if old in frame and new in frame]
+    if conflicts:
+        raise ContractError(f"ambiguous imported coordinate aliases: {conflicts}")
+    return frame.rename(columns={old: new for old, new in aliases.items() if old in frame})
 
 
 def formal_feature_columns(

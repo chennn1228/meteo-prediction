@@ -166,7 +166,9 @@ def execute_request(
         audit: Mapping[str, Any],
         digest: str,
     ) -> Mapping[str, Any]:
-        del payload
+        returned = audit["returned_coordinates"]
+        provider = (data_config["forecast"]["provider"] if request.source == "previous_runs"
+                    else data_config["truth"]["primary" if request.source == "satellite" else "supplementary"]["provider"])
         return make_receipt(
             root=paths.root,
             stage="raw",
@@ -175,17 +177,17 @@ def execute_request(
             status="ready",
             output_hashes={"data": digest},
             source=request.source,
-            provider_model=request.model,
-            requested_site={
-                "site_id": request.site_id,
-                "latitude": request.requested_latitude,
-                "longitude": request.requested_longitude,
-            },
-            returned_coordinates=audit["returned_coordinates"],
+            provider=provider,
+            model=request.model,
+            requested_latitude=request.requested_latitude,
+            requested_longitude=request.requested_longitude,
+            returned_service_latitude=returned["latitude"],
+            returned_service_longitude=returned["longitude"],
+            returned_service_elevation=returned.get("elevation"),
             variables=list(request.variables),
             leads=list(request.leads),
             request_parameters=parameters,
-            time_range={"start": request.start.isoformat(), "end": request.end.isoformat()},
+            time_start=request.start.isoformat(), time_end=request.end.isoformat(),
             row_count=audit["row_count"],
             missingness=audit["missingness"],
             data_sha256=digest,

@@ -9,6 +9,7 @@ from typing import Any, Mapping
 import pandas as pd
 
 from nwp.core.hashing import content_hash, file_sha256
+from nwp.core.fingerprints import environment_fingerprint, source_files_fingerprint
 from nwp.core.paths import RunPaths
 from nwp.core.provenance import make_receipt, read_receipt, write_receipt
 from nwp.core.schema import ContractError
@@ -77,15 +78,7 @@ CLOUD_COLUMNS = (
     "cloud_cover_mid_obs",
     "cloud_cover_high_obs",
 )
-CLEAN_CONTRACT = {
-    "radiation_negative_policy": "clip_to_zero",
-    "cloud_range": [0, 100],
-    "missing_policy": "preserve_and_report",
-    "row_unit": "site_target_time_lead",
-}
-
-
-def clean_dependency_hash(source_hashes: Mapping[str, str], clean_contract: Mapping[str, object] = CLEAN_CONTRACT) -> str:
+def clean_dependency_hash(source_hashes: Mapping[str, str], clean_contract: Mapping[str, object]) -> str:
     if not source_hashes:
         raise ContractError("clean data requires source hashes")
     return content_hash({"source_hashes": source_hashes, "clean_contract": clean_contract})
@@ -112,9 +105,6 @@ def read_previous_runs(path: Path, data_config: Mapping[str, Any]) -> pd.DataFra
             {
                 "target_time_utc": target_time,
                 "lead_time": int(lead_hours),
-                "source_grid_latitude": payload.get("latitude"),
-                "source_grid_longitude": payload.get("longitude"),
-                "source_grid_elevation": payload.get("elevation"),
                 "gfs_service_latitude": payload.get("latitude"),
                 "gfs_service_longitude": payload.get("longitude"),
                 "gfs_service_elevation": payload.get("elevation"),
@@ -140,11 +130,16 @@ def read_truth(path: Path, rename: Mapping[str, str], service_name: str) -> pd.D
     return frame
 
 
-def apply_clean_contract(frame: pd.DataFrame) -> pd.DataFrame:
+def apply_clean_contract(frame: pd.DataFrame, clean_contract: Mapping[str, object]) -> pd.DataFrame:
+    if clean_contract.get("radiation_negative_policy") != "clip_to_zero":
+        raise ContractError("unsupported radiation_negative_policy")
+    cloud_range = clean_contract.get("cloud_range")
+    if cloud_range != [0, 100] and tuple(cloud_range or ()) != (0, 100):
+        raise ContractError("clean cloud_range must be [0, 100]")
     output = frame.copy()
     for column in CLOUD_COLUMNS:
         if column in output:
-            output[column] = pd.to_numeric(output[column], errors="coerce").clip(0, 100)
+            output[column] = pd.to_numeric(output[column], errors="coerce").clip(*cloud_range)
     for column in RADIATION_COLUMNS:
         if column in output:
             output[column] = pd.to_numeric(output[column], errors="coerce").clip(lower=0)
@@ -210,7 +205,8 @@ def build_clean_month(
         raw_records[request.source] = record
         receipt = read_receipt(catalog.receipt_path(record))
         source_hashes[request.source] = receipt["data_sha256"]
-    dependency_hash = clean_dependency_hash(source_hashes)
+    clean_contract = data_config["clean_contract"]
+    dependency_hash = clean_dependency_hash(source_hashes, clean_contract)
     existing = catalog.resolve(
         stage="clean",
         config_hash=dependency_hash,
@@ -224,7 +220,7 @@ def build_clean_month(
     satellite = read_truth(catalog.dataset_path(raw_records["satellite"]), SATELLITE_RENAME, "himawari")
     era5 = read_truth(catalog.dataset_path(raw_records["era5"]), ERA5_RENAME, "era5")
     frame = previous.merge(satellite, on="target_time_utc", how="left").merge(era5, on="target_time_utc", how="left")
-    frame = apply_clean_contract(frame)
+    frame = apply_clean_contract(frame, clean_contract)
     site = site_registry[site_id]
     frame.insert(0, "station_id", site_id)
     frame.insert(1, "requested_latitude", float(site["lat"]))
@@ -266,7 +262,15 @@ def build_clean_month(
         row_count=audit["row_count"],
         missingness=audit["missingness"],
         service_coordinates=audit["service_coordinates"],
-        clean_contract=CLEAN_CONTRACT,
+        clean_contract=clean_contract,
+        upstream_artifact_ids=[record.dataset_id for record in raw_records.values()],
+        upstream_sha256=source_hashes,
+        dependency_fingerprint=dependency_hash,
+        implementation_fingerprint=source_files_fingerprint(
+            paths.root, ("src/nwp/data/clean.py", "src/nwp/data/contracts.py")),
+        environment_fingerprint=environment_fingerprint(
+            ("numpy", "pandas", "pyarrow", "pvlib")),
+        output_sha256=output_hash,
     )
     write_receipt(receipt_path, receipt)
     record = DatasetRecord(

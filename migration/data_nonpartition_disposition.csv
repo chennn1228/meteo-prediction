@@ -2,7 +2,7 @@
 "data/00_geo/grid_annual_ghi_2025.csv","data/registry/geography/grid_annual_ghi_2025.csv","3c9578bad95cff96f50a10e7df36979ca6f32c0de864f675876d6447828eb681","GEOGRAPHY","MOVE"
 "data/00_geo/jiangsu.geojson","data/registry/geography/jiangsu_probe.geojson","6af17f07a3c83bad7d4d552efdd7f59ba8f7574363d1a686f59bc1d0f91733e7","GEOGRAPHY","MOVE"
 "data/01_raw/fetch_log.csv","data/registry/imports/main_fetch_log.csv","8170ce96b0c275c53f2d54ff983980e1be02886605089e2abe8bf78a5a34bb95","FETCH_PROVENANCE","MOVE"
-"data/01_raw/jiangsu.geojson","data/registry/geography/jiangsu_main.geojson","983d15e1964dbd349ec3aac41a30c7b252fbf2b87ff3bca19af2efcd6f16e1b9","GEOGRAPHY","MOVE"
+"data/01_raw/jiangsu.geojson","data/registry/geography/jiangsu.geojson","983d15e1964dbd349ec3aac41a30c7b252fbf2b87ff3bca19af2efcd6f16e1b9","GEOGRAPHY","MOVE"
 "data/01_raw/site_selection_2026-09-05.json","data/registry/site_selections/site_selection_2026-09-05.json","c5e7260bf30f0602551de2f0a55b5ba4aa70dfcc9ef076228d44bd51a0aa17a0","HISTORICAL_SELECTION","MOVE"
 "data/01_raw/site_selection_stratified_2026-09-07.json","data/registry/site_selections/site_selection_stratified_2026-09-07.json","77f7d019c8e2a7354697e2508e3d78420ce33e63f8826225db94797f4c4dd489","HISTORICAL_SELECTION","MOVE"
 "data/02_clean/quality_report_changzhou_1.md","migration/recovered_artifacts/main_clean_audits/quality_report_changzhou_1.md","0645710a4b93d736ca75a8f9531266de28b93e4da7f75646cd08a9005a80e49d","LEGACY_DATA_AUDIT","MOVE"

@@ -37,7 +37,7 @@ class ProtocolConsistencyTests(unittest.TestCase):
     def test_data_config_contains_no_weather_selection_protocol(self):
         bundle = to_plain(load_bundle())
         self.assertNotIn("kt_weather_bins", bundle["data"])
-        self.assertEqual(bundle["features"]["diagnostics"]["role"],
+        self.assertEqual(bundle["features"]["analysis"]["diagnostics"]["role"],
                          "diagnostic_only_not_model_selection")
 
 

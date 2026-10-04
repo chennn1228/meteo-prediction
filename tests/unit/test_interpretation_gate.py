@@ -25,7 +25,7 @@ class InterpretationGateTests(unittest.TestCase):
         sampled_x, sampled_meta = sample_aligned(
             features, metadata, n=10, seed=0,
             protocol_config=BUNDLE["protocol"],
-            feature_policy=BUNDLE["features"]["policy"])
+            feature_policy=BUNDLE["features"]["build"]["policy"])
         self.assertEqual(sampled_x.index.tolist(), sampled_meta.index.tolist())
         self.assertEqual([f"region_{i}" for i in sampled_x["ghi_fcst"]],
                          sampled_meta["region"].tolist())
@@ -37,7 +37,7 @@ class InterpretationGateTests(unittest.TestCase):
             sample_aligned(
                 features, metadata, n=1,
                 protocol_config=BUNDLE["protocol"],
-                feature_policy=BUNDLE["features"]["policy"])
+                feature_policy=BUNDLE["features"]["build"]["policy"])
 
 
 if __name__ == "__main__":

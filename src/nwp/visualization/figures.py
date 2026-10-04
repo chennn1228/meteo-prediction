@@ -8,16 +8,38 @@ from typing import Any, Iterable
 import numpy as np
 import pandas as pd
 
+from nwp.core.fingerprints import sha256_file, stable_object_hash
 from nwp.experiment.prediction import quantile_columns
 from .style import (
     FigureContract, PALETTE, apply_publication_style, relationship, save_figure)
 
 
 def write_figure_index(path: Path, figures: Iterable[dict[str, Any]]) -> None:
-    payload = list(figures)
-    for item in payload:
-        if not {"figure_id", "source_table", "generation_function", "caption", "status"} <= set(item):
-            raise ValueError("figure index entry lacks required provenance")
+    payload = []
+    for original in figures:
+        sources = [Path(value) for value in str(original["source_table"]).split(";")
+                   if Path(value).is_file()]
+        if not sources:
+            raise ValueError("figure index source table is missing")
+        source_hashes = [sha256_file(source) for source in sources]
+        files = [Path(value) for value in original.get("files", [])]
+        svg = next((item for item in files if item.suffix.lower() == ".svg"), None)
+        png = next((item for item in files if item.suffix.lower() == ".png"), None)
+        if svg is None or png is None:
+            raise ValueError("every figure requires SVG and PNG")
+        item = {
+            "figure_id": original["figure_id"],
+            "source_artifact_id": "source-" + stable_object_hash(source_hashes)[:16],
+            "source_table": original["source_table"],
+            "source_sha256": stable_object_hash(source_hashes),
+            "generation_function": original["generation_function"],
+            "figure_dependency_fingerprint": stable_object_hash({
+                "sources": source_hashes,
+                "generation_function": original["generation_function"]}),
+            "caption": original["caption"],
+            "svg_path": str(svg), "png_path": str(png),
+        }
+        payload.append(item)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 

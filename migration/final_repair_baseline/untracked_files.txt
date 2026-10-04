@@ -1,0 +1,4 @@
+migration/final_repair_baseline/git_status.txt
+migration/final_repair_baseline/git_tree.txt
+migration/final_repair_baseline/tracked_files.txt
+migration/final_repair_register.csv

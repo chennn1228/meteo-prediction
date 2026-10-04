@@ -25,6 +25,8 @@ sets:
 selectors:
   density:
     method: region_balanced_farthest_point
+    status: development_only
+    official_eligible: false
     source_set: training_20
     allowed_counts: [5, 10, 15, 20]
     region_quotas: {5: 1, 10: 2, 15: 3, 20: 4}

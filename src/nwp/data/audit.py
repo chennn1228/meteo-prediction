@@ -6,7 +6,6 @@ import datetime as dt
 import json
 import math
 import re
-import shutil
 import time
 import urllib.error
 import urllib.parse
@@ -90,16 +89,8 @@ def inventory_data(
     data_root: Path,
     *,
     output: Path | None = None,
-    quarantine_unknown: bool = False,
 ) -> dict[str, int]:
-    """Hash/classify every data file without moving or deleting anything.
-
-    The retained boolean argument is a fail-closed migration guard.  Unknown
-    paths may be quarantined only by an explicit reviewed-path call to
-    :func:`quarantine_files` in Phase I.
-    """
-    if quarantine_unknown:
-        raise ContractError("automatic quarantine is disabled; review explicit UNKNOWN paths first")
+    """Hash/classify every data file without moving or deleting anything."""
     data_root = data_root.resolve()
     output = (output or data_root / "data_inventory.csv").resolve()
     excluded = {output, (data_root / "catalog.json").resolve()}
@@ -114,10 +105,14 @@ def inventory_data(
         by_hash[row["sha256"]].append(row)
     for copies in by_hash.values():
         if len(copies) > 1:
-            # Keep the lexicographically first path as the candidate canonical
-            # copy. No copy is deleted by this audit.
-            for row in sorted(copies, key=lambda item: item["path"])[1:]:
-                row["action"] = "DUPLICATE_DELETE"
+            canonical = sorted(
+                (row for row in copies if row["action"] == "KEEP"),
+                key=lambda item: item["path"])
+            if canonical:
+                keep = canonical[0]
+                for row in copies:
+                    if row is not keep:
+                        row["action"] = "DUPLICATE_DELETE"
     if any(row["action"] not in INVENTORY_ACTIONS for row in rows):
         raise AssertionError("inventory produced an unregistered action")
     fields = [
@@ -143,35 +138,6 @@ def inventory_data(
     for row in rows:
         counts[row["action"]] += 1
     return dict(counts)
-
-
-def quarantine_files(data_root: Path, relative_paths: Iterable[str]) -> tuple[Path, ...]:
-    """Move only explicitly reviewed paths into quarantine without overwriting."""
-    data_root = data_root.resolve()
-    requested = tuple(relative_paths)
-    if not requested or len(requested) != len(set(requested)):
-        raise ContractError("quarantine requires a nonempty unique reviewed path list")
-    planned: list[tuple[Path, Path]] = []
-    for relative in requested:
-        source = (data_root / relative).resolve()
-        try:
-            source.relative_to(data_root)
-        except ValueError as exc:
-            raise ContractError(f"quarantine source escapes data_root: {relative}") from exc
-        if not source.is_file():
-            raise ContractError(f"quarantine source is not a file: {relative}")
-        if "quarantine" in source.relative_to(data_root).parts:
-            raise ContractError(f"file is already quarantined: {relative}")
-        target = data_root / "quarantine" / source.relative_to(data_root)
-        if target.exists():
-            raise ContractError(f"quarantine target already exists: {target}")
-        planned.append((source, target))
-    moved = []
-    for source, target in planned:
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.move(str(source), str(target))
-        moved.append(target)
-    return tuple(moved)
 
 
 def audit_month_coverage(
@@ -340,7 +306,7 @@ def probe_service_round(
             "batch size must be 1-40 and budget nonnegative")
     boundary = service_boundary(boundary_path)
     locations = service_request_lattice(boundary, step)
-    output = data_root / "04_service_probes" / f"step_{step:g}"
+    output = data_root / "registry" / "service_probes" / f"step_{step:g}"
     batches = [locations[index:index + batch_size]
                for index in range(0, len(locations), batch_size)]
     reused = newly_fetched = 0

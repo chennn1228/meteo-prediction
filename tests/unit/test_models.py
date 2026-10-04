@@ -22,7 +22,7 @@ def test_factory_creates_raw_model_from_registry_and_predicts():
 
 def test_feature_policy_blocks_identity_and_truth_leakage():
     with pytest.raises(ContractError):
-        assert_model_features(["ghi_fcst", "station_id", "y"], load_bundle()["features"]["policy"])
+        assert_model_features(["ghi_fcst", "station_id", "y"], load_bundle()["features"]["build"]["policy"])
 
 
 def test_factory_covers_every_registered_model_family():

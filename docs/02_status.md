@@ -10,8 +10,17 @@
   processed imports are retained but fail-closed as `incomplete`.
 - Data and inherited figure/report inventories are complete. No formal/full
   training, network acquisition, or result regeneration occurred.
-- The post-cleanup full suite passes; the exact command and result are recorded
-  in `migration/final_acceptance.md`.
+- Historical raw-audit evidence was imported from the freeze tag with exact
+  hashes: 42 current audit files are materialized, of which 34 came from Git
+  and 8 were exact local files. Sixty Nanjing diagnostic files were restored
+  from Git and materialized read-only. Imported evidence is non-official.
+- Of the original 282 recovery-required paths, 121 have exact local recovery
+  and 161 remain `RECOVERY_REQUIRED`. The canonical current snapshot is
+  `migration/recovery_required_register.csv`.
+- A clean Python 3.13.2 environment, created without system site packages and
+  installed from `pyproject.toml`, passed the ordered acceptance run and the
+  complete suite: **124 passed** on 2026-10-04. The environment snapshot is
+  `migration/final_environment.txt`.
 
 ## Blocked
 
@@ -20,14 +29,12 @@
   with acquisition-time receipts before an official run.
 - Models not marked eligible in `config/models.yaml` still need real-data
   validation, including one receipt-backed development mini-E2E.
-- The reproducible training environment is incomplete on the current machine;
-  official readiness must verify all pinned runtime dependencies.
 - Spatial evaluation remains deferred pending its configured returned-point
   convergence and truth gates.
 - `project_manifest.yaml::official_result_set` is intentionally unset.
-- The earlier erroneous pass removed 282 untracked inherited figure/report
-  artifacts. Their hashes and paths remain recorded as `RECOVERY_REQUIRED` in
-  `migration/figure_inventory.csv`, but they are not recoverable from Git.
+- The 161 unresolved recovery paths have no exact local or Git-tag copy found;
+  they remain recorded by path and SHA-256 and must not be represented as
+  restored.
 
 ## Safe now
 
@@ -38,6 +45,8 @@ blocked by the gate.
 
 ## Next
 
-Validate the chosen development model set on receipt-backed data. Only after
+Validate the chosen development model set on receipt-backed data. Current
+readiness values are snapshots; canonical scientific state remains in
+`config/`. Only after
 closing the open evidence items in `docs/06_issues.md` should an official
 profile/hash and result set be registered.

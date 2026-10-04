@@ -1,0 +1,66 @@
+{
+  "azimuth": 0,
+  "forecast": {
+    "cell_selection": "land",
+    "leads": [
+      24,
+      48,
+      72
+    ],
+    "model": "gfs_seamless",
+    "product_class": "location_specific",
+    "provider": "Open-Meteo Previous Runs API",
+    "resolution": "hourly",
+    "source_grid_id_exposed": false,
+    "variables": [
+      "shortwave_radiation",
+      "diffuse_radiation",
+      "direct_normal_irradiance",
+      "global_tilted_irradiance",
+      "cloud_cover",
+      "temperature_2m",
+      "relative_humidity_2m",
+      "dewpoint_2m",
+      "wind_speed_10m",
+      "wind_direction_10m",
+      "surface_pressure",
+      "precipitation",
+      "sunshine_duration",
+      "terrestrial_radiation",
+      "is_day"
+    ]
+  },
+  "radiation_semantics": "preceding_hour_mean",
+  "requested_coordinates_role": "provenance_only",
+  "tilt": 30,
+  "timezone": "UTC",
+  "truth": {
+    "primary": {
+      "model": "jma_jaxa_himawari",
+      "provider": "jma_jaxa_himawari_shortwave_radiation",
+      "semantics": "preceding_hour_mean",
+      "variables": [
+        "shortwave_radiation",
+        "direct_radiation",
+        "diffuse_radiation",
+        "direct_normal_irradiance",
+        "global_tilted_irradiance"
+      ]
+    },
+    "supplementary": {
+      "provider": "era5_reanalysis",
+      "role": "supplementary_exploratory",
+      "variables": [
+        "shortwave_radiation",
+        "direct_radiation",
+        "diffuse_radiation",
+        "direct_normal_irradiance",
+        "global_tilted_irradiance",
+        "cloud_cover",
+        "cloud_cover_low",
+        "cloud_cover_mid",
+        "cloud_cover_high"
+      ]
+    }
+  }
+}

@@ -59,11 +59,9 @@ def write_ledger(trials: Sequence[Trial], path: str | Path) -> None:
 def registered_candidates(model_id: str,
                           model_config: Mapping[str, Any]) -> tuple[dict[str, Any], ...]:
     registry = model_config["registry"]
-    if model_id == "pinn":
-        raise ValueError("PINN remains experimental; no official tuning space")
     if model_id not in registry:
         raise KeyError(f"unregistered model: {model_id}")
-    if not registry[model_id]["tuning"]:
+    if not registry[model_id]["tuning"]["enabled"]:
         raise KeyError(f"model does not use candidate tuning: {model_id}")
     key = ("deep_shared_prototype"
            if registry[model_id]["family"] == "deep" else model_id)

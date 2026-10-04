@@ -32,7 +32,7 @@ def test_run_paths_own_all_fixed_locations_and_reject_unsafe_segments(tmp_path):
     paths.initialize_run()
     assert {path.name for path in paths.run_root.iterdir()} == set(RUN_DIRECTORIES)
     assert paths.model_fold("ridge_mos", "outer_01") == paths.models_dir / "ridge_mos" / "outer_01"
-    assert paths.prediction_file("xgboost", "outer_02").name == "outer_02.parquet"
+    assert paths.prediction_file("xgboost", "outer_02") == paths.predictions_dir / "xgboost" / "outer_02" / "predictions.parquet"
     raw = paths.raw_partition("gfs", "nanjing_1", "2024-02")
     assert raw == paths.data_root / "raw" / "gfs" / "nanjing_1" / "2024-02.parquet"
     with pytest.raises(ContractError, match="unsafe"):
@@ -78,18 +78,21 @@ def test_run_context_writes_complete_meta_and_records_immutable_stage(tmp_path):
     assert provenance["run_id"] == "context-test"
     assert provenance["config_hash"] == config.config_hash
     assert len(provenance["git_commit"]) == 40
-    assert json.loads((context.paths.meta_dir / "stage_status.json").read_text(encoding="utf-8")) == {}
+    assert not (context.paths.meta_dir / "stage_results.json").exists()
     result = StageResult(
         status="success",
+        artifact_outputs={},
+        metadata_outputs={"count": 1},
         inputs={"profile": config.profile},
-        outputs={"count": 1},
-        config_hash=config.config_hash,
+        dependency_fingerprint=config.config_hash,
+        implementation_fingerprint="abcdef12",
         input_hashes={"config": config.config_hash},
+        output_hashes={"count": "abcdef12"},
         started_at="2026-10-02T00:00:00+00:00",
         finished_at="2026-10-02T00:00:01+00:00",
     )
     context.record_stage("validate", result)
-    saved = json.loads((context.paths.meta_dir / "stage_status.json").read_text(encoding="utf-8"))
+    saved = json.loads((context.paths.meta_dir / "stage_results.json").read_text(encoding="utf-8"))
     assert saved["validate"]["status"] == "success"
     with pytest.raises(TypeError):
         result.inputs["profile"] = "changed"

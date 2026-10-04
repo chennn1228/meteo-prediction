@@ -48,10 +48,10 @@ def synthetic_feature_and_prediction_rows():
     features = build_forecast_features(
         input_frame,
         data_config=bundle["data"],
-        feature_config=bundle["features"],
+        feature_config=bundle["features"]["build"],
     )
     columns = ("ghi_fcst", "kt_model", "wind_dir_sin")
-    processor = FoldPreprocessor(columns, bundle["features"]["policy"]).fit(
+    processor = FoldPreprocessor(columns, bundle["features"]["build"]["policy"]).fit(
         features.iloc[:2], fit_end_utc="2025-01-02T00:00:00Z"
     )
     rows = []
@@ -71,7 +71,7 @@ def synthetic_feature_and_prediction_rows():
             "inner_fold": "inner_synthetic", "seed": 0,
             "y": center + 5., "point_prediction": center,
             "data_version": bundle["data"]["version"],
-            "feature_version": bundle["features"]["version"],
+            "feature_version": bundle["features"]["build"]["version"],
             "protocol_revision": bundle["manifest"]["protocol_version"],
             "experiment_id": "synthetic-smoke-only", "result_status": "diagnostic",
         }

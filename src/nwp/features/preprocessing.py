@@ -180,4 +180,9 @@ def fit_fold_preprocessing(
         "cloud_imputation": blocks[0].attrs["cloud_imputation"],
         "preprocessing_fit_end_utc": numeric.fit_end_utc.isoformat(),
         "preprocessing_fit_rows": numeric.train_rows,
+        "fold_scope": {
+            "fit_start_utc": pd.to_datetime(
+                fit["forecast_issue_time_utc"], utc=True).min().isoformat(),
+            "fit_end_utc": numeric.fit_end_utc.isoformat(),
+        },
     }

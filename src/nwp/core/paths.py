@@ -128,6 +128,15 @@ class RunPaths:
     def data_registry_dir(self) -> Path:
         return self.data_root / "registry"
 
+    def geography_path(self) -> Path:
+        return self.data_registry_dir / "geography" / "jiangsu.geojson"
+
+    def service_probe_root(self) -> Path:
+        return self.data_registry_dir / "service_probes"
+
+    def site_selection_root(self) -> Path:
+        return self.data_registry_dir / "site_selections"
+
     def raw_partition(self, source: str, site_id: str, month: str, *, suffix: str = ".parquet") -> Path:
         if not suffix.startswith(".") or "/" in suffix or "\\" in suffix:
             raise ContractError(f"unsafe partition suffix: {suffix!r}")
@@ -152,12 +161,25 @@ class RunPaths:
     def model_fold(self, model_id: str, fold_id: str) -> Path:
         return self.models_dir / _segment(model_id, "model_id") / _segment(fold_id, "fold_id")
 
-    def prediction_file(self, model_id: str, fold_id: str) -> Path:
-        return self.predictions_dir / _segment(model_id, "model_id") / f"{_segment(fold_id, 'fold_id')}.parquet"
+    def prediction_file(self, model_id: str, scope: str) -> Path:
+        return (self.predictions_dir / _segment(model_id, "model_id") /
+                _segment(scope, "scope") / "predictions.parquet")
 
-    def calibration_file(self, model_id: str, artifact_id: str) -> Path:
-        return (self.calibration_dir / _segment(model_id, "model_id")
-                / f"{_segment(artifact_id, 'artifact_id')}.parquet")
+    def calibration_file(self, model_id: str, scope: str) -> Path:
+        return (self.calibration_dir / _segment(model_id, "model_id") /
+                _segment(scope, "scope") / "calibration.parquet")
+
+    def model_metrics_dir(self, model_id: str) -> Path:
+        return self.metrics_dir / _segment(model_id, "model_id")
+
+    def aggregate_metrics_dir(self) -> Path:
+        return self.metrics_dir / "aggregate"
+
+    def model_analysis_dir(self, model_id: str) -> Path:
+        return self.analysis_dir / _segment(model_id, "model_id")
+
+    def aggregate_analysis_dir(self) -> Path:
+        return self.analysis_dir / "aggregate"
 
     def stage_receipt(self, stage: str) -> Path:
         return self.stage_dir(stage) / f"{_segment(stage, 'stage')}.receipt.json"
