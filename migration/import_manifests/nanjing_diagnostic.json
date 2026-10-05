@@ -16,361 +16,361 @@
   },
   "files": [
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_cloud_error_ghi_error_hexbin.pdf",
+      "source_path": "figs/nanjing_15var_diagnostic/01_data/fig_cloud_error_ghi_error_hexbin.pdf",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_cloud_error_ghi_error_hexbin.pdf",
       "size": 54828,
       "sha256": "ee1f230dfba8c29765bc2122e9eb171e54729e7bd9b27bdd0c44851fdf093a42"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_cloud_error_ghi_error_hexbin.png",
+      "source_path": "figs/nanjing_15var_diagnostic/01_data/fig_cloud_error_ghi_error_hexbin.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_cloud_error_ghi_error_hexbin.png",
       "size": 252929,
       "sha256": "45f054a7a401ca63b1f30dae2e134bda4a88a9e13dc45c84c22bb3dfefb15e23"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_cloud_error_ghi_error_hexbin.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/01_data/fig_cloud_error_ghi_error_hexbin.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_cloud_error_ghi_error_hexbin.svg",
       "size": 350355,
       "sha256": "c0004d03ea9a1a5aad8a7c9a0b1e39f18516b09209908ed1dec43ed897905dfc"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_cloud_error_ghi_error_hexbin_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/01_data/fig_cloud_error_ghi_error_hexbin_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_cloud_error_ghi_error_hexbin_source.csv",
       "size": 680992,
       "sha256": "4104aed47070b58c47214e923a739cce53c05697dc696a1326df1add036ddf05"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_data_source_timeline.png",
+      "source_path": "figs/nanjing_15var_diagnostic/01_data/fig_data_source_timeline.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_data_source_timeline.png",
       "size": 104048,
       "sha256": "7679b9efd9323fd8da1ff1fa190bc0ec2a8716428abcfe1057050b94fff74cdb"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_data_source_timeline.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/01_data/fig_data_source_timeline.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_data_source_timeline.svg",
       "size": 29153,
       "sha256": "7140fe1fab30b690da553406dd8248d39ee30e1854c40836c9640c772c618f7f"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_data_source_timeline_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/01_data/fig_data_source_timeline_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_data_source_timeline_source.csv",
       "size": 1183,
       "sha256": "a91a73f60db10f623cde847216e615ad9f0989a99291646f3505a3f7f187f3fc"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_feature_distribution_hexbin.png",
+      "source_path": "figs/nanjing_15var_diagnostic/01_data/fig_feature_distribution_hexbin.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_feature_distribution_hexbin.png",
       "size": 311522,
       "sha256": "794f84beead2a19fe2bcc519e8b739eb2a5c41e7d4e06d0272158c307d1bb11a"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_feature_distribution_hexbin.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/01_data/fig_feature_distribution_hexbin.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_feature_distribution_hexbin.svg",
       "size": 385750,
       "sha256": "505bd29763639d7a13a6bba46926175d30e549503e323bd92a9d89eb7cbe3df5"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_feature_distribution_hexbin_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/01_data/fig_feature_distribution_hexbin_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/01_data/fig_feature_distribution_hexbin_source.csv",
       "size": 1582536,
       "sha256": "ca4bc764a7cf32a67448b3023137ba513ac4abca6715d71c0a38a96622470fb0"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/all_cpu_rmse_by_fold.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/all_cpu_rmse_by_fold.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/all_cpu_rmse_by_fold.csv",
       "size": 2179,
       "sha256": "80d29dbc1baee30b60bd9c8e47f189b8597c63b5c28249e5ecb7141fe5de9922"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/all_cpu_rmse_by_lead.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/all_cpu_rmse_by_lead.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/all_cpu_rmse_by_lead.csv",
       "size": 1169,
       "sha256": "9c2e04f718e85768d2228812d4d1632e9f91187c14764ccae1216130d18b22e5"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/all_cpu_rmse_overall.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/all_cpu_rmse_overall.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/all_cpu_rmse_overall.csv",
       "size": 363,
       "sha256": "6ddc4d03a2db161747f128b888acb35146791976275ec0accf4a3ecb759b1f20"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_improvement_vs_raw.png",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_improvement_vs_raw.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_improvement_vs_raw.png",
       "size": 87604,
       "sha256": "5098c0546b3967d57aca6691df6c6d1ec4d2bd7265528972e52f2c171495399f"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_improvement_vs_raw.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_improvement_vs_raw.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_improvement_vs_raw.svg",
       "size": 21937,
       "sha256": "9ea21054b26bac2abfe07bf0ff355b8eccab297778a7e0771f1c22b2d8bd5da7"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_improvement_vs_raw_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_improvement_vs_raw_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_improvement_vs_raw_source.csv",
       "size": 3687,
       "sha256": "78b70bc023643de0ab9d2d7910101fc3a5fbc0adb6d207a120c76fb4fe48ea3e"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_lead_performance.png",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_lead_performance.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_lead_performance.png",
       "size": 146396,
       "sha256": "8be385a279b7516cc36a20247213c6bfe2a4639a004e41a44603630f5825b5f7"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_lead_performance.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_lead_performance.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_lead_performance.svg",
       "size": 24962,
       "sha256": "4436f0c9dde9065ae5b9b371767e7bb3f8c808006a98cb939ec5047bf2db161e"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_lead_performance_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_lead_performance_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_lead_performance_source.csv",
       "size": 1169,
       "sha256": "9c2e04f718e85768d2228812d4d1632e9f91187c14764ccae1216130d18b22e5"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_overall_pinball.png",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_overall_pinball.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_overall_pinball.png",
       "size": 68120,
       "sha256": "7bce51861a23998c1aca50efcf0a2fdcf5fd7d5b6f5b8d0c0c009ab201c617cb"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_overall_pinball.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_overall_pinball.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_overall_pinball.svg",
       "size": 17461,
       "sha256": "f070ae1a6f5c4488f0c6cd1e34eda8d888955b394494b1b2e7543ac34bbedeb0"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_overall_pinball_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_overall_pinball_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_cpu_overall_pinball_source.csv",
       "size": 1002,
       "sha256": "5a7a2a61f4e5be46ceb0059036b85d54a7920884adee77c073ecefdcdd5fdbad"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_tuning_candidates.png",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_tuning_candidates.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_tuning_candidates.png",
       "size": 138158,
       "sha256": "fb19c7a67b18ca8c35fa416b31d94b15609a119fbd34723c4acec4cdb0469bc3"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_tuning_candidates.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_tuning_candidates.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_tuning_candidates.svg",
       "size": 48699,
       "sha256": "de74c1f65dd97577822bda003f8a0ad76fbdd10516c31777088d76ecc2545cbd"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_tuning_candidates_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_tuning_candidates_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_tuning_candidates_source.csv",
       "size": 13064,
       "sha256": "9936b33512d7e78027147480f7b7c9e1d84173fa119a1a8bee9b21816d80f450"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_value_ladder.png",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_value_ladder.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_value_ladder.png",
       "size": 98524,
       "sha256": "1a81a5b259c5f793a8c1b92389c86f7980f2253746036071304fd4155395cbb9"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_value_ladder.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fig_value_ladder.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fig_value_ladder.svg",
       "size": 26646,
       "sha256": "f8cd00a26429f8a0aa614a7669374811de98a380c61f59b0f8de29284ffa4154"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fixed_rmse_by_fold.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fixed_rmse_by_fold.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fixed_rmse_by_fold.csv",
       "size": 1591,
       "sha256": "14a0761c0e63fe1ca5daf3663983b27dadb8ece4f43326c0cafc859d464fcffb"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fixed_rmse_by_fold_lead.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fixed_rmse_by_fold_lead.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fixed_rmse_by_fold_lead.csv",
       "size": 4940,
       "sha256": "ad6325dd99efc62c6d69ae1466537104587760a8929d3b20bfe9b6639c12968d"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fixed_rmse_overall.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/03_model_benchmark/fixed_rmse_overall.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/03_model_benchmark/fixed_rmse_overall.csv",
       "size": 270,
       "sha256": "dacaccc18d52bb707612d8e423f1824627ecbf5dec70e0074eacf4f6565c5880"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_coverage_reliability.png",
+      "source_path": "figs/nanjing_15var_diagnostic/04_probability/fig_coverage_reliability.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_coverage_reliability.png",
       "size": 183415,
       "sha256": "6444774e549bf84eeed7d30e901af4bf19a11634d0abf380f15f23b0aa869e26"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_coverage_reliability.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/04_probability/fig_coverage_reliability.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_coverage_reliability.svg",
       "size": 29398,
       "sha256": "49befbee7426a6cc7110972bd4c115573d17d222b8af41f9a967b9cd4523aea6"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_coverage_reliability_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/04_probability/fig_coverage_reliability_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_coverage_reliability_source.csv",
       "size": 2316,
       "sha256": "c371bbb7c4da8a272191be2095b1795872826ab658a3a6fba835fd016e19b30b"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_coverage_width.png",
+      "source_path": "figs/nanjing_15var_diagnostic/04_probability/fig_coverage_width.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_coverage_width.png",
       "size": 166378,
       "sha256": "751dde9ae37b17b25b547e25bb462113e986512eb16e91119e9062b84518a5a0"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_coverage_width.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/04_probability/fig_coverage_width.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_coverage_width.svg",
       "size": 25787,
       "sha256": "22af4ef5c207bb8f7ce30abe6056c6c20726f54d9ee4400dc4c71cdc6fff199a"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_coverage_width_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/04_probability/fig_coverage_width_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_coverage_width_source.csv",
       "size": 534,
       "sha256": "5c35bbeaac09919ad5528ca8d7583967f7bd721b9c433b9cfcf14d998577d478"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_quantile_case.png",
+      "source_path": "figs/nanjing_15var_diagnostic/04_probability/fig_quantile_case.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_quantile_case.png",
       "size": 187030,
       "sha256": "259bbfc205234467ec91bf872059fd2592fd0f2e3109c12b6698b0faf43099b0"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_quantile_case.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/04_probability/fig_quantile_case.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_quantile_case.svg",
       "size": 20195,
       "sha256": "bd9e08157cbfc98a2106dd6258101469b64eded1d1b69b34421a5595c6729f82"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_quantile_case_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/04_probability/fig_quantile_case_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_quantile_case_source.csv",
       "size": 2252,
       "sha256": "c2d7eaf449e67fefdb9f3eb92eb9789148fa147456a1fb2be229b4fd75ba83d8"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_weather_conditional_coverage.png",
+      "source_path": "figs/nanjing_15var_diagnostic/04_probability/fig_weather_conditional_coverage.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_weather_conditional_coverage.png",
       "size": 103899,
       "sha256": "03dfa2ba4b30d81082533d12b8ca9fefc2fe4d7752a5699100a1a998fd8e02d3"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_weather_conditional_coverage.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/04_probability/fig_weather_conditional_coverage.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_weather_conditional_coverage.svg",
       "size": 26493,
       "sha256": "e3de56c1fb6a8a33f71dd34525086bbd684adbc50bc5c22db9f1befb11c82c5b"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_weather_conditional_coverage_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/04_probability/fig_weather_conditional_coverage_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/04_probability/fig_weather_conditional_coverage_source.csv",
       "size": 1339,
       "sha256": "43baedfe0e13e1a0171873833673f31284848604730298449a8d71a74f10b026"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_ablation.png",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_group_ablation.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_ablation.png",
       "size": 77535,
       "sha256": "1d835d290c469db1dcd1f490e929cc0c57122d9e331e30d95da714b50a908353"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_ablation.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_group_ablation.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_ablation.svg",
       "size": 23315,
       "sha256": "8c8bb64016fc0ff89582827eb672d227ab90e1c3dd548929fe72fa071b4270cf"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_ablation_by_outer.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_group_ablation_by_outer.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_ablation_by_outer.csv",
       "size": 1228,
       "sha256": "4702b137ed1e06a99366f6c5044c5133b2430981dded85b9f5431b30186717d4"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_ablation_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_group_ablation_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_ablation_source.csv",
       "size": 8066,
       "sha256": "1eb90fac13064fc732c5493f2923331d73ad18c570550ae4bf38f597dd705496"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_permutation.png",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_group_permutation.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_permutation.png",
       "size": 93350,
       "sha256": "035d9618fd06bdad8b26df4a5a0148122644f06207235312e4c8e4904e93b251"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_permutation.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_group_permutation.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_permutation.svg",
       "size": 27206,
       "sha256": "ade5b7f08e6414f7afaeeb9c004b911eda84bf6bcc9900898c10dd62bb398749"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_permutation_by_outer.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_group_permutation_by_outer.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_permutation_by_outer.csv",
       "size": 1196,
       "sha256": "3ddcc500d4d62b8f4f435cde05a86dc48be06fb771c3ae34f6d270e0d5cec974"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_permutation_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_group_permutation_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_group_permutation_source.csv",
       "size": 24323,
       "sha256": "1b62e903cbc107542b889af95675f84c9129b855aff3a01cf1add73fea9ed6c6"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_key_feature_hexbin.png",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_key_feature_hexbin.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_key_feature_hexbin.png",
       "size": 272401,
       "sha256": "e6d6628ce5dceb8db4f0e7b4d356f5217f08d464a5a79226e9935a376de0cc92"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_key_feature_hexbin.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_key_feature_hexbin.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_key_feature_hexbin.svg",
       "size": 304994,
       "sha256": "ed47d0e30d658a16039e74409bd533ece9857dc57020a854c8663c92ef8331f2"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_key_feature_hexbin_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_key_feature_hexbin_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_key_feature_hexbin_source.csv",
       "size": 1041390,
       "sha256": "7652cf95168ed1919f7a6ad0a2b61977779dbc3fd87430f13e19de6108ebc543"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_shap_beeswarm.png",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_shap_beeswarm.png",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_shap_beeswarm.png",
       "size": 217164,
       "sha256": "5f1b40e25364451db3a6abd8493e636619791c89b9033ddecaa62efdabb1ff27"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_shap_beeswarm.svg",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_shap_beeswarm.svg",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_shap_beeswarm.svg",
       "size": 51248,
       "sha256": "3b3a5f59c2c57e34679aa52487f5f2f9713facfde6870f84fdae6fbce9b966bb"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_shap_beeswarm_importance.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_shap_beeswarm_importance.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_shap_beeswarm_importance.csv",
       "size": 1251,
       "sha256": "ed28402ef7ac32dd15fbd172ea3f154c78ac47282b50da764cf3b431435c7eb8"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_shap_beeswarm_source.csv",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/fig_shap_beeswarm_source.csv",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/fig_shap_beeswarm_source.csv",
       "size": 485775,
       "sha256": "e319067ce381885feccca293fe35d546fcaa77018638c044b7e149fe6ed2abe8"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/model_reproduction_receipt.json",
+      "source_path": "figs/nanjing_15var_diagnostic/05_interpretation/model_reproduction_receipt.json",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/05_interpretation/model_reproduction_receipt.json",
       "size": 1514,
       "sha256": "4a3dce5e02724b81465576d84111053de0a38f5ad6da58461f57b4b3686f97ad"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/FIGURE_CONTRACT.md",
+      "source_path": "figs/nanjing_15var_diagnostic/FIGURE_CONTRACT.md",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/FIGURE_CONTRACT.md",
       "size": 4773,
       "sha256": "5bc15524227d2b76ec75a5132ce019661a709941d31729a5383813a39395631c"
     },
     {
-      "source_path": "migration/recovery_staging/nanjing_diagnostic/figs/nanjing_15var_diagnostic/figure_manifest.json",
+      "source_path": "figs/nanjing_15var_diagnostic/figure_manifest.json",
       "materialized_path": "outputs/development/imported_nanjing_diagnostic/figs/nanjing_15var_diagnostic/figure_manifest.json",
       "size": 8246,
       "sha256": "de68228b9d5d72efd273427d4914d9f66d3527c667289529c559e284c28c25f7"

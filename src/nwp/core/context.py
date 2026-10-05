@@ -13,6 +13,7 @@ from .artifacts import ArtifactResolver
 from .config import (RunConfig, load_local_paths, read_resolved_run_config,
                      write_resolved_run_config)
 from .lifecycle import read_state, require_writable, transition, write_initial_state
+from .fingerprints import runtime_source_fingerprint
 from .paths import RunPaths
 from .provenance import write_run_provenance
 from .schema import ContractError, StageResult
@@ -33,6 +34,7 @@ class RunContext:
     provenance: dict[str, Any] = field(default_factory=dict)
     allow_model_execution: bool = False
     stage_results: dict[str, dict[str, Any]] = field(default_factory=dict)
+    active_stage: str | None = None
 
     @classmethod
     def create(
@@ -80,6 +82,9 @@ class RunContext:
             execution_level=config.execution,
             parent_run_id=parent_run_id, change_reason=change_reason,
             changed_dependencies=changed_dependencies,
+            site_registry_hash=config.site_registry_hash,
+            model_registry_hash=config.model_registry_hash,
+            runtime_source_fingerprint=runtime_source_fingerprint(root),
         )
         (paths.meta_dir / "artifact_manifest.json").write_text(
             '{"artifacts": []}\n', encoding="utf-8")
@@ -123,6 +128,9 @@ class RunContext:
             raise ContractError(
                 "current resolved configuration differs from the saved run")
         provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+        if provenance.get("runtime_source_fingerprint") != runtime_source_fingerprint(root):
+            raise ContractError(
+                "runtime source fingerprint differs from the saved run; create a child run")
         expected = {
             "run_id": run_id, "config_hash": config.config_hash,
             "execution_level": config.execution}

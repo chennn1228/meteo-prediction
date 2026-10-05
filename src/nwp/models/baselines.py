@@ -114,19 +114,20 @@ def predict_fixed_cpu(
 ) -> tuple[np.ndarray, dict[str, Any]]:
     """Return fixed predictions and transparent fit metadata."""
     entry = model_config["registry"][model_id]
+    implementation = str(entry["implementation"])
     if entry["tuning"]["enabled"]:
         raise ModelError("fixed model cannot require candidate tuning")
     if fit.empty or score.empty or "y" not in fit:
         raise ModelError("nonempty fit/score and fit truth required")
-    if model_id == "raw_gfs":
+    if implementation == "raw_gfs":
         return score.ghi_fcst.to_numpy(dtype=float), {
             "definition": "uncorrected_GFS_point"
         }
-    if model_id == "climatology":
+    if implementation == "climatology":
         return _climatology(fit, score), {
             "definition": "fit_block_month_local_hour_mean"
         }
-    if model_id == "bias_correction":
+    if implementation == "bias_correction":
         residual = fit.y.to_numpy(dtype=float) - fit.ghi_fcst.to_numpy(dtype=float)
         adjustment = pd.Series(residual).groupby(fit.lead_time.to_numpy()).mean().to_dict()
         fallback = float(np.mean(residual))
@@ -137,7 +138,7 @@ def predict_fixed_cpu(
             "definition": "fit_block_mean_additive_bias",
             "offset_by_lead": adjustment,
         }
-    if model_id == "linear_mos":
+    if implementation == "linear":
         (x_fit, _, x_score), receipt = fit_fold_preprocessing(
             fit, early_stop, score, feature_config=feature_config
         )
@@ -150,7 +151,7 @@ def predict_fixed_cpu(
     fallback = _climatology(fit, score)
     past_y = history.history_y.to_numpy(dtype=float)
     persistence = np.where(np.isfinite(past_y), past_y, fallback)
-    if model_id == "persistence":
+    if implementation == "persistence":
         return persistence, {
             "definition": "latest_same_local_hour_truth_before_issue"
         }
@@ -165,10 +166,12 @@ def predict_fixed_cpu(
         * current_clear,
         fallback,
     )
-    if model_id == "smart_persistence":
+    if implementation == "smart_persistence":
         return smart, {
             "definition": "issue_safe_clear_sky_scaled_persistence"
         }
+    if implementation != "optimal_convex":
+        raise ModelError(f"unknown fixed baseline implementation: {implementation}")
     fit_history = _causal_history(fit, fit.iloc[:0], fit)
     fit_past = fit_history.history_y.to_numpy(dtype=float)
     fit_clear = fit_history.history_clear.to_numpy(dtype=float)
@@ -209,6 +212,7 @@ class FixedBaselineModel(BaseModel):
         feature_config: Mapping[str, Any],
     ) -> None:
         self.model_id = model_id
+        self.implementation = str(model_config["registry"][model_id]["implementation"])
         self.model_config = model_config
         self.feature_config = feature_config
         self.training_: pd.DataFrame | None = None
@@ -217,7 +221,7 @@ class FixedBaselineModel(BaseModel):
     def fit(
         self, features: Any, target: Any | None = None
     ) -> "FixedBaselineModel":
-        if self.model_id == "raw_gfs":
+        if self.implementation == "raw_gfs":
             fit = features["fit"] if isinstance(features, Mapping) else features
             self.training_ = fit.iloc[:0].copy()
             self.history_ = fit.iloc[:0].copy()
@@ -236,7 +240,7 @@ class FixedBaselineModel(BaseModel):
         return self
 
     def predict(self, features: pd.DataFrame) -> np.ndarray:
-        if self.model_id == "raw_gfs":
+        if self.implementation == "raw_gfs":
             if "ghi_fcst" not in features:
                 raise ModelError("raw_gfs requires ghi_fcst")
             return features["ghi_fcst"].to_numpy(dtype=float)

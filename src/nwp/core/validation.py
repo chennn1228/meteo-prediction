@@ -226,12 +226,65 @@ def validate_cpu_readiness(root: Path | None = None) -> list[Check]:
     checks.append(Check(
         "declared CPU models validated and official-eligible", not pending,
         f"pending={pending}", "cpu_ready"))
-    accepted = [
-        path for path in (load_local_paths(root)["outputs_root"] / "development").glob("*/09_report/report.receipt.json")
-        if path.is_file()]
+    accepted: list[dict[str, str]] = []
+    outputs_root = load_local_paths(root)["outputs_root"]
+    data_root = load_local_paths(root)["data_root"]
+    required_stages = {
+        "validate", "selection", "data", "features", "splits", "tuning",
+        "fitting", "prediction", "calibration", "evaluation", "analysis",
+        "figures", "report"}
+    for run_root in sorted((outputs_root / "development").glob("*")):
+        try:
+            meta = run_root / "00_meta"
+            provenance = __import__("json").loads(
+                (meta / "provenance.json").read_text(encoding="utf-8"))
+            resolved = __import__("yaml").safe_load(
+                (meta / "resolved_config.yaml").read_text(encoding="utf-8"))
+            stages = __import__("json").loads(
+                (meta / "stage_results.json").read_text(encoding="utf-8"))
+            manifest = __import__("json").loads(
+                (meta / "artifact_manifest.json").read_text(encoding="utf-8"))
+            clean = __import__("json").loads(
+                (meta / "clean_manifest.json").read_text(encoding="utf-8"))
+            receipt = read_receipt(run_root / "09_report" / "report.receipt.json")
+            if provenance.get("run_type") != "executable":
+                continue
+            if resolved.get("execution") != "development":
+                continue
+            if set(stages) != required_stages or any(
+                    value.get("status") != "success" for value in stages.values()):
+                continue
+            if not manifest.get("artifacts"):
+                continue
+            records = clean.get("records", [])
+            if not records or any(
+                    record.get("status") != "ready"
+                    or "imported" in str(record.get("path", "")).lower()
+                    or not (data_root / str(record.get("receipt_path", ""))).is_file()
+                    for record in records):
+                continue
+            report_stage = stages["report"]
+            if receipt.get("output_hashes") != report_stage.get("output_hashes"):
+                continue
+            report_outputs_valid = True
+            for key, path_text in report_stage.get("artifact_outputs", {}).items():
+                path = Path(path_text)
+                if (not path.is_file()
+                        or report_stage["output_hashes"].get(key) != file_sha256(path)):
+                    report_outputs_valid = False
+                    break
+            if not report_outputs_valid or not report_stage.get("artifact_outputs"):
+                continue
+            markers = (str(provenance) + str(resolved)).lower()
+            if "synthetic" in markers or "imported_evidence" in markers:
+                continue
+            accepted.append({"run_id": run_root.name,
+                             "config_hash": str(resolved["config_hash"])})
+        except (OSError, KeyError, TypeError, ValueError, ContractError):
+            continue
     checks.append(Check(
         "receipt-backed real-data development mini-E2E accepted", bool(accepted),
-        f"accepted_receipts={len(accepted)}", "cpu_ready"))
+        f"accepted_runs={accepted}", "cpu_ready"))
     missing_runtime = [name for name in ("numpy", "pandas", "pyarrow", "lightgbm", "xgboost")
                        if importlib.util.find_spec(name) is None]
     checks.append(Check(
@@ -329,10 +382,19 @@ def official_readiness_receipt(config: Any, root: Path | None = None) -> dict[st
                            if "provenance" in check.name or "receipt" in check.name)
     environment_ready = all(check.passed for check in checks
                             if "runtime" in check.name or "environment" in check.name)
-    overall = (all(by_scope.values()) and registered and provenance_ready
+    selected_records = config.models["registry"]
+    deep_required = any(selected_records[model_id].get("family") in {
+        "deep", "experimental_constrained"} for model_id in config.selected_models)
+    spatial_required = bool(config.scope.get("spatial"))
+    required_scopes = (
+        by_scope["structural"] and by_scope["data_ready"] and by_scope["cpu_ready"]
+        and (by_scope["deep_ready"] if deep_required else True)
+        and (by_scope["spatial_ready"] if spatial_required else True)
+    )
+    overall = (required_scopes and registered and provenance_ready
                and environment_ready and all(eligibility.values()))
     return {
-        "scientific_run_hash": stable_object_hash(config.protocol),
+        "scientific_run_hash": config.config_hash,
         "structural_ready": by_scope["structural"],
         "data_ready": by_scope["data_ready"],
         "cpu_ready": by_scope["cpu_ready"],

@@ -29,3 +29,10 @@ def test_scientific_configs_are_exactly_six_and_local_example_is_machine_only():
               if path.name not in {"local.yaml", "local.example.yaml"}}
     assert actual == expected
     assert (ROOT / "config" / "local.example.yaml").is_file()
+
+
+def test_temporary_workflow_and_migration_staging_are_absent():
+    assert not (ROOT / "src" / "nwp" / "workflow" / "stages" / "implementation.py").exists()
+    assert not (ROOT / "migration" / "recovery_staging").exists()
+    assert not list((ROOT / "migration").glob("phase_*.md"))
+    assert (ROOT / "migration" / "recovered_artifacts").is_dir()

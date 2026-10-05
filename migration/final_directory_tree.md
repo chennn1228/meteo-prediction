@@ -69,7 +69,12 @@ collapsed intentionally.
 │   │   ├── figures.py
 │   │   └── style.py
 │   └── workflow/
-│       └── pipeline.py
+│       ├── pipeline.py
+│       └── stages/
+│           ├── common.py
+│           ├── prepare.py
+│           ├── modeling.py
+│           └── analysis.py
 ├── data/                         # ignored local research material
 │   ├── raw/<source>/<site>/<month>.*
 │   ├── clean/<config-hash>/<site>/<month>.*
@@ -99,8 +104,9 @@ collapsed intentionally.
     ├── figure_inventory.csv
     ├── data_*_plan.csv
     ├── development_run*_inventory.csv
-    ├── phase_a_baseline.md … phase_k_cleanup.md
     ├── final_residual_search.md
+    ├── final_closure_register.csv
+    ├── post_acceptance_verification.md
     ├── final_acceptance.md
     └── recovered_artifacts/      # isolated inherited evidence, never active output
 ```

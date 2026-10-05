@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 
 import pytest
 
@@ -50,6 +51,9 @@ def test_receipt_roundtrip_validation_and_no_overwrite(tmp_path):
         status="success",
         input_hashes={"clean": "12345678"},
         output_hashes={"features": "abcdefabcdef"},
+        dependency_fingerprint="1" * 64,
+        implementation_fingerprint="2" * 64,
+        environment_fingerprint="3" * 64,
     )
     path = tmp_path / "features.receipt.json"
     write_receipt(path, receipt)
@@ -102,8 +106,29 @@ def test_run_context_writes_complete_meta_and_records_immutable_stage(tmp_path):
         project_root(), config, data_root=tmp_path / "data",
         outputs_root=tmp_path / "outputs", run_id="context-test")
     assert resumed.stage_results == saved
+    registry_only_change = replace(
+        config, site_registry_hash="1" * 64, model_registry_hash="2" * 64,
+        official_result_set="future-official-result",
+        locked_config_hash="f" * 64)
+    registry_resumed = RunContext.resume(
+        project_root(), registry_only_change, data_root=tmp_path / "data",
+        outputs_root=tmp_path / "outputs", run_id="context-test")
+    assert registry_resumed.config.config_hash == config.config_hash
     changed = resolve_config("nanjing_cpu_diagnostic", models="raw_gfs")
     with pytest.raises(ContractError, match="differs"):
         RunContext.resume(
             project_root(), changed, data_root=tmp_path / "data",
             outputs_root=tmp_path / "outputs", run_id="context-test")
+
+
+def test_same_run_resume_rejects_runtime_source_drift(tmp_path, monkeypatch):
+    config = resolve_config("nanjing_cpu_diagnostic", models="raw_gfs")
+    RunContext.create(
+        project_root(), config, data_root=tmp_path / "data",
+        outputs_root=tmp_path / "outputs", run_id="runtime-drift")
+    monkeypatch.setattr("nwp.core.context.runtime_source_fingerprint",
+                        lambda _root: "0" * 64)
+    with pytest.raises(ContractError, match="runtime source fingerprint differs"):
+        RunContext.resume(
+            project_root(), config, data_root=tmp_path / "data",
+            outputs_root=tmp_path / "outputs", run_id="runtime-drift")

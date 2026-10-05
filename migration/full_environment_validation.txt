@@ -1,0 +1,22 @@
+Full clean environment validation
+Date (Asia/Shanghai): 2026-10-05
+Environment: D:\codex-envs\nwp-full-20261005
+Install command: python -m pip install -e ".[cpu,deep,dev]"
+Install result: PASS
+
+Installed optional execution families:
+scikit-learn 1.9.1
+lightgbm 4.7.0
+xgboost 3.4.1
+torch 2.14.1
+pytest 9.1.1
+
+Verification command:
+python -m pytest -p no:cacheprovider -q
+Result: PASS — 147 passed in 66.10s
+Python: 3.13.2
+
+No formal training, GPU benchmark, multi-seed experiment, official run,
+network data acquisition, or official result registration was performed.
+
+This is the final post-acceptance source state before acceptance regeneration.

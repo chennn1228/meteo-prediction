@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import sys
+import copy
 from pathlib import Path
 
 import numpy as np
@@ -76,6 +77,19 @@ def test_raw_gfs_is_point_only_and_bias_fits_fit_rows():
     bias, _ = predict("bias_correction", fit, early, score)
     np.testing.assert_allclose(raw, score.ghi_fcst)
     np.testing.assert_allclose(bias, score.ghi_fcst + 5)
+
+
+def test_fixed_baseline_dispatches_by_implementation_not_model_id():
+    frame = rows()
+    fit, early, score = frame.iloc[:8], frame.iloc[8:10], frame.iloc[10:]
+    aliased = copy.deepcopy(CONFIG["models"])
+    aliased["registry"]["test_raw_alias"] = copy.deepcopy(
+        aliased["registry"]["raw_gfs"])
+    alias, _ = predict_fixed_cpu(
+        "test_raw_alias", fit, early, score, model_config=aliased,
+        feature_config=CONFIG["features"]["build"])
+    raw, _ = predict("raw_gfs", fit, early, score)
+    np.testing.assert_allclose(alias, raw)
 
 
 def test_missing_latest_truth_does_not_hide_earlier_valid_persistence():

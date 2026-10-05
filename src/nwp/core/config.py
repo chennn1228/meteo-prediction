@@ -154,6 +154,84 @@ def _validate_bundle(bundle: Mapping[str, Any]) -> None:
             )
     protocol, data = bundle["protocol"], bundle["data"]
     features = bundle["features"]["build"]
+    def exact_keys(value: Any, allowed: set[str], label: str) -> None:
+        if not isinstance(value, Mapping):
+            raise ConfigError(f"{label} must be a mapping")
+        extra, missing = set(value) - allowed, allowed - set(value)
+        if extra or missing:
+            raise ConfigError(
+                f"{label} keys must be exactly {sorted(allowed)}; "
+                f"missing={sorted(missing)}, extra={sorted(extra)}")
+
+    exact_keys(protocol["validation"], {
+        "name", "maximum_sequence_lookback_hours", "maximum_lead_hours",
+        "purge_hours", "purge_derivation", "gap_sensitivity_days",
+        "inner_folds", "early_stop_days", "scoring_days", "inner_order",
+        "first_outer_insufficiency_policy", "outer_folds", "final_fit"},
+        "protocol.validation")
+    exact_keys(protocol["probability"], {
+        "quantiles", "selection_metric", "construction", "calibration"},
+        "protocol.probability")
+    exact_keys(protocol["evaluation"], {
+        "deterministic_metrics", "probabilistic_metrics",
+        "point_metric_references", "prediction_contract"},
+        "protocol.evaluation")
+    exact_keys(protocol["execution_gate"], {
+        "implementation_levels", "execution_levels", "official",
+        "readiness_scope", "model_execution_requires_explicit_flag"},
+        "protocol.execution_gate")
+    exact_keys(protocol["spatial_design"], {
+        "execution_status", "province_model_forbids_station_id", "levels",
+        "truth_gate", "study_object", "service_registry_status",
+        "empirical_probe_step_degrees", "service_probe_registry",
+        "convergence_required_before_official"}, "protocol.spatial_design")
+    exact_keys(data["truth"], {"primary", "supplementary"}, "data.truth")
+    exact_keys(data["truth"]["primary"], {
+        "provider", "model", "semantics", "variables"}, "data.truth.primary")
+    exact_keys(data["truth"]["supplementary"], {
+        "provider", "role", "variables"}, "data.truth.supplementary")
+    exact_keys(data["storage"], {
+        "raw_partitioning", "clean_partitioning", "feature_partitioning",
+        "raw_overwrite_forbidden"}, "data.storage")
+    exact_keys(data["clean_contract"], {
+        "radiation_negative_policy", "cloud_range", "missing_policy", "row_unit"},
+        "data.clean_contract")
+    exact_keys(features, {
+        "version", "status", "clear_sky", "feature_groups",
+        "derived_features", "policy"}, "features.build")
+    exact_keys(features["policy"], {
+        "issue_time_availability_required", "identity_fields_forbidden",
+        "truth_fields_forbidden", "location_for_solar_geometry",
+        "solar_geometry_time_basis", "clear_sky_time_basis",
+        "circular_encodings", "clear_sky_denominator", "diffuse_denominator",
+        "diagnostic_ratio_columns", "diagnostic_ratio_clipping",
+        "model_ratio_columns", "model_ratio_transform", "preprocessing",
+        "lag_source", "cloud_imputation_predictors"}, "features.build.policy")
+    exact_keys(bundle["features"]["analysis"], {
+        "evidence", "diagnostics"}, "features.analysis")
+    for selector_id, selector in bundle["sites"]["selectors"].items():
+        exact_keys(selector, {"method", "status", "official_eligible", "source_set",
+                              "allowed_counts", "region_quotas"},
+                   f"sites.selectors.{selector_id}")
+    model_allowed = {"family", "role", "internal_version", "implementation",
+                     "quantile_adapter", "algorithm", "device", "tuning",
+                     "implementation_status", "official_eligible", "constraints"}
+    for model_id, model in bundle["models"]["registry"].items():
+        if set(model) - model_allowed:
+            raise ConfigError(f"models.registry.{model_id} contains unknown keys: "
+                              f"{sorted(set(model) - model_allowed)}")
+        exact_keys(model["tuning"], {"enabled"},
+                   f"models.registry.{model_id}.tuning")
+    exact_keys(bundle["models"]["search"], {"budget", "spaces"}, "models.search")
+    exact_keys(bundle["models"]["search"]["budget"], {
+        "trials_per_model", "equal_budget", "report_compute_budget",
+        "trial_definition", "outer_validation_forbidden_during_selection",
+        "final_test_forbidden_during_selection"}, "models.search.budget")
+    for profile_id, profile in bundle["experiments"]["profiles"].items():
+        allowed = {"execution", "sites", "models", "spatial", "locked_config_hash"}
+        if set(profile) - allowed:
+            raise ConfigError(f"experiments.profiles.{profile_id} contains unknown keys: "
+                              f"{sorted(set(profile) - allowed)}")
     for value, label in ((manifest.get("project_id"), "project ID"),):
         if not isinstance(value, str) or not _SAFE_ID.fullmatch(value):
             raise ConfigError(f"unsafe {label}: {value!r}")
@@ -375,11 +453,7 @@ class RunConfig:
             "selected_model_records": self.selected_model_records,
             "selected_search_spaces": self.selected_search_spaces,
             "scope": self.scope,
-            "site_registry_hash": self.site_registry_hash,
-            "model_registry_hash": self.model_registry_hash,
             "overrides": self.overrides,
-            "official_result_set": self.official_result_set,
-            "locked_config_hash": self.locked_config_hash,
             "config_hash": self.config_hash,
         })
 
@@ -467,6 +541,19 @@ def resolve_config(profile: str | None, *, root: Path | None = None, models: str
                    else None)
     resolved_site_set = (site_set or dict(chosen["sites"]).get("value")
                          if sites is None else None)
+    selector_parameters: dict[str, Any] = {}
+    if selector_id is not None:
+        selector_record = _plain(site_cfg["selectors"][selector_id])
+        selector_parameters = {
+            "selector_id": selector_id,
+            "method": selector_record["method"],
+            "source_set": source_set,
+            "allowed_counts": selector_record["allowed_counts"],
+            "region_quotas": selector_record["region_quotas"],
+            "requested_n_sites": len(chosen_sites),
+            "status": selector_record["status"],
+            "official_eligible": selector_record["official_eligible"],
+        }
     payload = {
         "project_id": bundle["manifest"]["project_id"],
         "protocol_version": bundle["manifest"]["protocol_version"],
@@ -486,7 +573,7 @@ def resolve_config(profile: str | None, *, root: Path | None = None, models: str
         "scope": {
             "site_set": resolved_site_set,
             "selector": selector_id,
-            "selector_parameters": ({"n_sites": len(chosen_sites)} if selector_id else {}),
+            "selector_parameters": selector_parameters,
             "model_group": dict(chosen["models"]).get("group"),
             "spatial": bool(chosen.get("spatial", False)),
         },

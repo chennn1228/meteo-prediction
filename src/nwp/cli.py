@@ -14,7 +14,6 @@ from nwp.core.lifecycle import transition
 from nwp.core.provenance import write_provenance
 from nwp.core.validation import official_readiness_receipt, readiness_result
 from nwp.data.audit import inventory_data, probe_service_round
-from nwp.workflow.pipeline import ALIASES, STAGES, run_pipeline
 
 
 def _add_config_arguments(parser: argparse.ArgumentParser) -> None:
@@ -56,7 +55,43 @@ def _resume_config(run_id: str):
     return config
 
 
+def _run_dir(run_id: str) -> Path:
+    root = project_root()
+    outputs_root = load_local_paths(root)["outputs_root"]
+    matches = [outputs_root / execution / run_id for execution in ("development", "official")
+               if (outputs_root / execution / run_id).is_dir()]
+    if len(matches) != 1:
+        raise ConfigError(f"run_id must resolve to exactly one development/official run: {run_id}")
+    return matches[0]
+
+
+def _child_metadata(parent_run_id: str, config: Any) -> list[str]:
+    parent = _run_dir(parent_run_id)
+    status = json.loads((parent / "00_meta" / "status.json").read_text(encoding="utf-8"))
+    state = status.get("state") or status.get("status")
+    if state not in {"COMPLETE", "BLOCKED", "FAILED", "FROZEN"}:
+        raise ConfigError("parent run must be terminal: COMPLETE, BLOCKED, FAILED, or FROZEN")
+    for required in ("provenance.json", "artifact_manifest.json", "resolved_config.yaml"):
+        if not (parent / "00_meta" / required).is_file():
+            raise ConfigError(f"parent run metadata is incomplete: {required}")
+    saved = read_resolved_run_config(parent / "00_meta" / "resolved_config.yaml")
+    current = config.as_dict()
+    def changed_paths(left: Any, right: Any, prefix: str = "") -> list[str]:
+        if isinstance(left, dict) and isinstance(right, dict):
+            output: list[str] = []
+            for key in sorted(set(left) | set(right)):
+                path = f"{prefix}.{key}" if prefix else str(key)
+                if key not in left or key not in right:
+                    output.append(path)
+                else:
+                    output.extend(changed_paths(left[key], right[key], path))
+            return output
+        return [] if left == right else [prefix]
+    return changed_paths(saved, current)
+
+
 def _run(args: argparse.Namespace) -> int:
+    from nwp.workflow.pipeline import ALIASES, STAGES, run_pipeline
     if args.command in {"evaluate", "figures"} and not getattr(args, "run_id", None):
         raise ConfigError(f"nwp {args.command} requires --run-id")
     config = (_resume_config(args.run_id)
@@ -67,7 +102,12 @@ def _run(args: argparse.Namespace) -> int:
         if getattr(args, "run_id", None)
         else RunContext.create(
             project_root(), config,
-            allow_model_execution=args.execute_model_stages))
+            allow_model_execution=args.execute_model_stages,
+            parent_run_id=getattr(args, "parent_run_id", None),
+            change_reason=getattr(args, "change_reason", None),
+            changed_dependencies=(
+                _child_metadata(args.parent_run_id, config)
+                if getattr(args, "parent_run_id", None) else None)))
     if config.execution == "official" and context.lifecycle_state == "CREATED":
         receipt = official_readiness_receipt(config, project_root())
         write_provenance(context.paths.meta_dir / "readiness_receipt.json", receipt)
@@ -112,6 +152,8 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--from-stage", default="validate")
     run.add_argument("--to-stage", default="report")
     run.add_argument("--run-id", help="resume an existing run with its saved configuration")
+    run.add_argument("--parent-run-id", help="create a child run from one terminal parent")
+    run.add_argument("--change-reason", help="required explanation for a child run")
     run.add_argument("--execute-model-stages", action="store_true")
     evaluate = sub.add_parser("evaluate", help="run the evaluation stage for a resolved development run")
     evaluate.add_argument("--run-id", required=True)
@@ -132,14 +174,15 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "data":
             root = project_root()
+            local_data_root = load_local_paths(root)["data_root"]
             if args.data_command == "inventory":
-                payload = inventory_data(root / "data")
+                payload = inventory_data(local_data_root)
             else:
                 bundle = load_bundle(str(root))
                 payload = probe_service_round(
                     args.step, batch_size=args.batch_size,
                     max_new_batches=args.max_new_batches,
-                    data_root=root / "data",
+                    data_root=local_data_root,
                     boundary_path=(
                         args.boundary or load_local_paths(root)["data_root"] /
                         "registry" / "geography" / "jiangsu.geojson"),
@@ -147,6 +190,10 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(payload, ensure_ascii=False, indent=2))
             return 0
         if args.command == "run":
+            if args.run_id and args.parent_run_id:
+                raise ConfigError("--run-id and --parent-run-id cannot be combined")
+            if bool(args.parent_run_id) != bool(args.change_reason):
+                raise ConfigError("--parent-run-id and --change-reason must be supplied together")
             return _run(args)
         if args.command in {"evaluate", "figures"}:
             args.from_stage = args.command

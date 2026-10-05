@@ -46,6 +46,13 @@ RUNTIME_PACKAGES = (
     "shap",
 )
 _HEX = re.compile(r"^[0-9a-f]{8,64}$")
+_WORKFLOW_STAGES = frozenset({
+    "validate", "selection", "data", "features", "splits", "tuning",
+    "fitting", "prediction", "calibration", "evaluation", "analysis",
+    "figures", "report"})
+_WORKFLOW_FINGERPRINT_KEYS = frozenset({
+    "dependency_fingerprint", "implementation_fingerprint",
+    "environment_fingerprint"})
 
 
 def _git(root: Path, *args: str) -> str:
@@ -141,6 +148,14 @@ def validate_receipt(receipt: Mapping[str, Any]) -> None:
         raise ContractError("receipt config_hash must be a lowercase hex hash")
     _hash_mapping(receipt["input_hashes"], "input_hashes")
     _hash_mapping(receipt["output_hashes"], "output_hashes")
+    if receipt["stage"] in _WORKFLOW_STAGES:
+        missing_fingerprints = _WORKFLOW_FINGERPRINT_KEYS - set(receipt)
+        if missing_fingerprints:
+            raise ContractError(
+                f"workflow receipt is missing fingerprints: {sorted(missing_fingerprints)}")
+        for key in _WORKFLOW_FINGERPRINT_KEYS:
+            if not isinstance(receipt[key], str) or not _HEX.fullmatch(receipt[key]):
+                raise ContractError(f"workflow receipt {key} must be a lowercase hex hash")
     if not isinstance(receipt["git_commit"], str) or not re.fullmatch(r"[0-9a-f]{40}", receipt["git_commit"]):
         raise ContractError("receipt git_commit must be a full SHA-1")
     if receipt["execution_level"] not in EXECUTION_LEVELS:
@@ -195,16 +210,24 @@ def read_receipt(path: Path) -> dict[str, Any]:
 def write_run_provenance(path: Path, *, root: Path, run_id: str, config_hash: str,
                          execution_level: str, parent_run_id: str | None = None,
                          change_reason: str | None = None,
-                         changed_dependencies: list[str] | None = None) -> dict[str, Any]:
+                         changed_dependencies: list[str] | None = None,
+                         site_registry_hash: str,
+                         model_registry_hash: str,
+                         runtime_source_fingerprint: str,
+                         run_type: str = "executable") -> dict[str, Any]:
     if not run_id:
         raise ContractError("run_id is required for run provenance")
     payload = {
         "run_id": run_id,
         "config_hash": config_hash,
         "execution_level": execution_level,
+        "run_type": run_type,
         "parent_run_id": parent_run_id,
         "change_reason": change_reason,
         "changed_dependencies": list(changed_dependencies or []),
+        "site_registry_hash": site_registry_hash,
+        "model_registry_hash": model_registry_hash,
+        "runtime_source_fingerprint": runtime_source_fingerprint,
         **runtime_provenance(root),
     }
     _write_new_json(path, payload)

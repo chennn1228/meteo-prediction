@@ -1,10 +1,9 @@
 # Status
 
-## Completed
+## Post-acceptance repair in progress
 
-- Unified configuration, core contracts, data/features/splits, model and
-  experiment interfaces, executable workflow, evaluation, visualization, and
-  run-scoped outputs are implemented.
+- Unified configuration and run-scoped workflow structure exist. Artifact-level
+  cross-run reuse remains under repair and is not yet accepted as complete.
 - Inherited API responses are stored by source/site/month with receipts and a
   catalog. Valid data are `ready`; invalid, partial, variant, and unverified
   processed imports are retained but fail-closed as `incomplete`.
@@ -17,10 +16,8 @@
 - Of the original 282 recovery-required paths, 121 have exact local recovery
   and 161 remain `RECOVERY_REQUIRED`. The canonical current snapshot is
   `migration/recovery_required_register.csv`.
-- A clean Python 3.13.2 environment, created without system site packages and
-  installed from `pyproject.toml`, passed the ordered acceptance run and the
-  complete suite: **124 passed** on 2026-10-04. The environment snapshot is
-  `migration/final_environment.txt`.
+- The earlier 124-test acceptance is superseded by the post-acceptance audit.
+  Current tests are useful regression evidence but are not final acceptance.
 
 ## Blocked
 

@@ -1,0 +1,25 @@
+Base-only clean environment validation
+Date (Asia/Shanghai): 2026-10-05
+Environment: D:\codex-envs\nwp-base-20261005
+Install command: python -m pip install -e .
+Install result: PASS
+
+Optional packages confirmed absent:
+sklearn=None
+lightgbm=None
+xgboost=None
+torch=None
+pytest=None
+
+Commands:
+python -c "import nwp" -> PASS (IMPORT_OK)
+python -m nwp validate --profile nanjing_cpu_diagnostic -> PASS
+python -m nwp status -> PASS
+python -m nwp data inventory -> PASS ({"KEEP": 11440})
+
+Resolved development config hash: 4e323accda08
+Python: 3.13.2
+
+Revalidated after final source changes on 2026-10-05. No optional execution
+package was present; import, validate, status and configured data inventory all
+passed.

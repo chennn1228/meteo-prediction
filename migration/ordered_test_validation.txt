@@ -1,0 +1,24 @@
+Ordered post-acceptance test validation
+Date (Asia/Shanghai): 2026-10-05
+Interpreter: .venv\Scripts\python.exe
+Common flags: -m pytest -p no:cacheprovider -q
+
+01 config: PASS — 17 passed
+02 core: PASS — 27 passed
+03 data: PASS — 8 passed
+04 features: PASS — 7 passed
+05 splits: PASS — 5 passed
+06 models: PASS — 16 passed
+07 experiment: PASS — 9 passed
+08 evaluation: PASS — 14 passed
+09 workflow integration: PASS — 2 passed
+10 child-run reuse integration: PASS — 2 passed
+11 stage tamper/resume: PASS — 1 passed
+12 repository layout: PASS — 4 passed
+
+The child-run test uses real RunContext, run_pipeline, ArtifactResolver,
+artifact_manifest writes and copy materialization. Training functions are
+bounded test doubles; no formal/full training is performed.
+
+Final aggregate verification: PASS — 147 passed in both the working and the
+independent full environment.

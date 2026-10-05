@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from nwp.core.context import RunContext
+from nwp.core.fingerprints import environment_fingerprint, sha256_directory, sha256_file
 from nwp.core.lifecycle import transition
 from nwp.core.provenance import make_receipt, read_receipt, write_receipt
 from nwp.core.schema import ContractError, StageResult
@@ -24,9 +25,47 @@ HANDLERS: dict[str, Callable[[RunContext], StageResult]] = {
     "fitting": fit_models, "prediction": predict, "calibration": calibrate,
     "evaluation": evaluate, "analysis": analyse, "figures": figures, "report": report}
 
+_STAGE_PACKAGES = (
+    "numpy", "pandas", "pyarrow", "pvlib", "scikit-learn", "lightgbm",
+    "xgboost", "torch", "matplotlib")
+
+
+def _stage_environment_fingerprint() -> str:
+    return environment_fingerprint(_STAGE_PACKAGES)
+
 
 def _outputs(stage: dict[str, Any]) -> dict[str, Any]:
     return {**stage.get("artifact_outputs", {}), **stage.get("metadata_outputs", {})}
+
+
+def _actual_output_hashes(stage: dict[str, Any]) -> dict[str, str]:
+    hashes: dict[str, str] = {}
+    for key, value in stage.get("artifact_outputs", {}).items():
+        path = Path(value)
+        if not path.exists():
+            raise ContractError(f"saved stage output is missing: {path}")
+        hashes[key] = sha256_file(path) if path.is_file() else sha256_directory(path)
+    return hashes
+
+
+def _verify_saved_stage(context: RunContext, stage: str,
+                        previous: dict[str, Any]) -> None:
+    try:
+        receipt = read_receipt(context.paths.stage_receipt(stage))
+        valid = (
+            receipt.get("config_hash") == context.config.config_hash
+            and receipt.get("status") == previous.get("status")
+            and receipt.get("dependency_fingerprint") == previous.get("dependency_fingerprint")
+            and receipt.get("implementation_fingerprint") == previous.get("implementation_fingerprint")
+            and receipt.get("environment_fingerprint") == _stage_environment_fingerprint()
+            and receipt.get("input_hashes") == previous.get("input_hashes")
+            and receipt.get("output_hashes") == previous.get("output_hashes")
+            and _actual_output_hashes(previous) == previous.get("output_hashes"))
+        if valid:
+            return
+    except (ContractError, OSError, ValueError):
+        pass
+    raise ContractError(f"saved stage {stage} is inconsistent; create a child run")
 
 
 def run_pipeline(context: RunContext, *, from_stage: str = "validate",
@@ -37,21 +76,20 @@ def run_pipeline(context: RunContext, *, from_stage: str = "validate",
     start, end = STAGES.index(from_stage), STAGES.index(to_stage)
     if start > end:
         raise ValueError("from-stage must not follow to-stage")
+    for stage in STAGES[:start]:
+        previous = context.stage_results.get(stage)
+        if previous and previous.get("status") in {"success", "reused", "skipped"}:
+            _verify_saved_stage(context, stage, previous)
     for stage in STAGES[start:end + 1]:
         previous = context.stage_results.get(stage)
         if previous and previous.get("status") in {"success", "reused", "skipped"}:
-            try:
-                receipt = read_receipt(context.paths.stage_receipt(stage))
-                paths = [Path(value) for value in _outputs(previous).values()
-                         if isinstance(value, str) and ("/" in value or "\\" in value)]
-                if (receipt.get("config_hash") == context.config.config_hash
-                        and receipt.get("status") == previous.get("status")
-                        and all(path.exists() for path in paths)):
-                    continue
-            except (ContractError, OSError, ValueError):
-                pass
-            raise ContractError(f"saved stage {stage} is inconsistent; create a child run")
-        result = HANDLERS[stage](context)
+            _verify_saved_stage(context, stage, previous)
+            continue
+        context.active_stage = stage
+        try:
+            result = HANDLERS[stage](context)
+        finally:
+            context.active_stage = None
         context.record_stage(stage, result)
         extra = ({key: _outputs(result.as_dict()).get(key)
                   for key in ("trial_budget", "actual_trials", "selection_metric")}
@@ -60,6 +98,9 @@ def run_pipeline(context: RunContext, *, from_stage: str = "validate",
             root=context.paths.root, stage=stage, config_hash=context.config.config_hash,
             execution_level=context.execution_level, status=result.status,
             input_hashes=result.input_hashes, output_hashes=result.output_hashes,
+            dependency_fingerprint=result.dependency_fingerprint,
+            implementation_fingerprint=result.implementation_fingerprint,
+            environment_fingerprint=_stage_environment_fingerprint(),
             message=result.message, **extra))
         if result.status in {"blocked", "failed"}:
             target = "BLOCKED" if result.status == "blocked" else "FAILED"

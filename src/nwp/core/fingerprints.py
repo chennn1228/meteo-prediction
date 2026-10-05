@@ -45,6 +45,15 @@ def source_files_fingerprint(root: Path, relative_paths: Iterable[str]) -> str:
     return stable_object_hash(records)
 
 
+def runtime_source_fingerprint(root: Path) -> str:
+    """Fingerprint every active Python source file, excluding docs and generated data."""
+    source_root = Path(root) / "src" / "nwp"
+    return source_files_fingerprint(
+        root,
+        (path.relative_to(root).as_posix() for path in source_root.rglob("*.py")),
+    )
+
+
 def environment_fingerprint(packages: Iterable[str]) -> str:
     versions = {"python": __import__("platform").python_version()}
     for package in sorted(set(packages)):
@@ -55,7 +64,7 @@ def environment_fingerprint(packages: Iterable[str]) -> str:
     return stable_object_hash(versions)
 
 
-def run_fingerprints(root: Path, *, protocol: Any, data: Any, feature_build: Any,
+def run_fingerprints(root: Path, *, scientific_run_hash: str, protocol: Any, data: Any, feature_build: Any,
                      analysis: Any, validation: Any, sites: Any,
                      models: dict[str, Any]) -> dict[str, Any]:
     root = Path(root)
@@ -78,10 +87,12 @@ def run_fingerprints(root: Path, *, protocol: Any, data: Any, feature_build: Any
                           else "src/nwp/models/baselines.py")
         model_hashes[model_id] = stable_object_hash({
             "config": record,
-            "code": source_files_fingerprint(root, ("src/nwp/models/base.py", implementation)),
+            "code": source_files_fingerprint(root, (
+                "src/nwp/models/base.py", "src/nwp/models/factory.py",
+                "src/nwp/features/preprocessing.py", implementation)),
         })
     return {
-        "scientific_run_hash": stable_object_hash(protocol),
+        "scientific_run_hash": scientific_run_hash,
         "site_selection_hash": stable_object_hash(sites),
         "data_contract_hash": stable_object_hash(data),
         "feature_build_hash": stable_object_hash({"config": feature_build, "code": feature_code}),

@@ -11,10 +11,13 @@ from nwp.core.artifacts import ArtifactRecord, ArtifactResolver
 from nwp.core.config import ConfigError, assert_official_ready, load_bundle, project_root, resolve_config, to_plain, _validate_bundle
 from nwp.core.dependencies import aggregate_dependency_fingerprint, model_dependency_fingerprint
 from nwp.core.lifecycle import require_writable, transition, write_initial_state
-from nwp.core.fingerprints import sha256_file, stable_object_hash
+from nwp.core.fingerprints import (runtime_source_fingerprint, sha256_directory, sha256_file,
+                                   stable_object_hash)
 from nwp.core.paths import RunPaths
 from nwp.core.context import RunContext
 from nwp.core.schema import ContractError, assert_model_features
+from nwp.workflow.stages.common import (_restore_artifact_bundle,
+                                        _write_artifact_bundle)
 
 
 def test_unknown_root_key_and_unsafe_ids_fail_closed():
@@ -173,6 +176,46 @@ def test_feature_and_visualization_fingerprint_invalidation_boundaries():
     assert feature_downstream(base) != feature_downstream(feature_changed)
     assert feature_downstream(base) == feature_downstream(visual_changed)
     assert figure(base) != figure(visual_changed)
+
+
+def test_runtime_source_fingerprint_covers_python_but_excludes_docs(tmp_path):
+    source = tmp_path / "src" / "nwp"
+    docs = tmp_path / "docs"
+    source.mkdir(parents=True)
+    docs.mkdir()
+    (source / "active.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (docs / "guide.md").write_text("one\n", encoding="utf-8")
+    baseline = runtime_source_fingerprint(tmp_path)
+    (docs / "guide.md").write_text("two\n", encoding="utf-8")
+    assert runtime_source_fingerprint(tmp_path) == baseline
+    (source / "active.py").write_text("VALUE = 2\n", encoding="utf-8")
+    assert runtime_source_fingerprint(tmp_path) != baseline
+
+
+def test_directory_hash_changes_when_same_named_file_bytes_change(tmp_path):
+    artifact = tmp_path / "artifact"
+    artifact.mkdir()
+    target = artifact / "same-name.bin"
+    target.write_bytes(b"first")
+    before = sha256_directory(artifact)
+    target.write_bytes(b"second")
+    assert sha256_directory(artifact) != before
+
+
+def test_model_local_artifact_bundle_round_trip(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "overall.csv").write_text("model_id,value\nridge,1\n", encoding="utf-8")
+    nested = source / "grouped" / "lead"
+    nested.mkdir(parents=True)
+    (nested / "reliability.csv").write_bytes(b"nominal,empirical\n0.5,0.5\n")
+    bundle = source / "metrics.bundle.json"
+    _write_artifact_bundle(source, bundle)
+    destination = tmp_path / "destination"
+    _restore_artifact_bundle(bundle, destination)
+    assert (destination / "overall.csv").read_bytes() == (source / "overall.csv").read_bytes()
+    assert (destination / "grouped" / "lead" / "reliability.csv").read_bytes() == (
+        nested / "reliability.csv").read_bytes()
 
 
 def test_child_run_provenance_records_parent_and_changed_dependencies(tmp_path: Path):

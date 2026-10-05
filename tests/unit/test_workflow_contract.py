@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import unittest
+import inspect
 from pathlib import Path
 
 ROOT = next(parent for parent in Path(__file__).resolve().parents
@@ -11,6 +12,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from nwp.core.config import resolve_config
 from nwp.core.validation import readiness_result
 from nwp.workflow.pipeline import HANDLERS, STAGES
+from nwp.workflow.stages.common import _result
 
 
 class ValidatorOrchestratorTests(unittest.TestCase):
@@ -24,6 +26,11 @@ class ValidatorOrchestratorTests(unittest.TestCase):
     def test_official_fail_closed_until_evidence_exists(self):
         report = readiness_result("official")
         self.assertEqual(report["status"], "blocked")
+
+    def test_stage_result_requires_explicit_dependency_and_implementation(self):
+        signature = inspect.signature(_result)
+        for name in ("dependency_fingerprint", "implementation_fingerprint"):
+            self.assertIs(signature.parameters[name].default, inspect.Parameter.empty)
 
 
 if __name__ == "__main__":

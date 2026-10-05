@@ -5,10 +5,19 @@ This repository has four layers: `config/` declares what an experiment uses,
 material, and `outputs/` isolates every run. Scientific settings belong in
 configuration, not in site-, model-, or date-specific scripts.
 
-Install the package in the project environment:
+Install the base package (configuration, status, inventory, and data stages):
 
 ```powershell
-python -m pip install --no-build-isolation -e .
+python -m pip install -e .
+```
+
+Install CPU model support, deep-model support, or the complete development
+environment explicitly:
+
+```powershell
+python -m pip install -e ".[cpu]"
+python -m pip install -e ".[deep]"
+python -m pip install -e ".[cpu,deep,dev]"
 ```
 
 The sole command-line interface is `python -m nwp`:

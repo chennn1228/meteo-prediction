@@ -30,9 +30,9 @@ fold-, gap-, or site-count-specific execution scripts.
 ## Runs and traceability
 
 Use only `python -m nwp`. Every run owns `00_meta` through `09_report` beneath
-`outputs/<execution>/<run-id>/`. Resume by run ID; the workflow validates the
-saved resolved configuration, stage receipt, dependency hashes, and output
-hashes before reuse.
+`outputs/<execution>/<run-id>/`. Resume by run ID. **NOT YET VERIFIED:** the
+post-acceptance repair is still validating complete dependency, implementation,
+environment, and persisted-byte checks for every reuse path.
 
 Metrics and analysis tables belong in `06_metrics` and `07_analysis`.
 `08_figures` contains only SVG, PNG, and `figure_index.json`. Trace a figure

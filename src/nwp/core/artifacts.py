@@ -92,7 +92,12 @@ class ArtifactResolver:
                 continue
             matches.append((candidate, record))
         if len(matches) > 1:
-            raise ContractError("ambiguous compatible artifacts")
+            # Reused children legitimately register the same immutable bytes.
+            # They are equivalent sources, not an ambiguity.  Different bytes
+            # for one dependency identity remain a hard contract violation.
+            if len({record.sha256 for _, record in matches}) > 1:
+                raise ContractError("ambiguous compatible artifacts")
+            matches.sort(key=lambda item: (item[1].artifact_id, str(item[0])))
         return matches[0] if matches else None
 
     @staticmethod

@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from dataclasses import replace
 from types import MappingProxyType
+import shutil
+import yaml
 
 import pytest
 
-from nwp.core.config import ConfigError, assert_official_ready, load_bundle, load_local_paths, resolve_config
+from nwp.core.config import (ConfigError, assert_official_ready, load_bundle,
+                             load_local_paths, project_root, resolve_config)
 from nwp.cli import main
 
 
@@ -135,3 +138,74 @@ def test_local_config_controls_only_machine_paths(tmp_path):
     )
     with pytest.raises(ConfigError, match="must not be the project root"):
         load_local_paths(tmp_path)
+
+
+def test_registry_fingerprints_are_provenance_not_scientific_identity():
+    config = resolve_config("nanjing_cpu_diagnostic", models="raw_gfs")
+    snapshot = config.as_dict()
+    assert "site_registry_hash" not in snapshot
+    assert "model_registry_hash" not in snapshot
+    assert "official_result_set" not in snapshot
+    assert "locked_config_hash" not in snapshot
+    assert config.site_registry_hash
+    assert config.model_registry_hash
+    assert snapshot["config_hash"] == config.config_hash
+
+
+@pytest.mark.parametrize("config_name,path", [
+    ("protocol", ("validation",)),
+    ("data", ("clean_contract",)),
+    ("features", ("build", "policy")),
+    ("models", ("registry", "raw_gfs")),
+    ("experiments", ("profiles", "cpu_20site")),
+])
+def test_nested_configuration_unknown_keys_fail_closed(tmp_path, config_name, path):
+    root = project_root()
+    shutil.copy2(root / "project_manifest.yaml", tmp_path / "project_manifest.yaml")
+    shutil.copytree(root / "config", tmp_path / "config")
+    target = tmp_path / "config" / f"{config_name}.yaml"
+    payload = yaml.safe_load(target.read_text(encoding="utf-8"))
+    node = payload
+    for key in path:
+        node = node[key]
+    node["fake_key"] = True
+    target.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    load_bundle.cache_clear()
+    try:
+        with pytest.raises(ConfigError, match="unknown|keys must be exactly"):
+            load_bundle(str(tmp_path))
+    finally:
+        load_bundle.cache_clear()
+
+
+def test_unselected_registry_additions_do_not_change_resolved_identity(tmp_path):
+    root = project_root()
+    shutil.copy2(root / "project_manifest.yaml", tmp_path / "project_manifest.yaml")
+    shutil.copytree(root / "config", tmp_path / "config")
+    baseline = resolve_config(
+        "nanjing_cpu_diagnostic", root=tmp_path, models="raw_gfs")
+    sites_path = tmp_path / "config" / "sites.yaml"
+    sites = yaml.safe_load(sites_path.read_text(encoding="utf-8"))
+    sites["registry"]["unselected_site"] = dict(sites["registry"]["nanjing_1"])
+    sites_path.write_text(yaml.safe_dump(sites, sort_keys=False), encoding="utf-8")
+    models_path = tmp_path / "config" / "models.yaml"
+    models = yaml.safe_load(models_path.read_text(encoding="utf-8"))
+    models["registry"]["unselected_model"] = dict(models["registry"]["raw_gfs"])
+    models_path.write_text(yaml.safe_dump(models, sort_keys=False), encoding="utf-8")
+    load_bundle.cache_clear()
+    changed = resolve_config(
+        "nanjing_cpu_diagnostic", root=tmp_path, models="raw_gfs")
+    assert changed.config_hash == baseline.config_hash
+    assert changed.as_dict() == baseline.as_dict()
+    assert changed.selected_sites == baseline.selected_sites
+    assert changed.selected_models == baseline.selected_models
+
+
+def test_selector_provenance_is_complete():
+    config = resolve_config("spatial_density")
+    parameters = config.scope["selector_parameters"]
+    assert set(parameters) == {
+        "selector_id", "method", "source_set", "allowed_counts",
+        "region_quotas", "requested_n_sites", "status", "official_eligible"}
+    assert parameters["selector_id"] == "density"
+    assert parameters["requested_n_sites"] == len(config.selected_sites)
