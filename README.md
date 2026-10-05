@@ -11,19 +11,21 @@ Install the base package (configuration, status, inventory, and data stages):
 python -m pip install -e .
 ```
 
-Install CPU model support, deep-model support, or the complete development
-environment explicitly:
+Install CPU experiment support, deep-development support, or the complete
+development-test environment explicitly. Deep architectures and bounded
+training utilities currently require the CPU stack; they do not constitute a
+complete unified deep workflow:
 
 ```powershell
 python -m pip install -e ".[cpu]"
-python -m pip install -e ".[deep]"
+python -m pip install -e ".[cpu,deep]"
 python -m pip install -e ".[cpu,deep,dev]"
 ```
 
 The sole command-line interface is `python -m nwp`:
 
 ```powershell
-python -m nwp validate --profile nanjing_cpu_diagnostic --mode config
+python -m nwp validate --profile nanjing_cpu_diagnostic
 python -m nwp data inventory
 python -m nwp run --profile nanjing_cpu_diagnostic --to-stage splits
 python -m nwp run --profile cpu_20site --models raw_gfs,xgboost --n-sites 10

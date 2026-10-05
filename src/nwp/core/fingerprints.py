@@ -4,7 +4,7 @@ from __future__ import annotations
 import hashlib
 import importlib.metadata
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping
 
 from .hashing import canonical_json
 
@@ -64,6 +64,29 @@ def environment_fingerprint(packages: Iterable[str]) -> str:
     return stable_object_hash(versions)
 
 
+def model_implementation_sources(record: Mapping[str, Any]) -> tuple[str, ...]:
+    """Resolve executable model sources from the registered implementation."""
+    implementation = str(record.get("implementation", ""))
+    baseline = {
+        "climatology", "persistence", "smart_persistence", "optimal_convex",
+        "raw_gfs", "bias_correction", "linear",
+    }
+    deep = {
+        "mlp", "cnn", "tcn", "lstm", "transformer", "autoformer",
+        "informer", "fedformer", "itransformer", "patchtst", "dlinear",
+        "timesnet", "tsmixer", "pinn",
+    }
+    if implementation in baseline:
+        return ("src/nwp/models/baselines.py",)
+    if implementation == "ridge":
+        return ("src/nwp/models/statistical.py",)
+    if implementation in {"lightgbm", "xgboost"}:
+        return ("src/nwp/models/trees.py",)
+    if implementation in deep:
+        return ("src/nwp/models/deep",)
+    raise ValueError(f"unknown registered model implementation: {implementation}")
+
+
 def run_fingerprints(root: Path, *, scientific_run_hash: str, protocol: Any, data: Any, feature_build: Any,
                      analysis: Any, validation: Any, sites: Any,
                      models: dict[str, Any]) -> dict[str, Any]:
@@ -80,16 +103,12 @@ def run_fingerprints(root: Path, *, scientific_run_hash: str, protocol: Any, dat
     evaluation_code = source_files_fingerprint(root, ("src/nwp/evaluation",))
     model_hashes = {}
     for model_id, record in models.items():
-        family = record.get("family")
-        implementation = ("src/nwp/models/deep" if family in {"deep", "experimental_constrained"}
-                          else "src/nwp/models/trees.py" if family == "tree_ml"
-                          else "src/nwp/models/statistical.py" if family == "statistical"
-                          else "src/nwp/models/baselines.py")
         model_hashes[model_id] = stable_object_hash({
             "config": record,
             "code": source_files_fingerprint(root, (
                 "src/nwp/models/base.py", "src/nwp/models/factory.py",
-                "src/nwp/features/preprocessing.py", implementation)),
+                "src/nwp/features/preprocessing.py",
+                *model_implementation_sources(record))),
         })
     return {
         "scientific_run_hash": scientific_run_hash,

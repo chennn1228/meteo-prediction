@@ -154,7 +154,10 @@ def environment_packages(artifact_type: str, implementation: str | None = None) 
         return base + ("scikit-learn", "lightgbm")
     if implementation == "xgboost":
         return base + ("scikit-learn", "xgboost")
-    if implementation in {"deep", "pinn"}:
+    if implementation in {
+            "mlp", "cnn", "tcn", "lstm", "transformer", "autoformer",
+            "informer", "fedformer", "itransformer", "patchtst", "dlinear",
+            "timesnet", "tsmixer", "pinn"}:
         return base + ("torch",)
     if artifact_type == "shap":
         return base + ("shap",)

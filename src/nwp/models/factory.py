@@ -28,7 +28,7 @@ def quantile_model_factory(model_id: str, model_config: Mapping[str, Any],
         if rounds is None:
             raise ModelError("tree quantile model requires selected rounds")
         return TreeQuantileModel(
-            str(entry["algorithm"]), dict(parameters), feature_config,
+            model_id, str(entry["implementation"]), dict(parameters), feature_config,
             levels, rounds, seed=seed)
     raise ModelError(f"no registered quantile adapter for {model_id}")
 

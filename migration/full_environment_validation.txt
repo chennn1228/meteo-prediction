@@ -13,10 +13,12 @@ pytest 9.1.1
 
 Verification command:
 python -m pytest -p no:cacheprovider -q
-Result: PASS — 147 passed in 66.10s
+Result: PASS — 153 passed in 45.54s
 Python: 3.13.2
 
 No formal training, GPU benchmark, multi-seed experiment, official run,
 network data acquisition, or official result registration was performed.
 
-This is the final post-acceptance source state before acceptance regeneration.
+Targeted repair revalidated in the independent full environment on 2026-10-06.
+The final run used a fresh short `--basetemp` path to avoid an unrelated
+Windows user-temp permission fault and long-path limit.

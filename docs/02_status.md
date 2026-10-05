@@ -1,9 +1,11 @@
 # Status
 
-## Post-acceptance repair in progress
+STATUS: MERGE_READY
 
-- Unified configuration and run-scoped workflow structure exist. Artifact-level
-  cross-run reuse remains under repair and is not yet accepted as complete.
+## Targeted dependency repair complete
+
+- Gap propagation, model-local reuse, pre-render figure reuse, implementation
+  routing, deep capability status, and base import boundaries are verified.
 - Inherited API responses are stored by source/site/month with receipts and a
   catalog. Valid data are `ready`; invalid, partial, variant, and unverified
   processed imports are retained but fail-closed as `incomplete`.
@@ -16,8 +18,9 @@
 - Of the original 282 recovery-required paths, 121 have exact local recovery
   and 161 remain `RECOVERY_REQUIRED`. The canonical current snapshot is
   `migration/recovery_required_register.csv`.
-- The earlier 124-test acceptance is superseded by the post-acceptance audit.
-  Current tests are useful regression evidence but are not final acceptance.
+- The earlier acceptances are superseded by the targeted 2026-10-06 repair.
+  The independent full environment passes 153 tests; the base-only bounded
+  workflow reaches the real split stage without model libraries.
 
 ## Blocked
 

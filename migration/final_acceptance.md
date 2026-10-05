@@ -1,46 +1,39 @@
-# Final repair acceptance
+# Targeted repair acceptance
 
 STATUS: MERGE_READY
 
-SUPERSEDES THE PREMATURE 2026-10-04 ACCEPTANCE
-
-Date: 2026-10-05
+Date: 2026-10-06 (Asia/Shanghai)
 
 Branch: `codex/nwp-unified-refactor`
 
-Audit base: `21ca995a46c75ec594c55eeee026f6e2aaf12421`
+Baseline: `71729cfb67e9d0248e7243a4707f28bfaa474ad1`
 
-Historical recovery tag: `pre-nwp-refactor-20261002`
-
-## Final gates
+## Acceptance gates
 
 | gate | status | evidence |
 |---|---|---|
-| 0–219 closure ledger | PASS | `migration/final_closure_register.csv`; 220 numbered rows with evidence |
-| 635-item repair ledger | PASS | `migration/final_repair_register.csv`; no pending/not-verified PASS and no blank PASS evidence |
-| scientific protocol unchanged | PASS | protocol/data/features/model exports and regression checks; science-contract tests |
-| real workflow integration | PASS | physical prepare/modeling/analysis modules; `implementation.py` absent |
-| artifact reuse and manifests | PASS | real child-run integration uses `RunContext`, `run_pipeline`, Resolver, manifests and byte materialization |
-| selective invalidation | PASS | XGBoost-only change recomputes XGBoost; gap/permutation/style-only children reuse model artifacts |
-| resume integrity | PASS | receipts validate dependency, implementation, environment, inputs, outputs and actual artifact SHA |
-| artifact safety | PASS | same-run tampering and incompatible cross-run bytes are rejected; final-test and diagnostic promotion gates pass |
-| scientific hash | PASS | resolved config, readiness receipt and report use the same `config.config_hash` |
-| configuration boundaries | PASS | unrelated registries excluded from scientific snapshot; nested unknown keys fail closed |
-| CLI and local roots | PASS | parent lifecycle/diff and configured data-root inventory/probe/boundary tests |
-| historical figures/reports | PASS | 94 original tag paths reproduce exact manifest SHA-256; staging is redundant and absent |
-| local data reconciliation | PASS | `local_inventory_diff.csv`; no unexplained row and no source-observation byte loss |
-| Git deletion reconciliation | PASS | `final_git_diff.csv`; all 322 deletions have disposition and recoverability |
-| migration closure | PASS | recovery staging and all eleven phase files absent; unique unrecoverable artifacts retained |
-| base-only environment | PASS | import/config/status/inventory; execution extras and pytest absent |
-| independent full environment | PASS | 147 tests passed in 66.10 s |
-| working environment | PASS | 147 tests passed in 69.65 s |
+| gap dependency propagation | PASS | production dependency truth table |
+| XGBoost-only invalidation | PASS | real child tuning/fitting workflow; Ridge/LGBM calls are zero |
+| figure check-before-render | PASS | compatible child figure render count is zero |
+| implementation fingerprints | PASS | baseline/ridge/tree directional invalidation tests |
+| tree implementation routing | PASS | arbitrary LightGBM model alias test |
+| deep capability status | PASS | architecture-only, tuning disabled, non-official |
+| deep environment fingerprint | PASS | Torch included for every deep implementation |
+| base environment | PASS | import, validate, status, inventory and bounded split workflow |
+| full environment | PASS | 153 tests passed in 45.54 seconds |
+| active documentation | PASS | acceptance, status and repository guide agree |
+| pseudo audit removal | PASS | no unsupported per-file responsibility audit or reference remains |
+| recovery evidence preservation | PASS | all 118 unique files retained |
+| scientific regression | PASS | baseline time/split/purge/quantile/data/site/spatial/model/profile assertions |
 
-Detailed range-to-evidence mapping is in
-`migration/post_acceptance_verification.md`.
+Detailed evidence is recorded in `migration/targeted_repair_validation.md`.
 
 ## Scope boundary
 
-This acceptance covers repository, code, configuration, documentation and
-artifact-management repair only. It does not authorize or claim completion of
-formal 20-site training, a GPU benchmark, formal multi-seed experiments, an
-official full run, official result registration, or remote bulk acquisition.
+No scientific protocol, time boundary, validation fold, purge, probability
+contract, 15-variable data contract, site cohort, spatial evaluation semantics,
+DataCatalog design, raw immutability rule, lifecycle, directory structure, or
+historical evidence was redesigned.
+
+No formal training, GPU benchmark, multi-seed experiment, official run, bulk
+remote acquisition, or official result registration was performed.

@@ -9,19 +9,19 @@ registry:
   ridge_mos: {family: statistical, role: value_ladder, implementation: ridge, quantile_adapter: ridge, device: cpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
   lgbm: {family: tree_ml, role: value_ladder, implementation: lightgbm, quantile_adapter: tree, algorithm: lgbm, device: cpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
   xgboost: {family: tree_ml, role: value_ladder, implementation: xgboost, quantile_adapter: tree, algorithm: xgboost, device: cpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  mlp: {family: deep, internal_version: v2, implementation: mlp, device: gpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  cnn: {family: deep, internal_version: v3, implementation: cnn, device: gpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  tcn: {family: deep, internal_version: v4, implementation: tcn, device: gpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  lstm: {family: deep, internal_version: v5, implementation: lstm, device: gpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  transformer: {family: deep, internal_version: v6, implementation: transformer, device: gpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  autoformer: {family: deep, internal_version: v7, implementation: autoformer, device: gpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  informer: {family: deep, internal_version: v8, implementation: informer, device: gpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  fedformer: {family: deep, internal_version: v9, implementation: fedformer, device: gpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  itransformer: {family: deep, internal_version: v10, implementation: itransformer, device: gpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  patchtst: {family: deep, internal_version: v11, implementation: patchtst, device: gpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  dlinear: {family: deep, internal_version: v12, implementation: dlinear, device: gpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  timesnet: {family: deep, internal_version: v13, implementation: timesnet, device: gpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  tsmixer: {family: deep, internal_version: v14, implementation: tsmixer, device: gpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
+  mlp: {family: deep, internal_version: v2, implementation: mlp, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  cnn: {family: deep, internal_version: v3, implementation: cnn, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  tcn: {family: deep, internal_version: v4, implementation: tcn, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  lstm: {family: deep, internal_version: v5, implementation: lstm, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  transformer: {family: deep, internal_version: v6, implementation: transformer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  autoformer: {family: deep, internal_version: v7, implementation: autoformer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  informer: {family: deep, internal_version: v8, implementation: informer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  fedformer: {family: deep, internal_version: v9, implementation: fedformer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  itransformer: {family: deep, internal_version: v10, implementation: itransformer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  patchtst: {family: deep, internal_version: v11, implementation: patchtst, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  dlinear: {family: deep, internal_version: v12, implementation: dlinear, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  timesnet: {family: deep, internal_version: v13, implementation: timesnet, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  tsmixer: {family: deep, internal_version: v14, implementation: tsmixer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
   pinn:
     family: experimental_constrained
     internal_version: v15
@@ -30,6 +30,7 @@ registry:
     tuning: {enabled: false}
     implementation_status: experimental
     official_eligible: false
+    workflow_status: architecture_only
     constraints:
       nonnegative: soft
       clear_sky_upper_bound: disabled_pending_site_adaptation

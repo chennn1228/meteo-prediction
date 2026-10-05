@@ -1,18 +1,22 @@
 from __future__ import annotations
 
 import json
-from dataclasses import replace
+import shutil
 from pathlib import Path
-from types import SimpleNamespace
 
 import pandas as pd
+import yaml
 
-from nwp.core.config import project_root, resolve_config, to_plain
+from nwp.core.config import project_root, resolve_config
 from nwp.core.context import RunContext
+from nwp.core.dependencies import (
+    data_dependency_fingerprint, feature_dependency_fingerprint,
+    split_dependency_fingerprint)
+from nwp.core.fingerprints import sha256_file, source_files_fingerprint
 from nwp.core.lifecycle import transition
 from nwp.core.provenance import make_receipt, write_receipt
-from nwp.core.fingerprints import sha256_file
-from nwp.core.fingerprints import stable_object_hash
+from nwp.experiment.tuning import Trial, candidates
+from nwp.splits.rolling import InnerFold, OuterFold
 from nwp.workflow.pipeline import _stage_environment_fingerprint, run_pipeline
 import nwp.workflow.stages.modeling as modeling
 
@@ -31,152 +35,139 @@ class FakeModel:
         path.write_bytes(f"bounded-model:{self.model_id}".encode())
 
 
-def _prime(context: RunContext, *, xgb_depth: int) -> None:
-    selection = {
-        "outer": {"outer_1": {}},
-        "final": {},
+def _write_stage(context: RunContext, stage: str, dependency: str,
+                 artifact: Path) -> None:
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    artifact.write_text(json.dumps({"stage": stage}), encoding="utf-8")
+    implementation = source_files_fingerprint(
+        context.paths.root,
+        ("src/nwp/workflow/stages/common.py",
+         "src/nwp/workflow/stages/prepare.py"))
+    result = {
+        "status": "success", "input_hashes": {stage: dependency},
+        "output_hashes": {stage: sha256_file(artifact)},
+        "artifact_outputs": {stage: str(artifact)}, "metadata_outputs": {},
+        "dependency_fingerprint": dependency,
+        "implementation_fingerprint": implementation,
     }
-    for model_id in MODELS:
-        parameters = {"depth": xgb_depth} if model_id == "xgboost" else {"fixed": 1}
-        detail = {"selected_candidate": 0, "parameters": parameters,
-                  "trials": [], "tree_round_receipts": []}
-        selection["outer"]["outer_1"][model_id] = detail
-        selection["final"][model_id] = detail
-    path = context.paths.tuning_dir / "selection.json"
-    path.write_text(json.dumps(selection), encoding="utf-8")
-    feature_path = context.paths.stage_dir("features") / "feature-index.json"
-    feature_path.write_text('{"bounded": true}', encoding="utf-8")
-    context.stage_results = {
-        "features": {"status": "success", "input_hashes": {"features": "a" * 64},
-                     "output_hashes": {"features": sha256_file(feature_path)},
-                     "artifact_outputs": {"features": str(feature_path)},
-                     "metadata_outputs": {}, "dependency_fingerprint": "c" * 64,
-                     "implementation_fingerprint": "d" * 64},
-        "tuning": {"status": "success", "input_hashes": {"tuning": "b" * 64},
-                   "artifact_outputs": {"selection": str(path)},
-                   "output_hashes": {"selection": sha256_file(path)},
-                   "metadata_outputs": {}, "dependency_fingerprint": "e" * 64,
-                   "implementation_fingerprint": "f" * 64},
-    }
-    for stage in ("features", "tuning"):
-        row = context.stage_results[stage]
-        write_receipt(context.paths.stage_receipt(stage), make_receipt(
-            root=context.paths.root, stage=stage,
-            config_hash=context.config.config_hash,
-            execution_level=context.execution_level, status="success",
-            input_hashes=row["input_hashes"], output_hashes=row["output_hashes"],
-            dependency_fingerprint=row["dependency_fingerprint"],
-            implementation_fingerprint=row["implementation_fingerprint"],
-            environment_fingerprint=_stage_environment_fingerprint()))
+    context.stage_results[stage] = result
+    write_receipt(context.paths.stage_receipt(stage), make_receipt(
+        root=context.paths.root, stage=stage,
+        config_hash=context.config.config_hash,
+        execution_level=context.execution_level, status="success",
+        input_hashes=result["input_hashes"], output_hashes=result["output_hashes"],
+        dependency_fingerprint=dependency,
+        implementation_fingerprint=implementation,
+        environment_fingerprint=_stage_environment_fingerprint()))
 
 
-def test_child_workflow_reuses_unchanged_model_local_artifacts(tmp_path, monkeypatch):
-    config = resolve_config("nanjing_cpu_diagnostic", models=MODELS)
-    calls = {model_id: 0 for model_id in MODELS}
-    frame = pd.DataFrame({"placeholder": [1.0]})
-    outer = SimpleNamespace(fold_id="outer_1", fit=frame)
-    monkeypatch.setattr(modeling, "_load_feature_frame", lambda _context: frame)
-    monkeypatch.setattr(modeling, "_eligible", lambda _context, block: block)
-    monkeypatch.setattr(modeling, "outer_folds", lambda *_args, **_kwargs: [outer])
-    monkeypatch.setattr(modeling, "inner_folds", lambda *_args, **_kwargs: [])
-    monkeypatch.setattr(
-        modeling, "_final_blocks", lambda *_args, **_kwargs: (frame, frame, frame, frame))
-    monkeypatch.setattr(
-        modeling, "fit_outer_quantile_model",
-        lambda _context, model_id, *_args, **_kwargs: FakeModel(model_id, calls))
-    monkeypatch.setattr(
-        modeling, "fit_final_quantile_model",
-        lambda _context, model_id, *_args, **_kwargs: FakeModel(model_id, calls))
-
-    first = RunContext.create(
-        project_root(), config, data_root=tmp_path / "data",
-        outputs_root=tmp_path / "outputs", run_id="reuse-a",
-        allow_model_execution=True)
-    _prime(first, xgb_depth=6)
-    run_pipeline(first, from_stage="fitting", to_stage="fitting")
-    assert calls == {model_id: 2 for model_id in MODELS}
-    transition(first.paths.meta_dir / "status.json", "FROZEN")
-    first_manifest = json.loads(
-        (first.paths.meta_dir / "artifact_manifest.json").read_text(encoding="utf-8"))
-    assert len([row for row in first_manifest["artifacts"]
-                if row["artifact_type"] == "model"]) == 6
-
-    calls.update({model_id: 0 for model_id in MODELS})
-    child = RunContext.create(
-        project_root(), config, data_root=tmp_path / "data",
-        outputs_root=tmp_path / "outputs", run_id="reuse-b",
-        parent_run_id=first.run_id, change_reason="xgboost search-space change",
-        changed_dependencies=["models.search.spaces.xgboost"],
-        allow_model_execution=True)
-    _prime(child, xgb_depth=9)
-    run_pipeline(child, from_stage="fitting", to_stage="fitting")
-    assert calls["ridge_mos"] == 0
-    assert calls["lgbm"] == 0
-    assert calls["xgboost"] == 2
-    child_manifest = json.loads(
-        (child.paths.meta_dir / "artifact_manifest.json").read_text(encoding="utf-8"))
-    model_records = [row for row in child_manifest["artifacts"]
-                     if row["artifact_type"] == "model"]
-    assert len(model_records) == 6
-    assert all("reused_from_run" in row["scope"] for row in model_records
-               if row["model_id"] in {"ridge_mos", "lgbm"})
+def _prime_real_upstream_dependencies(context: RunContext) -> None:
+    data = data_dependency_fingerprint(
+        context.config.data, [{"bounded-source": "1" * 64}])
+    features = feature_dependency_fingerprint(
+        data, context.config.features, {"bounded-feature": "2" * 64})
+    splits = split_dependency_fingerprint(
+        features, context.selected_sites,
+        context.config.protocol["validation"])
+    _write_stage(
+        context, "features", features,
+        context.paths.stage_dir("features") / "feature-index.json")
+    _write_stage(
+        context, "splits", splits,
+        context.paths.stage_dir("splits") / "splits.json")
 
 
-def test_child_dependency_changes_reuse_model_artifacts(tmp_path, monkeypatch):
-    """Gap, interpretation, and figure-only changes do not refit models."""
+def _variant_root(tmp_path: Path) -> Path:
+    root = tmp_path / "variant-project"
+    root.mkdir()
+    shutil.copy2(project_root() / "project_manifest.yaml", root)
+    shutil.copytree(project_root() / "config", root / "config")
+    models_path = root / "config" / "models.yaml"
+    payload = yaml.safe_load(models_path.read_text(encoding="utf-8"))
+    payload["search"]["spaces"]["xgboost"][0]["max_depth"] = 9
+    models_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    return root
+
+
+def test_xgboost_change_uses_real_tuning_dependencies_and_reuses_other_models(
+        tmp_path, monkeypatch):
     base_config = resolve_config("nanjing_cpu_diagnostic", models=MODELS)
-    calls = {model_id: 0 for model_id in MODELS}
+    child_config = resolve_config(
+        "nanjing_cpu_diagnostic", root=_variant_root(tmp_path), models=MODELS)
     frame = pd.DataFrame({"placeholder": [1.0]})
-    outer = SimpleNamespace(fold_id="outer_1", fit=frame)
+    stamp = pd.Timestamp("2024-01-01", tz="UTC")
+    outer = OuterFold("outer_1", frame, frame, stamp, stamp)
+    inner = [InnerFold(
+        f"inner_{index}", frame, frame, frame, stamp, stamp, stamp, stamp)
+        for index in range(1, 4)]
+    fit_calls = {model_id: 0 for model_id in MODELS}
+    tuning_calls = {model_id: 0 for model_id in MODELS}
+
     monkeypatch.setattr(modeling, "_load_feature_frame", lambda _context: frame)
     monkeypatch.setattr(modeling, "_eligible", lambda _context, block: block)
     monkeypatch.setattr(modeling, "outer_folds", lambda *_args, **_kwargs: [outer])
-    monkeypatch.setattr(modeling, "inner_folds", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(modeling, "inner_folds", lambda *_args, **_kwargs: inner)
     monkeypatch.setattr(
-        modeling, "_final_blocks", lambda *_args, **_kwargs: (frame, frame, frame, frame))
+        modeling, "_final_blocks", lambda *_args, **_kwargs:
+        (frame, frame, frame, frame))
+
+    def fake_trials(model_id, outer_id, folds, _adapter, *, model_config,
+                    protocol_config, device, gap_days):
+        tuning_calls[model_id] += 1
+        rows = []
+        for candidate, parameters in enumerate(candidates(model_id, model_config)):
+            for fold in folds:
+                rows.append(Trial(
+                    model=model_id, candidate=candidate,
+                    parameters=dict(parameters), outer=outer_id,
+                    inner=fold.fold_id, seed=0, fit_rows=1,
+                    early_stop_rows=1, scoring_rows=1,
+                    mean_pinball=float(candidate + 1), wall_seconds=0.0,
+                    device=device, peak_memory_bytes=0, epoch=1,
+                    status="ok", error_reason=None))
+        return 0, rows
+
+    monkeypatch.setattr(modeling, "run_trials", fake_trials)
     monkeypatch.setattr(
         modeling, "fit_outer_quantile_model",
-        lambda _context, model_id, *_args, **_kwargs: FakeModel(model_id, calls))
+        lambda _context, model_id, *_args, **_kwargs:
+        FakeModel(model_id, fit_calls))
     monkeypatch.setattr(
         modeling, "fit_final_quantile_model",
-        lambda _context, model_id, *_args, **_kwargs: FakeModel(model_id, calls))
+        lambda _context, model_id, *_args, **_kwargs:
+        FakeModel(model_id, fit_calls))
 
     parent = RunContext.create(
         project_root(), base_config, data_root=tmp_path / "data",
-        outputs_root=tmp_path / "outputs", run_id="boundary-parent",
+        outputs_root=tmp_path / "outputs", run_id="reuse-parent",
         allow_model_execution=True)
-    _prime(parent, xgb_depth=6)
-    run_pipeline(parent, from_stage="fitting", to_stage="fitting")
+    _prime_real_upstream_dependencies(parent)
+    run_pipeline(parent, from_stage="tuning", to_stage="fitting")
+    assert tuning_calls == {model_id: 1 for model_id in MODELS}
+    assert fit_calls == {model_id: 2 for model_id in MODELS}
     transition(parent.paths.meta_dir / "status.json", "FROZEN")
 
-    gap_config = resolve_config(
-        "nanjing_cpu_diagnostic", models=MODELS, gap_days=7)
-    analysis_payload = to_plain(base_config.analysis)
-    analysis_payload["evidence"] = dict(analysis_payload["evidence"])
-    analysis_payload["evidence"]["permutation_repeats"] = 11
-    permutation_config = replace(
-        base_config, analysis=analysis_payload,
-        config_hash=stable_object_hash({"variant": "permutation-repeats"}))
-    variants = (
-        ("boundary-gap", gap_config, "protocol.validation.gap_days"),
-        ("boundary-permutation", permutation_config,
-         "analysis.evidence.permutation_repeats"),
-        ("boundary-figure-style", base_config, "visualization.style"),
-    )
-    for run_id, config, changed in variants:
-        calls.update({model_id: 0 for model_id in MODELS})
-        child = RunContext.create(
-            project_root(), config, data_root=tmp_path / "data",
-            outputs_root=tmp_path / "outputs", run_id=run_id,
-            parent_run_id=parent.run_id, change_reason=f"change {changed}",
-            changed_dependencies=[changed], allow_model_execution=True)
-        _prime(child, xgb_depth=6)
-        run_pipeline(child, from_stage="fitting", to_stage="fitting")
-        assert calls == {model_id: 0 for model_id in MODELS}
-        manifest = json.loads(
-            (child.paths.meta_dir / "artifact_manifest.json").read_text(
-                encoding="utf-8"))
-        records = [row for row in manifest["artifacts"]
-                   if row["artifact_type"] == "model"]
-        assert len(records) == 6
-        assert all(row["scope"].get("reused_from_run") for row in records)
+    tuning_calls.update({model_id: 0 for model_id in MODELS})
+    fit_calls.update({model_id: 0 for model_id in MODELS})
+    child = RunContext.create(
+        project_root(), child_config, data_root=tmp_path / "data",
+        outputs_root=tmp_path / "outputs", run_id="reuse-child",
+        parent_run_id=parent.run_id, change_reason="xgboost search-space change",
+        changed_dependencies=["models.search.spaces.xgboost"],
+        allow_model_execution=True)
+    _prime_real_upstream_dependencies(child)
+    run_pipeline(child, from_stage="tuning", to_stage="fitting")
+
+    assert tuning_calls == {"ridge_mos": 0, "lgbm": 0, "xgboost": 1}
+    assert fit_calls == {"ridge_mos": 0, "lgbm": 0, "xgboost": 2}
+    manifest = json.loads(
+        (child.paths.meta_dir / "artifact_manifest.json").read_text(
+            encoding="utf-8"))
+    models = [row for row in manifest["artifacts"]
+              if row["artifact_type"] == "model"]
+    assert len(models) == 6
+    assert all(row["scope"].get("reused_from_run") == parent.run_id
+               for row in models
+               if row["model_id"] in {"ridge_mos", "lgbm"})
+    assert all("reused_from_run" not in row["scope"] for row in models
+               if row["model_id"] == "xgboost")

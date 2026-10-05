@@ -9,9 +9,17 @@ from nwp.core.fingerprints import environment_fingerprint, sha256_directory, sha
 from nwp.core.lifecycle import transition
 from nwp.core.provenance import make_receipt, read_receipt, write_receipt
 from nwp.core.schema import ContractError, StageResult
-from .stages.analysis import analyse, evaluate, figures, report
-from .stages.modeling import calibrate, fit_models, predict, tune_models
 from .stages.prepare import build_features, build_splits, resolve_data, resolve_sites, validate_config
+
+
+def _modeling_handler(name: str, context: RunContext) -> StageResult:
+    from .stages import modeling
+    return getattr(modeling, name)(context)
+
+
+def _analysis_handler(name: str, context: RunContext) -> StageResult:
+    from .stages import analysis
+    return getattr(analysis, name)(context)
 
 STAGES = ("validate", "selection", "data", "features", "splits", "tuning",
           "fitting", "prediction", "calibration", "evaluation", "analysis",
@@ -21,9 +29,15 @@ ALIASES = {"resolve_sites": "selection", "resolve_data": "data",
            "evaluate": "evaluation"}
 HANDLERS: dict[str, Callable[[RunContext], StageResult]] = {
     "validate": validate_config, "selection": resolve_sites, "data": resolve_data,
-    "features": build_features, "splits": build_splits, "tuning": tune_models,
-    "fitting": fit_models, "prediction": predict, "calibration": calibrate,
-    "evaluation": evaluate, "analysis": analyse, "figures": figures, "report": report}
+    "features": build_features, "splits": build_splits,
+    "tuning": lambda context: _modeling_handler("tune_models", context),
+    "fitting": lambda context: _modeling_handler("fit_models", context),
+    "prediction": lambda context: _modeling_handler("predict", context),
+    "calibration": lambda context: _modeling_handler("calibrate", context),
+    "evaluation": lambda context: _analysis_handler("evaluate", context),
+    "analysis": lambda context: _analysis_handler("analyse", context),
+    "figures": lambda context: _analysis_handler("figures", context),
+    "report": lambda context: _analysis_handler("report", context)}
 
 _STAGE_PACKAGES = (
     "numpy", "pandas", "pyarrow", "pvlib", "scikit-learn", "lightgbm",

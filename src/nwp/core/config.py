@@ -215,7 +215,8 @@ def _validate_bundle(bundle: Mapping[str, Any]) -> None:
                    f"sites.selectors.{selector_id}")
     model_allowed = {"family", "role", "internal_version", "implementation",
                      "quantile_adapter", "algorithm", "device", "tuning",
-                     "implementation_status", "official_eligible", "constraints"}
+                     "implementation_status", "official_eligible",
+                     "workflow_status", "constraints"}
     for model_id, model in bundle["models"]["registry"].items():
         if set(model) - model_allowed:
             raise ConfigError(f"models.registry.{model_id} contains unknown keys: "

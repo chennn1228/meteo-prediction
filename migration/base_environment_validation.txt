@@ -23,3 +23,10 @@ Python: 3.13.2
 Revalidated after final source changes on 2026-10-05. No optional execution
 package was present; import, validate, status and configured data inventory all
 passed.
+
+Targeted revalidation (Asia/Shanghai 2026-10-06):
+python tests/base_bounded_splits_smoke.py -> PASS
+validate=success, selection=success, data=success, features=success,
+splits=success. The smoke substitutes bounded local data/features only; the
+production config resolver, RunContext, pipeline and split implementation run
+unchanged. No model library is importable in this environment.

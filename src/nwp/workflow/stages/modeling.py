@@ -1,10 +1,32 @@
 """Stage handlers split by workflow responsibility."""
-from .common import *  # noqa: F401,F403
+from dataclasses import asdict
+import json
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import pandas as pd
+
+from nwp.core.context import RunContext
+from nwp.core.dependencies import model_dependency_fingerprint
+from nwp.core.fingerprints import stable_object_hash
+from nwp.core.hashing import content_hash, file_sha256
+from nwp.core.schema import ContractError, StageResult
+from nwp.experiment.calibration import CausalIssueQuantileCalibrator
+from nwp.experiment.fitting import (
+    fit_final_quantile_model, fit_model, fit_outer_quantile_model)
+from nwp.experiment.prediction import (
+    quantile_columns, quantiles, read_predictions, write_predictions)
+from nwp.experiment.tuning import IncompleteTrialsError, candidates, run_trials
+from nwp.models.base import BaseModel
+from nwp.models.statistical import ridge_fit_predict as _ridge_fit_predict
+from nwp.models.trees import tree_fit_predict
+from nwp.splits.rolling import inner_folds, outer_folds
+
 from .common import (
-    _artifact_scope, _eligible, _final_blocks, _find_reusable_model_artifact,
-    _load_feature_frame, _model_implementation_fingerprint, _months, _now,
-    _record_model_artifact, _stage_result, _stage_outputs, _time_range, _write_json,
-    _ridge_fit_predict,
+    _eligible, _final_blocks, _find_reusable_model_artifact,
+    _load_feature_frame, _model_implementation_fingerprint, _now,
+    _record_model_artifact, _stage_result, _stage_outputs, _write_json,
 )
 
 def tune_models(context: RunContext) -> StageResult:
@@ -23,6 +45,7 @@ def tune_models(context: RunContext) -> StageResult:
     validation, development = protocol["validation"], protocol["development_period"]
     gap = int(validation["gap_days"])
     selected: dict[str, Any] = {}
+    artifact_dependencies: dict[str, Any] = {"outer": {}, "final": {}}
     try:
         for outer in outer_folds(frame, validation, development, gap_days=gap):
             folds = inner_folds(outer, validation, development, gap_days=gap)
@@ -44,7 +67,7 @@ def tune_models(context: RunContext) -> StageResult:
                     tree_receipts = []
                 elif adapter_name == "tree":
                     adapter = tree_fit_predict(
-                        str(entry["algorithm"]),
+                        str(entry["implementation"]),
                         feature_config=context.config.features)
                     tree_receipts = adapter.receipts
                 else:
@@ -60,6 +83,8 @@ def tune_models(context: RunContext) -> StageResult:
                     search_space=context.config.selected_search_spaces[model_id],
                     stage_contract={"gap_days": gap,
                                     "metric": protocol["probability"]["selection_metric"]})
+                artifact_dependencies["outer"].setdefault(
+                    outer.fold_id, {})[model_id] = dependency
                 implementation = _model_implementation_fingerprint(context, model_id)
                 local_dir = context.paths.tuning_fold(model_id, outer.fold_id)
                 local_selection = local_dir / "selection.json"
@@ -134,8 +159,12 @@ def tune_models(context: RunContext) -> StageResult:
             "parameters": candidates(model_id, models)[chosen],
             "mean_pinball_by_candidate": means,
             "score_count_per_candidate": expected}
+        artifact_dependencies["final"][model_id] = stable_object_hash({
+            outer_id: artifact_dependencies["outer"][outer_id][model_id]
+            for outer_id in sorted(artifact_dependencies["outer"])})
     path = context.paths.tuning_dir / "selection.json"
-    _write_json(path, {"outer": selected, "final": final_selection})
+    _write_json(path, {"outer": selected, "final": final_selection,
+                       "artifact_dependencies": artifact_dependencies})
     dependency = content_hash({
         "features": context.stage_results["features"]["input_hashes"]["features"],
         "splits": context.stage_results["splits"]["input_hashes"]["splits"],
@@ -165,6 +194,7 @@ def fit_models(context: RunContext) -> StageResult:
     selection = json.loads(Path(
         _stage_outputs(tuning)["selection"]).read_text(encoding="utf-8"))
     outer_selection = selection["outer"]
+    tuning_dependencies = selection.get("artifact_dependencies", {})
     artifacts = []
     for outer in outer_folds(frame, validation, development, gap_days=gap):
         fit = _eligible(context, outer.fit)
@@ -181,7 +211,10 @@ def fit_models(context: RunContext) -> StageResult:
                 "fitting", model_id,
                 upstream={
                     "features": context.stage_results["features"]["input_hashes"]["features"],
-                    "tuning": tuning["input_hashes"]["tuning"],
+                    "splits": context.stage_results["splits"]["input_hashes"]["splits"],
+                    "tuning": tuning_dependencies.get("outer", {}).get(
+                        outer.fold_id, {}).get(
+                            model_id, stable_object_hash({"fixed": model_id})),
                     "fold": stable_object_hash(outer.fold_id)},
                 model_record=entry,
                 stage_contract=(outer_selection[outer.fold_id].get(model_id)
@@ -218,7 +251,8 @@ def fit_models(context: RunContext) -> StageResult:
             artifacts.append({
                 "model_id": model_id, "outer_fold": outer.fold_id,
                 "fit_scope": "outer", "path": str(path),
-                "sha256": file_sha256(path)})
+                "sha256": file_sha256(path),
+                "dependency_fingerprint": dependency})
     final_fit, final_early, final_calibration, _ = _final_blocks(
         context, frame)
     final_history = pd.concat(
@@ -230,7 +264,9 @@ def fit_models(context: RunContext) -> StageResult:
             "fitting", model_id,
             upstream={
                 "features": context.stage_results["features"]["input_hashes"]["features"],
-                "tuning": tuning["input_hashes"]["tuning"],
+                "splits": context.stage_results["splits"]["input_hashes"]["splits"],
+                "tuning": tuning_dependencies.get("final", {}).get(
+                    model_id, stable_object_hash({"fixed": model_id})),
                 "fold": stable_object_hash("final")},
             model_record=entry,
             stage_contract=(selection["final"].get(model_id)
@@ -269,7 +305,8 @@ def fit_models(context: RunContext) -> StageResult:
         artifacts.append({
             "model_id": model_id, "outer_fold": "final",
             "fit_scope": "final", "path": str(path),
-            "sha256": file_sha256(path)})
+            "sha256": file_sha256(path),
+            "dependency_fingerprint": dependency})
     path = context.paths.models_dir / "model_index.json"
     _write_json(path, {"models": artifacts})
     dependency = content_hash({
@@ -347,6 +384,7 @@ def predict(context: RunContext) -> StageResult:
             dependency = model_dependency_fingerprint(
                 "prediction", model_id,
                 upstream={"model": item["sha256"],
+                          "model_dependency": item["dependency_fingerprint"],
                           "score": stable_object_hash(outer.fold_id)},
                 model_record=context.config.models["registry"][model_id],
                 stage_contract={"scope": "outer_validation"})
@@ -379,7 +417,8 @@ def predict(context: RunContext) -> StageResult:
                 time_scope="outer_validation", reuse=reuse_meta)
             outer_outputs.append({
                 "model_id": model_id, "outer_fold": outer.fold_id,
-                "path": str(path), "sha256": file_sha256(path)})
+                "path": str(path), "sha256": file_sha256(path),
+                "dependency_fingerprint": dependency})
     _, _, final_calibration, final_test = _final_blocks(context, frame)
     for model_id in context.selected_models:
         item = by_key[("final", model_id)]
@@ -394,7 +433,9 @@ def predict(context: RunContext) -> StageResult:
             calibration_path = context.paths.prediction_file(
                 model_id, "final_calibration")
             calibration_dependency = model_dependency_fingerprint(
-                "prediction", model_id, upstream={"model": item["sha256"]},
+                "prediction", model_id, upstream={
+                    "model": item["sha256"],
+                    "model_dependency": item["dependency_fingerprint"]},
                 model_record=context.config.models["registry"][model_id],
                 stage_contract={"scope": "final_calibration"})
             reusable = _find_reusable_model_artifact(
@@ -431,11 +472,14 @@ def predict(context: RunContext) -> StageResult:
                 reuse=calibration_reuse)
             final_calibration_outputs.append({
                 "model_id": model_id, "path": str(calibration_path),
-                "sha256": file_sha256(calibration_path)})
+                "sha256": file_sha256(calibration_path),
+                "dependency_fingerprint": calibration_dependency})
         test_path = context.paths.prediction_file(
             model_id, "final_test_uncalibrated")
         test_dependency = model_dependency_fingerprint(
-            "prediction", model_id, upstream={"model": item["sha256"]},
+            "prediction", model_id, upstream={
+                "model": item["sha256"],
+                "model_dependency": item["dependency_fingerprint"]},
             model_record=context.config.models["registry"][model_id],
             stage_contract={"scope": "final_test_uncalibrated"})
         reusable = _find_reusable_model_artifact(
@@ -473,7 +517,8 @@ def predict(context: RunContext) -> StageResult:
             reuse=test_reuse)
         final_test_outputs.append({
             "model_id": model_id, "path": str(test_path),
-            "sha256": file_sha256(test_path)})
+            "sha256": file_sha256(test_path),
+            "dependency_fingerprint": test_dependency})
     index_path = context.paths.predictions_dir / "prediction_index.json"
     payload = {
         "outer_predictions": outer_outputs,
@@ -522,7 +567,11 @@ def calibrate(context: RunContext) -> StageResult:
         dependency = model_dependency_fingerprint(
             "calibration", model_id,
             upstream={"calibration_predictions": calibration_item["sha256"],
-                      "test_predictions": test_item["sha256"]},
+                      "calibration_prediction_dependency":
+                          calibration_item["dependency_fingerprint"],
+                      "test_predictions": test_item["sha256"],
+                      "test_prediction_dependency":
+                          test_item["dependency_fingerprint"]},
             model_record=context.config.models["registry"][model_id],
             stage_contract=context.config.protocol["probability"]["calibration"])
         implementation = _model_implementation_fingerprint(context, model_id)
@@ -558,7 +607,8 @@ def calibrate(context: RunContext) -> StageResult:
             time_scope="final_test", reuse=reuse_meta)
         artifacts.append({
             "model_id": model_id, "path": str(path),
-            "sha256": file_sha256(path)})
+            "sha256": file_sha256(path),
+            "dependency_fingerprint": dependency})
     path = context.paths.calibration_dir / "calibration_index.json"
     payload = {
         "method": context.config.protocol["probability"]["calibration"]["primary"],

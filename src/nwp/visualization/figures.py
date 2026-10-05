@@ -330,51 +330,79 @@ def group_effect_figure(
     }
 
 
-def generate_run_figures(metrics_index: Path, analysis_index: Path,
-                         output: Path, *, result_status: str,
-                         protocol_config: dict[str, Any] | None = None,
-                         prediction_index: Path | None = None) -> list[dict[str, Any]]:
-    """Render only from run-owned source tables; never copy CSV into figures."""
-    apply_publication_style()
+def plan_run_figures(metrics_index: Path, analysis_index: Path,
+                     output: Path, *, result_status: str,
+                     protocol_config: dict[str, Any] | None = None,
+                     prediction_index: Path | None = None) -> list[dict[str, Any]]:
+    """Plan each figure and its dependency sources before any render call."""
     metrics = json.loads(metrics_index.read_text(encoding="utf-8"))
     analysis = json.loads(analysis_index.read_text(encoding="utf-8"))
     output.mkdir(parents=True, exist_ok=True)
-    figures: list[dict[str, Any]] = []
+    plans: list[dict[str, Any]] = []
+
+    def add(figure_id: str, source_table: str, generation_function: str,
+            caption: str, render: Any) -> None:
+        plans.append({
+            "figure_id": figure_id, "source_table": source_table,
+            "generation_function": generation_function, "caption": caption,
+            "render": render,
+            "files": [str(output / f"{figure_id}.svg"),
+                      str(output / f"{figure_id}.png")],
+        })
+
     probability_path = Path(metrics["overview"]["probability_primary"])
     point_path = Path(metrics["overview"]["point_secondary"])
     reliability_path = Path(metrics["overview"]["reliability"])
     probability, point = pd.read_csv(probability_path), pd.read_csv(point_path)
     reliability = pd.read_csv(reliability_path)
     if not probability.empty:
-        figures.append(_bar_figure(
-            probability, value="mean_pinball", ylabel="Mean pinball loss",
-            title="Probability-model performance", source=probability_path,
-            output=output, figure_id="probability_ranking",
-            result_status=result_status))
+        add("probability_ranking", str(probability_path),
+            "nwp.visualization.figures._bar_figure",
+            "Probability-model performance",
+            lambda table=probability, source=probability_path: _bar_figure(
+                table, value="mean_pinball", ylabel="Mean pinball loss",
+                title="Probability-model performance", source=source,
+                output=output, figure_id="probability_ranking",
+                result_status=result_status))
     if not point.empty:
-        figures.append(_bar_figure(
-            point, value="rmse", ylabel="RMSE (W m$^{-2}$)",
-            title="Auxiliary point-forecast performance", source=point_path,
-            output=output, figure_id="point_performance",
-            result_status=result_status))
+        add("point_performance", str(point_path),
+            "nwp.visualization.figures._bar_figure",
+            "Auxiliary point-forecast performance",
+            lambda table=point, source=point_path: _bar_figure(
+                table, value="rmse", ylabel="RMSE (W m$^{-2}$)",
+                title="Auxiliary point-forecast performance", source=source,
+                output=output, figure_id="point_performance",
+                result_status=result_status))
     if not reliability.empty:
-        figures.append(_reliability_figure(
-            reliability, source=reliability_path, output=output,
-            result_status=result_status))
+        add("reliability", str(reliability_path),
+            "nwp.visualization.figures._reliability_figure",
+            "Quantile reliability by model",
+            lambda table=reliability, source=reliability_path:
+                _reliability_figure(table, source=source, output=output,
+                                    result_status=result_status))
     for dimension, tables in sorted(metrics.get("grouped", {}).items()):
         probability_group = Path(tables["probability_primary"])
         point_group = Path(tables["point_secondary"])
         q_table, p_table = pd.read_csv(probability_group), pd.read_csv(point_group)
         if not q_table.empty and dimension in {"lead_time", "outer_fold", "season"}:
-            figures.append(grouped_metric_figure(
-                q_table, dimension=dimension, metric="mean_pinball",
-                source=probability_group, output=output,
-                result_status=result_status))
+            figure_id = f"mean_pinball_by_{dimension}"
+            add(figure_id, str(probability_group),
+                "nwp.visualization.figures.grouped_metric_figure",
+                f"mean_pinball by {dimension}",
+                lambda table=q_table, dim=dimension, source=probability_group,
+                       stem=figure_id: grouped_metric_figure(
+                    table, dimension=dim, metric="mean_pinball", source=source,
+                    output=output, result_status=result_status, figure_id=stem))
         if (not p_table.empty and dimension in {"lead_time", "outer_fold"}
                 and "rmse" in p_table):
-            figures.append(grouped_metric_figure(
-                p_table, dimension=dimension, metric="rmse", source=point_group,
-                output=output, result_status=result_status))
+            figure_id = f"rmse_by_{dimension}"
+            add(figure_id, str(point_group),
+                "nwp.visualization.figures.grouped_metric_figure",
+                f"rmse by {dimension}",
+                lambda table=p_table, dim=dimension, source=point_group,
+                       stem=figure_id: grouped_metric_figure(
+                    table, dimension=dim, metric="rmse", source=source,
+                    output=output, result_status=result_status, figure_id=stem))
     summary = Path(analysis["model_summary"])
     if not summary.is_file():
         raise ValueError("analysis index points to a missing model summary")
@@ -382,18 +410,29 @@ def generate_run_figures(metrics_index: Path, analysis_index: Path,
     if tuning_path and Path(tuning_path).is_file():
         trials = pd.read_csv(tuning_path)
         if not trials.empty:
-            figures.append(tuning_trials_figure(
-                trials, source=Path(tuning_path), output=output,
-                result_status=result_status))
+            add("tuning_candidates", str(tuning_path),
+                "nwp.visualization.figures.tuning_trials_figure",
+                "Equal-budget tuning candidate performance",
+                lambda table=trials, source=Path(tuning_path):
+                    tuning_trials_figure(
+                        table, source=source, output=output,
+                        result_status=result_status))
     ablation_path = analysis.get("group_ablation")
     permutation_path = analysis.get("grouped_permutation")
     if (ablation_path and permutation_path and Path(ablation_path).is_file()
             and Path(permutation_path).is_file()):
-        figures.append(group_effect_figure(
-            pd.read_csv(ablation_path), pd.read_csv(permutation_path),
-            ablation_source=Path(ablation_path),
-            permutation_source=Path(permutation_path), output=output,
-            result_status=result_status))
+        ablation_table, permutation_table = (
+            pd.read_csv(ablation_path), pd.read_csv(permutation_path))
+        sources = f"{ablation_path};{permutation_path}"
+        add("group_mechanism", sources,
+            "nwp.visualization.figures.group_effect_figure",
+            "Development-only feature-group mechanism evidence",
+            lambda left=ablation_table, right=permutation_table,
+                   left_source=Path(ablation_path),
+                   right_source=Path(permutation_path): group_effect_figure(
+                left, right, ablation_source=left_source,
+                permutation_source=right_source, output=output,
+                result_status=result_status))
     if prediction_index is not None and protocol_config is not None:
         payload = json.loads(prediction_index.read_text(encoding="utf-8"))
         paths = [Path(item["path"])
@@ -401,8 +440,22 @@ def generate_run_figures(metrics_index: Path, analysis_index: Path,
         if paths:
             predictions = pd.concat([pd.read_parquet(path) for path in paths],
                                     ignore_index=True)
-            figures.append(prediction_case_figure(
-                predictions, protocol_config=protocol_config,
-                source=prediction_index, output=output,
-                result_status=result_status))
-    return figures
+            add("prediction_case", str(prediction_index),
+                "nwp.visualization.figures.prediction_case_figure",
+                "Traceable one-day quantile forecast case",
+                lambda table=predictions: prediction_case_figure(
+                    table, protocol_config=protocol_config,
+                    source=prediction_index, output=output,
+                    result_status=result_status))
+    return plans
+
+
+def generate_run_figures(metrics_index: Path, analysis_index: Path,
+                         output: Path, *, result_status: str,
+                         protocol_config: dict[str, Any] | None = None,
+                         prediction_index: Path | None = None) -> list[dict[str, Any]]:
+    """Render the planned run-owned figures."""
+    apply_publication_style()
+    return [plan["render"]() for plan in plan_run_figures(
+        metrics_index, analysis_index, output, result_status=result_status,
+        protocol_config=protocol_config, prediction_index=prediction_index)]

@@ -1,9 +1,29 @@
 """Stage handlers split by workflow responsibility."""
-from .common import *  # noqa: F401,F403
+import json
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import pandas as pd
+
+from nwp.core.artifacts import environment_packages, new_artifact_record
+from nwp.core.config import to_plain
+from nwp.core.context import RunContext
+from nwp.core.dependencies import model_dependency_fingerprint
+from nwp.core.fingerprints import (
+    environment_fingerprint, source_files_fingerprint, stable_object_hash)
+from nwp.core.hashing import content_hash, file_sha256
+from nwp.core.schema import ContractError, StageResult
+from nwp.evaluation.grouped import evaluate_predictions, write_evaluation_report
+from nwp.evaluation.interpretation import group_mechanism_evidence, model_summary
+from nwp.experiment.prediction import read_predictions
+from nwp.visualization.figures import plan_run_figures, write_figure_index
+from nwp.visualization.style import apply_publication_style
+
 from .common import (
-    _artifact_scope, _eligible, _final_blocks, _find_reusable_model_artifact,
-    _load_feature_frame, _model_implementation_fingerprint, _months, _now,
-    _record_model_artifact, _stage_result, _stage_outputs, _time_range, _write_json,
+    _eligible, _find_reusable_model_artifact, _load_feature_frame,
+    _model_implementation_fingerprint, _now, _record_model_artifact,
+    _stage_result, _stage_outputs, _write_json,
     _restore_artifact_bundle, _write_artifact_bundle,
 )
 
@@ -52,7 +72,9 @@ def evaluate(context: RunContext) -> StageResult:
         dependency = model_dependency_fingerprint(
             "metrics", model_id,
             upstream={"predictions": stable_object_hash([
-                item["sha256"] for item in index.get("outer_predictions", [])
+                {"sha256": item["sha256"],
+                 "dependency_fingerprint": item["dependency_fingerprint"]}
+                for item in index.get("outer_predictions", [])
                 if item["model_id"] == model_id])},
             model_record=context.config.models["registry"][model_id],
             stage_contract=context.config.protocol["evaluation"])
@@ -322,35 +344,50 @@ def figures(context: RunContext) -> StageResult:
     prediction_index = Path(
         _stage_outputs(context.stage_results["prediction"])["prediction_index"])
     status = "official" if context.execution_level == "official" else "diagnostic"
-    entries = generate_run_figures(
+    plans = plan_run_figures(
         metrics_index, analysis_index, directory, result_status=status,
         protocol_config=to_plain(context.config.protocol),
         prediction_index=prediction_index)
     visualization_implementation = source_files_fingerprint(
         context.paths.root, ("src/nwp/visualization",))
-    for entry in entries:
-        sources = [Path(value) for value in str(entry["source_table"]).split(";")]
-        source_hashes = {str(path): file_sha256(path) for path in sources}
+    entries = []
+    style_applied = False
+    for plan in plans:
+        sources = [Path(value) for value in str(plan["source_table"]).split(";")]
+        source_hashes = [file_sha256(path) for path in sources]
         dependency = stable_object_hash({
             "sources": source_hashes,
-            "generation_function": entry["generation_function"],
+            "generation_function": plan["generation_function"],
             "visualization_implementation": visualization_implementation})
+        reusable_by_output = {}
+        for output in (Path(value) for value in plan["files"]):
+            reusable_by_output[output] = (
+                context.artifact_resolver.find_compatible_artifact(
+                    artifact_type="figure", dependency_fingerprint=dependency,
+                    implementation_fingerprint=visualization_implementation,
+                    data_scope={"sites": list(context.selected_sites)},
+                    time_scope="outer_validation",
+                    split_scope={"figure_id": plan["figure_id"],
+                                 "format": output.suffix.lower()},
+                    execution_level=context.execution_level,
+                    environment_fingerprint=environment_fingerprint(
+                        environment_packages("figure"))))
+        if all(value is not None for value in reusable_by_output.values()):
+            entry = {key: value for key, value in plan.items() if key != "render"}
+        else:
+            if not style_applied:
+                apply_publication_style()
+                style_applied = True
+            entry = plan["render"]()
+        entries.append(entry)
         for output in (Path(value) for value in entry["files"]):
             reuse_meta = None
-            reusable = context.artifact_resolver.find_compatible_artifact(
-                artifact_type="figure", dependency_fingerprint=dependency,
-                implementation_fingerprint=visualization_implementation,
-                data_scope={"sites": list(context.selected_sites)},
-                time_scope="outer_validation",
-                split_scope={"figure_id": entry["figure_id"],
-                             "format": output.suffix.lower()},
-                execution_level=context.execution_level,
-                environment_fingerprint=environment_fingerprint(
-                    environment_packages("figure")))
+            reusable = reusable_by_output[output]
             if reusable is not None:
                 source_path, source_record = reusable
                 source_run = source_path.relative_to(context.paths.outputs_root).parts[1]
-                output.unlink()
+                if output.exists():
+                    output.unlink()
                 reuse_meta = context.artifact_resolver.materialize(
                     source_path, output, source_record.sha256,
                     reused_from_run=source_run,

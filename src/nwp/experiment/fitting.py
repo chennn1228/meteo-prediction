@@ -39,7 +39,7 @@ def fit_outer_quantile_model(
         if tree_receipts is None:
             raise ValueError("tree outer fitting requires selected inner round receipts")
         rounds = selected_tree_rounds(
-            str(entry["algorithm"]), parameters, seed, levels, tree_receipts,
+            str(entry["implementation"]), parameters, seed, levels, tree_receipts,
             expected_inner_folds=int(
                 context.config.protocol["validation"]["inner_folds"]))
         return quantile_model_factory(
@@ -67,7 +67,7 @@ def fit_final_quantile_model(
                 {"outer_fit": fit, "inner_folds": [fold]})
     if adapter == "tree":
         rounds = final_tree_rounds(
-            str(entry["algorithm"]), parameters, fit, early_stop, seed, levels,
+            str(entry["implementation"]), parameters, fit, early_stop, seed, levels,
             feature_config=to_plain(context.config.features))
         return quantile_model_factory(
             model_id, to_plain(context.config.models),

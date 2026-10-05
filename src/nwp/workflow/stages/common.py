@@ -18,27 +18,13 @@ from nwp.core.dependencies import model_dependency_fingerprint
 from nwp.core.lifecycle import transition
 from nwp.core.hashing import content_hash, file_sha256
 from nwp.core.fingerprints import (
-    environment_fingerprint, sha256_directory, source_files_fingerprint,
-    stable_object_hash)
+    environment_fingerprint, model_implementation_sources, sha256_directory,
+    source_files_fingerprint, stable_object_hash)
 from nwp.core.provenance import make_receipt, read_receipt, write_receipt
 from nwp.core.schema import ContractError, StageResult
 from nwp.data.contracts import DatasetRecord
-from nwp.evaluation.grouped import evaluate_predictions, write_evaluation_report
-from nwp.evaluation.interpretation import group_mechanism_evidence, model_summary
-from nwp.experiment.calibration import CausalIssueQuantileCalibrator
-from nwp.experiment.fitting import (
-    fit_final_quantile_model, fit_model, fit_outer_quantile_model)
-from nwp.experiment.prediction import (
-    quantile_columns, quantiles, read_predictions, write_predictions)
-from nwp.experiment.tuning import IncompleteTrialsError, candidates, run_trials
-from nwp.features.build import build_feature_month
 from nwp.features.engineering import formal_daylight_mask
-from nwp.models.base import BaseModel
-from nwp.models.statistical import ridge_fit_predict as _ridge_fit_predict
-from nwp.models.trees import tree_fit_predict
-from nwp.splits.diagnostics import split_specs
 from nwp.splits.rolling import assert_gap, inner_folds, outer_folds
-from nwp.visualization.figures import generate_run_figures, write_figure_index
 
 
 STAGES = (
@@ -147,15 +133,10 @@ def _restore_artifact_bundle(bundle_path: Path, directory: Path) -> None:
 
 def _model_implementation_fingerprint(context: RunContext, model_id: str) -> str:
     record = context.config.models["registry"][model_id]
-    family = record.get("family")
-    implementation = (
-        "src/nwp/models/deep" if family in {"deep", "experimental_constrained"}
-        else "src/nwp/models/trees.py" if family == "tree_ml"
-        else "src/nwp/models/statistical.py" if family == "statistical"
-        else "src/nwp/models/baselines.py")
     return source_files_fingerprint(context.paths.root, (
         "src/nwp/models/base.py", "src/nwp/models/factory.py",
-        "src/nwp/features/preprocessing.py", implementation))
+        "src/nwp/features/preprocessing.py",
+        *model_implementation_sources(record)))
 
 
 def _artifact_scope(context: RunContext) -> dict[str, Any]:

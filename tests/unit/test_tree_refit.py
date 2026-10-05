@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from nwp.core.config import load_bundle, to_plain  # noqa: E402
 from nwp.models import trees as estimators  # noqa: E402
+from nwp.models.factory import quantile_model_factory  # noqa: E402
 
 
 CONFIG = to_plain(load_bundle())
@@ -24,7 +25,7 @@ PARAMETERS = {"learning_rate": .05, "num_leaves": 31}
 
 def receipt(day, rounds, *, parameters=PARAMETERS):
     return {
-        "algorithm": "lgbm", "parameters": parameters, "seed": 0,
+        "implementation": "lightgbm", "parameters": parameters, "seed": 0,
         "quantiles": list(TAUS), "best_rounds": list(rounds),
         "fit_max_target_utc": f"2024-04-{day - 3:02d}T23:00:00+00:00",
         "early_start_target_utc": f"2024-04-{day - 2:02d}T00:00:00+00:00",
@@ -38,13 +39,13 @@ def test_selected_rounds_are_per_quantile_median_and_require_complete_folds():
     receipts = [receipt(10, [10, 30, 5, 8, 9, 11, 12]),
                 receipt(12, [20, 10, 7, 8, 9, 11, 12]),
                 receipt(14, [30, 20, 9, 8, 9, 11, 12])]
-    rounds = estimators.selected_tree_rounds("lgbm", PARAMETERS, 0, TAUS, receipts)
+    rounds = estimators.selected_tree_rounds("lightgbm", PARAMETERS, 0, TAUS, receipts)
     assert rounds == (20, 20, 7, 8, 9, 11, 12)
     with pytest.raises(ValueError, match="expected 3"):
-        estimators.selected_tree_rounds("lgbm", PARAMETERS, 0, TAUS, receipts[:2])
+        estimators.selected_tree_rounds("lightgbm", PARAMETERS, 0, TAUS, receipts[:2])
     duplicate = [receipts[0], receipts[0], receipts[2]]
     with pytest.raises(ValueError, match="overlap"):
-        estimators.selected_tree_rounds("lgbm", PARAMETERS, 0, TAUS, duplicate)
+        estimators.selected_tree_rounds("lightgbm", PARAMETERS, 0, TAUS, duplicate)
 
 
 def test_refit_has_no_outer_validation_truth_or_early_stop(monkeypatch):
@@ -76,7 +77,7 @@ def test_refit_has_no_outer_validation_truth_or_early_stop(monkeypatch):
     monkeypatch.setitem(sys.modules, "lightgbm", types.SimpleNamespace(LGBMRegressor=FakeRegressor))
     receipts = [receipt(10, [10] * 7), receipt(12, [20] * 7), receipt(14, [30] * 7)]
     prediction, audit = estimators.refit_tree_quantiles(
-        "lgbm", PARAMETERS, fit, score, 0, TAUS, receipts,
+        "lightgbm", PARAMETERS, fit, score, 0, TAUS, receipts,
         feature_config=CONFIG["features"],
         validation_config=CONFIG["protocol"]["validation"])
     assert prediction.shape == (24, 7)
@@ -89,12 +90,12 @@ def test_refit_has_no_outer_validation_truth_or_early_stop(monkeypatch):
         fit.target_time_utc.max() + pd.Timedelta(hours=1, days=7),
         periods=len(score), freq="h", tz="UTC")
     with pytest.raises(AssertionError, match="10-day purge"):
-        estimators.refit_tree_quantiles("lgbm", PARAMETERS, fit, score_gap7,
+        estimators.refit_tree_quantiles("lightgbm", PARAMETERS, fit, score_gap7,
                                        0, TAUS, receipts,
                                        feature_config=CONFIG["features"],
                                        validation_config=CONFIG["protocol"]["validation"])
     sensitivity, _ = estimators.refit_tree_quantiles(
-        "lgbm", PARAMETERS, fit, score_gap7, 0, TAUS, receipts,
+        "lightgbm", PARAMETERS, fit, score_gap7, 0, TAUS, receipts,
         feature_config=CONFIG["features"],
         validation_config=CONFIG["protocol"]["validation"], gap_days=7)
 
@@ -128,8 +129,19 @@ def test_tree_adapter_records_seven_early_stop_rounds(monkeypatch):
     score = pd.DataFrame({"target_time_utc": pd.date_range("2024-02-23", periods=10,
                                                           freq="h", tz="UTC"), "y": 1.0})
     adapter = estimators.tree_fit_predict(
-        "lgbm", feature_config=CONFIG["features"])
+        "lightgbm", feature_config=CONFIG["features"])
     output, epoch, memory = adapter(PARAMETERS, fit, early, score, 0, TAUS)
     assert output.shape == (10, 7) and memory is None
     assert adapter.receipts[0]["best_rounds"] == [int(t * 100) + 1 for t in TAUS]
     assert epoch == max(adapter.receipts[0]["best_rounds"])
+
+
+def test_lightgbm_quantile_backend_accepts_an_arbitrary_model_alias():
+    model_config = to_plain(CONFIG["models"])
+    model_config["registry"]["new_tree_alias"] = {
+        **model_config["registry"]["lgbm"], "implementation": "lightgbm"}
+    model = quantile_model_factory(
+        "new_tree_alias", model_config, CONFIG["features"], CONFIG["protocol"],
+        parameters=PARAMETERS, rounds=[10] * len(TAUS), seed=0)
+    assert model.model_id == "new_tree_alias"
+    assert model.implementation == "lightgbm"

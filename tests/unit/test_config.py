@@ -209,3 +209,14 @@ def test_selector_provenance_is_complete():
         "region_quotas", "requested_n_sites", "status", "official_eligible"}
     assert parameters["selector_id"] == "density"
     assert parameters["requested_n_sites"] == len(config.selected_sites)
+
+
+def test_deep_registry_is_explicitly_architecture_only():
+    registry = load_bundle()["models"]["registry"]
+    deep = [record for record in registry.values()
+            if record["family"] in {"deep", "experimental_constrained"}]
+    assert deep
+    assert all(record["tuning"]["enabled"] is False for record in deep)
+    assert all(record["official_eligible"] is False for record in deep)
+    assert all(record["workflow_status"] == "architecture_only"
+               for record in deep)

@@ -1,9 +1,20 @@
 """Stage handlers split by workflow responsibility."""
-from .common import *  # noqa: F401,F403
+from nwp.core.config import ConfigError, assert_official_ready, to_plain
+from nwp.core.context import RunContext
+from nwp.core.dependencies import (
+    data_dependency_fingerprint, feature_dependency_fingerprint,
+    split_dependency_fingerprint)
+from nwp.core.fingerprints import source_files_fingerprint
+from nwp.core.hashing import content_hash, file_sha256
+from nwp.core.provenance import read_receipt
+from nwp.core.schema import ContractError, StageResult
+from nwp.features.build import build_feature_month
+from nwp.splits.diagnostics import split_specs
+from nwp.splits.rolling import inner_folds, outer_folds
+
 from .common import (
-    _artifact_scope, _eligible, _final_blocks, _find_reusable_model_artifact,
-    _load_feature_frame, _model_implementation_fingerprint, _months, _now,
-    _record_model_artifact, _stage_result, _stage_outputs, _time_range, _write_json,
+    _load_feature_frame, _manifest_records, _months, _now, _stage_result,
+    _stage_outputs, _time_range, _verified_record, _write_json,
 )
 
 def validate_config(context: RunContext) -> StageResult:
@@ -77,9 +88,8 @@ def resolve_data(context: RunContext) -> StageResult:
         "months": list(months), "records": [record.as_dict() for record in chosen],
         "missing": missing, "ambiguous": ambiguous}
     _write_json(path, payload)
-    dependency = content_hash({
-        "data_config": context.config.data,
-        "records": [record.source_hashes for record in chosen]})
+    dependency = data_dependency_fingerprint(
+        context.config.data, [record.source_hashes for record in chosen])
     if missing or ambiguous:
         return _stage_result(
             context, "blocked", inputs={"missing": missing, "ambiguous": ambiguous},
@@ -119,9 +129,8 @@ def build_features(context: RunContext) -> StageResult:
                        "records": [record.as_dict() for record in records]})
     hashes = {record.dataset_id: file_sha256(
         context.catalog.dataset_path(record)) for record in records}
-    dependency = content_hash({
-        "clean": data_stage["input_hashes"]["data"],
-        "features": context.config.features, "outputs": hashes})
+    dependency = feature_dependency_fingerprint(
+        data_stage["input_hashes"]["data"], context.config.features, hashes)
     return _stage_result(
         context, "success", outputs={"feature_manifest": str(path),
                                      "partitions": len(records)},
@@ -151,8 +160,8 @@ def build_splits(context: RunContext) -> StageResult:
                        "score_rows": len(item.score)} for item in inner]})
     path = context.paths.stage_dir("splits") / "splits.json"
     _write_json(path, payload)
-    dependency = content_hash({
-        "features": context.stage_results["features"]["input_hashes"]["features"],
-        "sites": context.selected_sites, "validation": validation})
+    dependency = split_dependency_fingerprint(
+        context.stage_results["features"]["input_hashes"]["features"],
+        context.selected_sites, validation)
     return _stage_result(context, "success", outputs={"splits": str(path)},
                    input_hashes={"splits": dependency}, started_at=started)

@@ -91,12 +91,12 @@ def model_summary(probability: pd.DataFrame,
 
 
 def _fit_quantile_estimators(
-        algorithm: str, parameters: Mapping[str, object], x_fit: pd.DataFrame,
+        implementation: str, parameters: Mapping[str, object], x_fit: pd.DataFrame,
         x_early: pd.DataFrame, y_fit: np.ndarray, y_early: np.ndarray,
         levels: tuple[float, ...], seed: int) -> list[object]:
     estimators = []
     for level in levels:
-        if algorithm == "lgbm":
+        if implementation == "lightgbm":
             import lightgbm as lgb
             estimator = lgb.LGBMRegressor(
                 objective="quantile", alpha=level, metric="quantile",
@@ -105,7 +105,7 @@ def _fit_quantile_estimators(
             estimator.fit(
                 x_fit, y_fit, eval_set=[(x_early, y_early)],
                 callbacks=[lgb.early_stopping(80, verbose=False)])
-        elif algorithm == "xgboost":
+        elif implementation == "xgboost":
             import xgboost as xgb
             estimator = xgb.XGBRegressor(
                 objective="reg:quantileerror", quantile_alpha=level,
@@ -116,7 +116,7 @@ def _fit_quantile_estimators(
                 x_fit, y_fit, eval_set=[(x_early, y_early)], verbose=False)
         else:
             raise ValueError(
-                "group mechanism evidence requires a registered tree algorithm")
+                "group mechanism evidence requires a registered tree implementation")
         estimators.append(estimator)
     return estimators
 
@@ -168,7 +168,7 @@ def group_mechanism_evidence(
     entry = model_config["registry"].get(model_id)
     if not isinstance(entry, Mapping) or entry.get("quantile_adapter") != "tree":
         raise ValueError("reference_model must be a supported tree model")
-    algorithm = str(entry["algorithm"])
+    implementation = str(entry["implementation"])
     levels = tuple(float(value) for value in
                    protocol_config["probability"]["quantiles"])
     leads = tuple(sorted(int(value) for value in frame.lead_time.unique()))
@@ -201,7 +201,7 @@ def group_mechanism_evidence(
             y_fit, y_early, y_score = (
                 block.y.to_numpy(dtype=float) for block in (fit, early, score))
             estimators = _fit_quantile_estimators(
-                algorithm, parameters, x_fit, x_early, y_fit, y_early,
+                implementation, parameters, x_fit, x_early, y_fit, y_early,
                 levels, seed)
             baseline_q = _tree_predictions(estimators, x_score)
             baseline = float(probability_metrics(
