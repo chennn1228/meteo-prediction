@@ -171,3 +171,102 @@ def test_xgboost_change_uses_real_tuning_dependencies_and_reuses_other_models(
                if row["model_id"] in {"ridge_mos", "lgbm"})
     assert all("reused_from_run" not in row["scope"] for row in models
                if row["model_id"] == "xgboost")
+
+
+def test_fitting_resume_uses_committed_current_run_artifact_without_copy(
+        tmp_path, monkeypatch):
+    model_ids = ("ridge_mos", "lgbm")
+    config = resolve_config(
+        "nanjing_cpu_diagnostic", models=model_ids)
+    frame = pd.DataFrame({"placeholder": [1.0]})
+    stamp = pd.Timestamp("2024-01-01", tz="UTC")
+    outer = OuterFold("outer_1", frame, frame, stamp, stamp)
+    inner = [InnerFold(
+        f"inner_{index}", frame, frame, frame, stamp, stamp, stamp, stamp)
+        for index in range(1, 4)]
+    monkeypatch.setattr(modeling, "_load_feature_frame", lambda _context: frame)
+    monkeypatch.setattr(modeling, "_eligible", lambda _context, block: block)
+    monkeypatch.setattr(modeling, "outer_folds", lambda *_args, **_kwargs: [outer])
+    monkeypatch.setattr(modeling, "inner_folds", lambda *_args, **_kwargs: inner)
+    monkeypatch.setattr(
+        modeling, "_final_blocks", lambda *_args, **_kwargs:
+        (frame, frame, frame, frame.iloc[0:0]))
+
+    def fake_trials(model_id, outer_id, folds, _adapter, *, model_config,
+                    protocol_config, device, gap_days):
+        rows = []
+        for candidate, parameters in enumerate(candidates(model_id, model_config)):
+            for fold in folds:
+                rows.append(Trial(
+                    model=model_id, candidate=candidate,
+                    parameters=dict(parameters), outer=outer_id,
+                    inner=fold.fold_id, seed=0, fit_rows=1,
+                    early_stop_rows=1, scoring_rows=1,
+                    mean_pinball=float(candidate + 1), wall_seconds=0.0,
+                    device=device, peak_memory_bytes=0, epoch=1,
+                    status="ok", error_reason=None))
+        return 0, rows
+
+    monkeypatch.setattr(modeling, "run_trials", fake_trials)
+    context = RunContext.create(
+        project_root(), config, data_root=tmp_path / "data",
+        outputs_root=tmp_path / "outputs", run_id="interrupted_fit",
+        allow_model_execution=True)
+    _prime_real_upstream_dependencies(context)
+    run_pipeline(context, from_stage="tuning", to_stage="tuning")
+
+    saves = 0
+
+    class CrashOnSecondSave(FakeModel):
+        def save(self, path: Path) -> None:
+            nonlocal saves
+            saves += 1
+            if saves == 2:
+                raise RuntimeError("bounded crash")
+            super().save(path)
+
+    initial_calls = {model_id: 0 for model_id in model_ids}
+    monkeypatch.setattr(
+        modeling, "fit_outer_quantile_model",
+        lambda _context, model_id, *_args, **_kwargs:
+        CrashOnSecondSave(model_id, initial_calls))
+    monkeypatch.setattr(
+        modeling, "fit_final_quantile_model",
+        lambda _context, model_id, *_args, **_kwargs:
+        CrashOnSecondSave(model_id, initial_calls))
+    try:
+        modeling.fit_models(context)
+    except RuntimeError as exc:
+        assert str(exc) == "bounded crash"
+    else:
+        raise AssertionError("bounded crash was not raised")
+
+    committed_path = context.paths.model_fold("ridge_mos", "outer_1") / "model.pkl"
+    committed_hash = sha256_file(committed_path)
+    resumed = RunContext.resume(
+        project_root(), config, run_id=context.run_id,
+        data_root=tmp_path / "data", outputs_root=tmp_path / "outputs",
+        allow_model_execution=True)
+    resumed_calls = {model_id: 0 for model_id in model_ids}
+    monkeypatch.setattr(
+        modeling, "fit_outer_quantile_model",
+        lambda _context, model_id, *_args, **_kwargs:
+        FakeModel(model_id, resumed_calls))
+    monkeypatch.setattr(
+        modeling, "fit_final_quantile_model",
+        lambda _context, model_id, *_args, **_kwargs:
+        FakeModel(model_id, resumed_calls))
+
+    result = run_pipeline(resumed, from_stage="fitting", to_stage="fitting")
+    assert result["fitting"]["status"] == "success"
+    assert resumed_calls == {"ridge_mos": 1, "lgbm": 2}
+    assert sha256_file(committed_path) == committed_hash
+    manifest = json.loads(
+        (resumed.paths.meta_dir / "artifact_manifest.json").read_text(
+            encoding="utf-8"))
+    committed = [row for row in manifest["artifacts"]
+                 if row["artifact_type"] == "model"
+                 and row["model_id"] == "ridge_mos"
+                 and row["fold_id"] == "outer_1"]
+    assert len(committed) == 1
+    assert "reused_from_run" not in committed[0]["scope"]

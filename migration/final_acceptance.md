@@ -6,7 +6,7 @@ Date: 2026-10-06 (Asia/Shanghai)
 
 Branch: `codex/nwp-unified-refactor`
 
-Baseline: `71729cfb67e9d0248e7243a4707f28bfaa474ad1`
+Baseline: `82fa80549c5ca34d81fd7c9936b70b67c80306b1`
 
 ## Acceptance gates
 
@@ -20,11 +20,16 @@ Baseline: `71729cfb67e9d0248e7243a4707f28bfaa474ad1`
 | deep capability status | PASS | architecture-only, tuning disabled, non-official |
 | deep environment fingerprint | PASS | Torch included for every deep implementation |
 | base environment | PASS | import, validate, status, inventory and bounded split workflow |
-| full environment | PASS | 153 tests passed in 45.54 seconds |
+| full environment | PASS | 160 tests passed in 54.20 seconds |
 | active documentation | PASS | acceptance, status and repository guide agree |
 | pseudo audit removal | PASS | no unsupported per-file responsibility audit or reference remains |
 | recovery evidence preservation | PASS | all 118 unique files retained |
 | scientific regression | PASS | baseline time/split/purge/quantile/data/site/spatial/model/profile assertions |
+| analysis runtime | PASS | independent analysis configuration and bounded real-LightGBM group evidence execution |
+| gap sensitivity | PASS | 7/10/14-day rolling folds differ; frozen final chronology remains canonical and reachable |
+| final-test isolation | PASS | development prediction/evaluation is closed; frozen official readiness gate controls hold-out access |
+| interrupted fitting resume | PASS | committed current-run model artifact is resumed in place without cross-run materialization |
+| active machine-ID naming regression | PASS | canonical snake_case IDs reject artificial numeric-version suffixes |
 
 Detailed evidence is recorded in `migration/targeted_repair_validation.md`.
 

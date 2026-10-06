@@ -136,6 +136,12 @@ def test_artifact_resolver_rejects_byte_implementation_environment_and_official_
                  data_scope={"sites": ["nanjing_1"]}, time_scope="outer_validation",
                  split_scope={"fold": "outer_1"}, execution_level="development",
                  environment_fingerprint="c" * 64)
+    assert resolver.find_compatible_artifact(**query) is None
+    assert resolver.find_current_artifact(**query)[1] == record
+    consumer = RunContext.create(
+        project_root(), config, data_root=tmp_path / "data",
+        outputs_root=tmp_path / "outputs", run_id="consumer")
+    resolver = consumer.artifact_resolver
     assert resolver.find_compatible_artifact(**query)[1] == record
     assert resolver.find_compatible_artifact(**{**query, "implementation_fingerprint": "d" * 64}) is None
     assert resolver.find_compatible_artifact(**{**query, "environment_fingerprint": "e" * 64}) is None

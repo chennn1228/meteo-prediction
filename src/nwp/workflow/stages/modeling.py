@@ -24,7 +24,8 @@ from nwp.models.trees import tree_fit_predict
 from nwp.splits.rolling import inner_folds, outer_folds
 
 from .common import (
-    _eligible, _final_blocks, _find_reusable_model_artifact,
+    _eligible, _final_blocks, _final_test_evaluation_allowed,
+    _find_current_model_artifact, _find_reusable_model_artifact,
     _load_feature_frame, _model_implementation_fingerprint, _now,
     _record_model_artifact, _stage_result, _stage_outputs, _write_json,
 )
@@ -220,12 +221,19 @@ def fit_models(context: RunContext) -> StageResult:
                 stage_contract=(outer_selection[outer.fold_id].get(model_id)
                                 if entry["tuning"]["enabled"] else {"fixed": True}))
             implementation = _model_implementation_fingerprint(context, model_id)
-            reusable = _find_reusable_model_artifact(
+            current = _find_current_model_artifact(
+                context, artifact_type="model", model_id=model_id,
+                fold_id=outer.fold_id, dependency=dependency,
+                implementation=implementation, time_scope="outer_validation")
+            reusable = None if current is not None else _find_reusable_model_artifact(
                 context, artifact_type="model", model_id=model_id,
                 fold_id=outer.fold_id, dependency=dependency,
                 implementation=implementation, time_scope="outer_validation")
             reuse_meta = None
-            if reusable is not None:
+            if current is not None:
+                if current[0].resolve() != path.resolve():
+                    raise ContractError("current-run artifact path disagrees with model path")
+            elif reusable is not None:
                 source_path, source_record = reusable
                 source_run = source_path.relative_to(context.paths.outputs_root).parts[1]
                 reuse_meta = context.artifact_resolver.materialize(
@@ -272,12 +280,19 @@ def fit_models(context: RunContext) -> StageResult:
             stage_contract=(selection["final"].get(model_id)
                             if entry["tuning"]["enabled"] else {"fixed": True}))
         implementation = _model_implementation_fingerprint(context, model_id)
-        reusable = _find_reusable_model_artifact(
+        current = _find_current_model_artifact(
+            context, artifact_type="model", model_id=model_id,
+            fold_id="final", dependency=dependency,
+            implementation=implementation, time_scope="calibration")
+        reusable = None if current is not None else _find_reusable_model_artifact(
             context, artifact_type="model", model_id=model_id,
             fold_id="final", dependency=dependency,
             implementation=implementation, time_scope="calibration")
         reuse_meta = None
-        if reusable is not None:
+        if current is not None:
+            if current[0].resolve() != path.resolve():
+                raise ContractError("current-run artifact path disagrees with model path")
+        elif reusable is not None:
             source_path, source_record = reusable
             source_run = source_path.relative_to(context.paths.outputs_root).parts[1]
             reuse_meta = context.artifact_resolver.materialize(
@@ -419,7 +434,9 @@ def predict(context: RunContext) -> StageResult:
                 "model_id": model_id, "outer_fold": outer.fold_id,
                 "path": str(path), "sha256": file_sha256(path),
                 "dependency_fingerprint": dependency})
-    _, _, final_calibration, final_test = _final_blocks(context, frame)
+    final_test_allowed = _final_test_evaluation_allowed(context)
+    _, _, final_calibration, final_test = _final_blocks(
+        context, frame, include_final_test=final_test_allowed)
     for model_id in context.selected_models:
         item = by_key[("final", model_id)]
         model_path = Path(item["path"])
@@ -474,6 +491,8 @@ def predict(context: RunContext) -> StageResult:
                 "model_id": model_id, "path": str(calibration_path),
                 "sha256": file_sha256(calibration_path),
                 "dependency_fingerprint": calibration_dependency})
+        if not final_test_allowed:
+            continue
         test_path = context.paths.prediction_file(
             model_id, "final_test_uncalibrated")
         test_dependency = model_dependency_fingerprint(
@@ -555,8 +574,7 @@ def calibrate(context: RunContext) -> StageResult:
     for model_id, calibration_item in sorted(calibration_by_model.items()):
         test_item = test_by_model.get(model_id)
         if test_item is None:
-            raise ContractError(
-                f"missing final-test predictions for calibration model {model_id}")
+            continue
         calibration_path, test_path = (
             Path(calibration_item["path"]), Path(test_item["path"]))
         if (file_sha256(calibration_path) != calibration_item["sha256"]

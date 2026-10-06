@@ -65,11 +65,16 @@ class ArtifactResolver:
                                  implementation_fingerprint: str,
                                  data_scope: Mapping[str, Any], time_scope: str,
                                  split_scope: Mapping[str, Any], execution_level: str,
-                                 environment_fingerprint: str) -> tuple[Path, ArtifactRecord] | None:
+                                 environment_fingerprint: str,
+                                 current_run_only: bool = False
+                                 ) -> tuple[Path, ArtifactRecord] | None:
         if time_scope not in TIME_SCOPES:
             raise ContractError("invalid requested time scope")
         matches = []
         for manifest, record in self._records():
+            is_current_run = manifest.parents[1].resolve() == self.paths.run_root.resolve()
+            if is_current_run != current_run_only:
+                continue
             checks = (
                 record.artifact_type == artifact_type,
                 record.dependency_fingerprint == dependency_fingerprint,
@@ -99,6 +104,10 @@ class ArtifactResolver:
                 raise ContractError("ambiguous compatible artifacts")
             matches.sort(key=lambda item: (item[1].artifact_id, str(item[0])))
         return matches[0] if matches else None
+
+    def find_current_artifact(self, **query: Any) -> tuple[Path, ArtifactRecord] | None:
+        """Resolve an already committed artifact within this interrupted run."""
+        return self.find_compatible_artifact(**query, current_run_only=True)
 
     @staticmethod
     def materialize(source: Path, destination: Path, expected_sha256: str, *,
@@ -130,7 +139,11 @@ class ArtifactResolver:
             raise ContractError("artifact manifest is malformed")
         existing = [item for item in records if item.get("artifact_id") == record.artifact_id]
         if existing:
-            if existing != [record.as_dict()]:
+            persisted = dict(existing[0])
+            proposed = record.as_dict()
+            persisted.pop("created_at", None)
+            proposed.pop("created_at", None)
+            if persisted != proposed:
                 raise ContractError("artifact ID already has a different committed record")
             return
         target = (self.paths.run_root / record.path).resolve()

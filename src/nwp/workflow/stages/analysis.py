@@ -21,7 +21,8 @@ from nwp.visualization.figures import plan_run_figures, write_figure_index
 from nwp.visualization.style import apply_publication_style
 
 from .common import (
-    _eligible, _find_reusable_model_artifact, _load_feature_frame,
+    _eligible, _final_test_evaluation_allowed, _find_reusable_model_artifact,
+    _load_feature_frame,
     _model_implementation_fingerprint, _now, _record_model_artifact,
     _stage_result, _stage_outputs, _write_json,
     _restore_artifact_bundle, _write_artifact_bundle,
@@ -37,6 +38,11 @@ def evaluate(context: RunContext) -> StageResult:
     prediction = context.stage_results.get("prediction", {})
     index_path = Path(_stage_outputs(prediction)["prediction_index"])
     index = json.loads(index_path.read_text(encoding="utf-8"))
+    final_test_allowed = _final_test_evaluation_allowed(context)
+    if (not final_test_allowed
+            and index.get("final_test_uncalibrated")):
+        raise ContractError(
+            "final-test predictions require the frozen official evaluation gate")
     artifact_hashes = []
     def load_items(items: list[dict[str, Any]], *, require_truth: bool) -> pd.DataFrame:
         frames = []
@@ -144,6 +150,10 @@ def evaluate(context: RunContext) -> StageResult:
         _stage_outputs(calibration)["calibration_index"])
     calibrated_payload = json.loads(
         calibration_index.read_text(encoding="utf-8"))
+    if (not final_test_allowed
+            and calibrated_payload.get("calibrated_final_test")):
+        raise ContractError(
+            "final-test evaluation requires the frozen official evaluation gate")
     final_calibrated = load_items(
         calibrated_payload.get("calibrated_final_test", []),
         require_truth=False)
@@ -301,6 +311,7 @@ def analyse(context: RunContext) -> StageResult:
                             _load_feature_frame(context), selection,
                             protocol_config=context.config.protocol,
                             feature_config=context.config.features,
+                            analysis_config=context.config.analysis,
                             model_config=context.config.models,
                             eligible=lambda block: _eligible(context, block))
                     table = computed[0] if label == "group_ablation" else computed[1]

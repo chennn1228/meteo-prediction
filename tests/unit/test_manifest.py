@@ -1,6 +1,7 @@
 from pathlib import Path
 import hashlib
 import json
+import re
 import subprocess
 import sys
 import unittest
@@ -31,6 +32,25 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(bundle["protocol"]["target"], "ghi")
         self.assertEqual(bundle["protocol"]["validation"]["name"], "nested_purged_rolling_origin")
         self.assertIsNone(bundle["manifest"]["official_result_set"])
+
+    def test_active_machine_ids_are_canonical_snake_case(self):
+        bundle = to_plain(load_bundle(str(ROOT)))
+        identifiers = [
+            bundle["manifest"]["project_id"],
+            bundle["data"]["version"],
+            bundle["features"]["build"]["version"],
+            *bundle["models"]["registry"],
+            *bundle["models"]["groups"],
+            *bundle["models"]["search"]["spaces"],
+            *bundle["sites"]["registry"],
+            *bundle["sites"]["sets"],
+            *bundle["sites"]["selectors"],
+            *bundle["experiments"]["profiles"],
+        ]
+        pattern = re.compile(r"[a-z][a-z0-9]*(?:_[a-z0-9]+)*")
+        self.assertTrue(all(pattern.fullmatch(value) for value in identifiers))
+        self.assertTrue(all(not re.search(r"(?:^|_)v\d+(?:_|$)", value)
+                            for value in identifiers))
 
     def test_import_manifests_use_original_tag_paths_and_exact_bytes(self):
         verified = 0

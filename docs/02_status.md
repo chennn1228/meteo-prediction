@@ -19,7 +19,7 @@ STATUS: MERGE_READY
   and 161 remain `RECOVERY_REQUIRED`. The canonical current snapshot is
   `migration/recovery_required_register.csv`.
 - The earlier acceptances are superseded by the targeted 2026-10-06 repair.
-  The independent full environment passes 153 tests; the base-only bounded
+  The independent full environment passes 160 tests; the base-only bounded
   workflow reaches the real split stage without model libraries.
 
 ## Blocked

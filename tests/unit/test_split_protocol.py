@@ -11,7 +11,7 @@ ROOT = next(
 )
 sys.path.insert(0, str(ROOT / "src"))
 
-from nwp.core.config import load_bundle, to_plain  # noqa: E402
+from nwp.core.config import load_bundle, resolve_config, to_plain  # noqa: E402
 from nwp.splits.rolling import (  # noqa: E402
     assert_gap,
     development_and_test,
@@ -85,6 +85,28 @@ class SplitProtocolTests(unittest.TestCase):
             ):
                 assert_gap(inner.fit, inner.early_stop, GAP_DAYS)
                 assert_gap(inner.early_stop, inner.score, GAP_DAYS)
+
+    def test_gap_sensitivity_changes_rolling_only_not_final_blocks(self):
+        frame = sample_frame()
+        final_boundaries = []
+        rolling_boundaries = []
+        for gap in (7, 10, 14):
+            protocol = resolve_config(
+                "nanjing_cpu_diagnostic", gap_days=gap).protocol
+            training, calibration, testing = final_training_calibration_test(
+                frame, protocol)
+            fit, early = final_fit_early_stop(training, protocol)
+            self.assertTrue(all(not block.empty for block in (
+                fit, early, calibration, testing)))
+            final_boundaries.append((
+                fit.target_time_utc.max(), early.target_time_utc.min(),
+                calibration.target_time_utc.min(), testing.target_time_utc.min()))
+            outer = outer_folds(
+                frame, protocol["validation"], protocol["development_period"],
+                gap_days=gap)[0]
+            rolling_boundaries.append(outer.fit.target_time_utc.max())
+        self.assertEqual(len(set(final_boundaries)), 1)
+        self.assertEqual(len(set(rolling_boundaries)), 3)
 
 
 if __name__ == "__main__":

@@ -155,12 +155,13 @@ def group_mechanism_evidence(
         frame: pd.DataFrame, selection: Mapping[str, object], *,
         protocol_config: Mapping[str, object],
         feature_config: Mapping[str, object],
+        analysis_config: Mapping[str, object],
         model_config: Mapping[str, object],
         eligible: Callable[[pd.DataFrame], pd.DataFrame],
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Run downstream-only group ablation and grouped permutation evidence."""
     assert_interpretation_only("analysis")
-    settings = feature_config["analysis_evidence"]
+    settings = analysis_config["evidence"]
     model_id = str(settings["reference_model"])
     repeats = int(settings["permutation_repeats"])
     if repeats < 1:
@@ -220,7 +221,7 @@ def group_mechanism_evidence(
                         f"{group}: declared feature absent from frozen matrix")
                 keep = [column for column in x_fit if column not in columns]
                 ablated = _fit_quantile_estimators(
-                    model_id, parameters, x_fit[keep], x_early[keep],
+                    implementation, parameters, x_fit[keep], x_early[keep],
                     y_fit, y_early, levels, seed)
                 loss = float(probability_metrics(
                     y_score, _tree_predictions(ablated, x_score[keep]),

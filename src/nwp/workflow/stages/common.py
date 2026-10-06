@@ -24,7 +24,7 @@ from nwp.core.provenance import make_receipt, read_receipt, write_receipt
 from nwp.core.schema import ContractError, StageResult
 from nwp.data.contracts import DatasetRecord
 from nwp.features.engineering import formal_daylight_mask
-from nwp.splits.rolling import assert_gap, inner_folds, outer_folds
+from nwp.splits.rolling import assert_gap, inner_folds, outer_folds, purge_days
 
 
 STAGES = (
@@ -39,6 +39,23 @@ ALIASES = {
 
 def _now() -> str:
     return dt.datetime.now(dt.timezone.utc).isoformat()
+
+
+def _final_test_evaluation_allowed(context: RunContext) -> bool:
+    """Allow hold-out access only after the frozen official readiness gate."""
+    config = context.config
+    if (context.execution_level != "official"
+            or not config.locked_config_hash
+            or config.locked_config_hash != config.config_hash
+            or not config.official_result_set):
+        return False
+    receipt_path = context.paths.meta_dir / "readiness_receipt.json"
+    if not receipt_path.is_file():
+        return False
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    return bool(
+        receipt.get("overall_ready")
+        and receipt.get("scientific_run_hash") == config.config_hash)
 
 
 def _stage_outputs(stage: dict[str, Any]) -> dict[str, Any]:
@@ -160,6 +177,25 @@ def _find_reusable_model_artifact(
                 str(context.config.models["registry"][model_id].get("implementation")))))
 
 
+def _find_current_model_artifact(
+    context: RunContext, *, artifact_type: str, model_id: str,
+    fold_id: str, dependency: str, implementation: str, time_scope: str,
+) -> tuple[Path, Any] | None:
+    return context.artifact_resolver.find_current_artifact(
+        artifact_type=artifact_type,
+        dependency_fingerprint=dependency,
+        implementation_fingerprint=implementation,
+        data_scope={"sites": list(context.selected_sites)},
+        time_scope=time_scope,
+        split_scope={"fold": fold_id},
+        execution_level=context.execution_level,
+        environment_fingerprint=environment_fingerprint(
+            environment_packages(
+                artifact_type,
+                str(context.config.models["registry"][model_id].get(
+                    "implementation")))))
+
+
 def _record_model_artifact(
     context: RunContext, path: Path, *, artifact_type: str, stage: str,
     model_id: str, fold_id: str, dependency: str, implementation: str,
@@ -250,26 +286,30 @@ def _window(frame: pd.DataFrame, first: str, last: str) -> pd.DataFrame:
 
 
 def _final_blocks(context: RunContext, frame: pd.DataFrame, *,
-                  require_test_truth: bool = False
+                  require_test_truth: bool = False,
+                  include_final_test: bool = False,
                   ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     protocol = context.config.protocol
     schedule = protocol["validation"]["final_fit"]
-    raw = (
+    raw = [
         _window(frame, protocol["development_period"]["start"][:10],
                 schedule["fit_end"]),
         _window(frame, schedule["early_stop_start"],
                 schedule["early_stop_end"]),
         _window(frame, schedule["calibration_start"],
-                schedule["calibration_end"]),
-        _window(frame, protocol["test_period"]["start"][:10],
-                protocol["test_period"]["end"][:10]))
-    gap = int(protocol["validation"]["gap_days"])
+                schedule["calibration_end"])]
+    gap = purge_days(protocol["validation"])
     assert_gap(raw[0], raw[1], gap)
     assert_gap(raw[1], raw[2], gap)
     fit, early, calibration = (
         _eligible(context, block) for block in raw[:3])
-    mask = formal_daylight_mask(raw[3], protocol)
-    test = raw[3].loc[mask].copy()
+    if not include_final_test:
+        return fit, early, calibration, frame.iloc[0:0].copy()
+    test_source = _window(
+        frame, protocol["test_period"]["start"][:10],
+        protocol["test_period"]["end"][:10])
+    mask = formal_daylight_mask(test_source, protocol)
+    test = test_source.loc[mask].copy()
     test["y"] = pd.to_numeric(test.get("ghi_obs_sat"), errors="coerce")
     if require_test_truth:
         test = test.loc[np.isfinite(test.y)].copy()
