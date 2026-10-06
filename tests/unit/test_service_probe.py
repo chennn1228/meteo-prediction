@@ -30,7 +30,7 @@ class ServiceProbeRateLimitTests(unittest.TestCase):
     def test_partial_round_preserves_cache_and_stops_new_requests(self):
         point = {"requested_longitude": 119.0, "requested_latitude": 32.0,
                  "service_longitude": 119.0, "service_latitude": 32.0,
-                 "service_elevation_m": 10.0, "service_id": "point-1"}
+                 "service_elevation_m": 10.0, "service_id": "point_1"}
         with tempfile.TemporaryDirectory() as directory:
             with patch("nwp.data.audit.service_boundary",
                        return_value=box(118, 31, 121, 34)), patch(
@@ -39,7 +39,7 @@ class ServiceProbeRateLimitTests(unittest.TestCase):
             ), patch("nwp.data.audit.fetch_service_probe_batch",
                      side_effect=[[point], ServiceRateLimitError("HTTP 429")]) as fetch:
                 result = probe_service_round(
-                    .025, batch_size=1, max_new_batches=3,
+                    .025, batch_size=1, max_batches=3,
                     data_root=Path(directory),
                     boundary_path=Path(directory) / "unused.geojson",
                     model="gfs_seamless")

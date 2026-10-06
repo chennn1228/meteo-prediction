@@ -1,5 +1,5 @@
 build:
-  version: feature-mechanism-raw-ratios
+  version: feature_mechanism_raw_ratios
   status: pending_retrain
   clear_sky:
     model: ineichen

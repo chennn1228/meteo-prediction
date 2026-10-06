@@ -286,7 +286,7 @@ def assess_himawari_truth(frame: pd.DataFrame, point: ServicePoint, *,
         math.isfinite(value) and value >= 0 for value in truth.values())
     fraction = valid_count / len(hours)
     return {
-        "evidence_schema": "validated_hourly_himawari_v1",
+        "evidence_schema": "validated_hourly_himawari",
         "gfs_service_id": point.service_id,
         "truth_service_coordinates": {
             "latitude": truth_point.latitude, "longitude": truth_point.longitude},
@@ -326,7 +326,7 @@ class SpatialContext:
             count = evidence.get("valid_truth_hour_count")
             fraction = evidence.get("valid_fraction")
             offset = evidence.get("truth_offset_km")
-            if (evidence.get("evidence_schema") != "validated_hourly_himawari_v1"
+            if (evidence.get("evidence_schema") != "validated_hourly_himawari"
                     or evidence.get("gfs_service_id") != key
                     or evidence.get("truth_period_start") != truth_period_start.isoformat()
                     or evidence.get("truth_period_end") != truth_period_end.isoformat()

@@ -21,7 +21,7 @@ def test_three_source_month_builds_receipted_clean_partition(tmp_path):
     paths = RunPaths.create(
         project_root(),
         execution="development",
-        run_id="data-integration",
+        run_id="data_integration",
         data_root=tmp_path / "data",
         outputs_root=tmp_path / "outputs",
     )

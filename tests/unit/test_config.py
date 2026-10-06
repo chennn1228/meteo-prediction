@@ -107,6 +107,7 @@ def test_duplicate_manifest_keys_and_noncanonical_config_paths_fail_closed(tmp_p
     (other / "project_manifest.yaml").write_text(
         """project_id: p
 protocol_version: v
+protocol_status: provisional
 official_result_set: null
 configs:
   protocol: protocol.yaml

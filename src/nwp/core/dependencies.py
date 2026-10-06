@@ -6,16 +6,25 @@ from typing import Any, Mapping
 from .fingerprints import stable_object_hash
 
 
+def _without_canonical_name(config: Any) -> Any:
+    """Keep human naming metadata from invalidating scientific artifacts."""
+    if not isinstance(config, Mapping):
+        return config
+    return {key: value for key, value in config.items() if key != "version"}
+
+
 def data_dependency_fingerprint(data_config: Any,
                                 record_source_hashes: Any) -> str:
     return stable_object_hash({
-        "data_config": data_config, "records": record_source_hashes})
+        "data_config": _without_canonical_name(data_config),
+        "records": record_source_hashes})
 
 
 def feature_dependency_fingerprint(data_dependency: str, feature_config: Any,
                                    output_hashes: Mapping[str, str]) -> str:
     return stable_object_hash({
-        "clean": data_dependency, "features": feature_config,
+        "clean": data_dependency,
+        "features": _without_canonical_name(feature_config),
         "outputs": dict(output_hashes)})
 
 

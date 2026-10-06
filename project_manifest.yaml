@@ -1,5 +1,6 @@
-project_id: jiangsu-gfs-ghi-postprocessing
-protocol_version: 2.1.0-provisional-15var-archive-aligned
+project_id: jiangsu_gfs_ghi_postprocessing
+protocol_version: 2.1.0
+protocol_status: provisional
 official_result_set: null
 configs:
   protocol: config/protocol.yaml

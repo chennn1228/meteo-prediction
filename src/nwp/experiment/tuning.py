@@ -63,7 +63,7 @@ def registered_candidates(model_id: str,
         raise KeyError(f"unregistered model: {model_id}")
     if not registry[model_id]["tuning"]["enabled"]:
         raise KeyError(f"model does not use candidate tuning: {model_id}")
-    key = ("deep_shared_prototype"
+    key = ("deep_shared"
            if registry[model_id]["family"] == "deep" else model_id)
     spaces = model_config["search"]["spaces"]
     if key not in spaces:

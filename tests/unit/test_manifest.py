@@ -11,17 +11,23 @@ from nwp.core.config import load_bundle, to_plain
 
 
 class ManifestTests(unittest.TestCase):
-    def test_counts_and_versions(self):
+    def test_canonical_model_ids_have_no_artificial_versions(self):
         registry = to_plain(load_bundle(str(ROOT)))["models"]["registry"]
-        versions = {model_id: int(entry["internal_version"].removeprefix("v"))
-                    for model_id, entry in registry.items()
-                    if "internal_version" in entry}
-        self.assertEqual(len(versions), 14)
-        self.assertEqual(versions["tcn"], 4)
-        self.assertEqual(versions["pinn"], 15)
+        expected = {
+            "raw_gfs", "climatology", "persistence", "smart_persistence",
+            "optimal_convex", "bias_correction", "linear_mos", "ridge_mos",
+            "lgbm", "xgboost", "mlp", "cnn", "tcn", "lstm", "transformer",
+            "autoformer", "informer", "fedformer", "itransformer", "patchtst",
+            "dlinear", "timesnet", "tsmixer", "pinn",
+        }
+        self.assertEqual(set(registry), expected)
+        self.assertTrue(all("internal_version" not in entry
+                            for entry in registry.values()))
 
     def test_primary_target_and_protocol(self):
         bundle = load_bundle(str(ROOT))
+        self.assertEqual(bundle["manifest"]["protocol_version"], "2.1.0")
+        self.assertEqual(bundle["manifest"]["protocol_status"], "provisional")
         self.assertEqual(bundle["protocol"]["target"], "ghi")
         self.assertEqual(bundle["protocol"]["validation"]["name"], "nested_purged_rolling_origin")
         self.assertIsNone(bundle["manifest"]["official_result_set"])

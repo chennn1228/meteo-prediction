@@ -20,7 +20,7 @@ def test_catalog_resolves_by_stage_hash_and_sites(tmp_path):
     paths = RunPaths.create(
         project_root(),
         execution="development",
-        run_id="catalog-test",
+        run_id="catalog_test",
         data_root=tmp_path / "data",
         outputs_root=tmp_path / "outputs",
     )
@@ -59,7 +59,7 @@ def test_catalog_resolves_by_stage_hash_and_sites(tmp_path):
 
 def test_catalog_bulk_registration_is_atomic_and_idempotent(tmp_path):
     paths = RunPaths.create(
-        project_root(), execution="development", run_id="catalog-bulk-test",
+        project_root(), execution="development", run_id="catalog_bulk_test",
         data_root=tmp_path / "data", outputs_root=tmp_path / "outputs")
     catalog = DataCatalog(paths)
     records = []
@@ -169,7 +169,7 @@ def test_fetch_writes_and_reuses_immutable_raw_receipt_pair(tmp_path):
     paths = RunPaths.create(
         project_root(),
         execution="development",
-        run_id="fetch-test",
+        run_id="fetch_test",
         data_root=tmp_path / "data",
         outputs_root=tmp_path / "outputs",
     )

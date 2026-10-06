@@ -43,7 +43,7 @@ def main() -> None:
             project_root(),
             resolve_config("nanjing_cpu_diagnostic", models="raw_gfs"),
             data_root=root / "data", outputs_root=root / "outputs",
-            run_id="base-bounded-splits")
+            run_id="base_bounded_splits")
         frame = pd.DataFrame({
             "target_time_utc": pd.date_range(
                 "2024-02-01", "2025-09-01", freq="6h",

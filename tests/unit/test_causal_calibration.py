@@ -35,8 +35,8 @@ def rows(targets, leads, *, observed=True):
             "lead_time": lead, "outer_fold": "final", "inner_fold": "none",
             "seed": 0, "y": centre + 10 if observed else np.nan,
             "point_prediction": centre,
-            "data_version": "data-v1", "feature_version": "features-v1",
-            "protocol_revision": "p-v2", "experiment_id": "exp-1",
+            "data_version": "synthetic_data", "feature_version": "synthetic_features",
+            "protocol_version": "synthetic_protocol", "experiment_id": "experiment_1",
             "result_status": "provisional",
             **dict.fromkeys(QUANTILE_COLUMNS, centre),
         })

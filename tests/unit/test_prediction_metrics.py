@@ -41,8 +41,8 @@ def rows(*, times=("2025-08-20T12:00:00Z", "2025-08-21T12:00:00Z"),
         "lead_time": [72] * n, "outer_fold": ["outer_1"] * n,
         "inner_fold": ["inner_1"] * n, "seed": [0] * n,
         "y": list(y), "point_prediction": [np.nan] * n,
-        "data_version": ["data-v1"] * n, "feature_version": ["features-v1"] * n,
-        "protocol_revision": ["p-v2"] * n, "experiment_id": ["exp-1"] * n,
+        "data_version": ["synthetic_data"] * n, "feature_version": ["synthetic_features"] * n,
+        "protocol_version": ["synthetic_protocol"] * n, "experiment_id": ["experiment_1"] * n,
         "result_status": ["provisional"] * n,
     })
     for i, column in enumerate(QUANTILE_COLUMNS):

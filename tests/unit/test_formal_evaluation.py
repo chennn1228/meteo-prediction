@@ -44,8 +44,8 @@ def predictions() -> pd.DataFrame:
             "forecast_issue_time_utc": (target - pd.Timedelta(hours=lead)).isoformat(),
             "lead_time": lead, "outer_fold": "outer_1", "inner_fold": "inner_1",
             "seed": 0, "y": truth, "point_prediction": np.nan,
-            "data_version": "data-v1", "feature_version": "features-v1",
-            "protocol_revision": "p-v2", "experiment_id": "exp-1",
+            "data_version": "synthetic_data", "feature_version": "synthetic_features",
+            "protocol_version": "synthetic_protocol", "experiment_id": "experiment_1",
             "result_status": "provisional",
             **dict(zip(QUANTILE_COLUMNS, quantiles)),
         })
@@ -120,12 +120,12 @@ def test_formal_gate_rejects_prototype_and_nonofficial_without_upgrading():
 
 def test_group_api_validates_contract_and_provenance_is_not_merged():
     frame = predictions()
-    frame.loc[0, "experiment_id"] = "exp-2"
+    frame.loc[0, "experiment_id"] = "experiment_2"
     output = evaluate_groups(frame, PROTOCOL, MODELS).probability_primary
-    assert set(output.experiment_id) == {"exp-1", "exp-2"}
+    assert set(output.experiment_id) == {"experiment_1", "experiment_2"}
     with pytest.raises(ValueError, match="grouping dimensions"):
         evaluate_groups(frame, PROTOCOL, MODELS, ("nonexistent",))
-    frame = predictions().drop(columns=["protocol_revision"])
+    frame = predictions().drop(columns=["protocol_version"])
     with pytest.raises(ValueError, match="prediction contract missing"):
         evaluate_predictions(frame, PROTOCOL, MODELS)
 

@@ -35,7 +35,7 @@ def test_pipeline_resume_rejects_tampered_stage_artifact(tmp_path):
     context = RunContext.create(
         project_root(), resolve_config("nanjing_cpu_diagnostic", models="raw_gfs"),
         data_root=tmp_path / "data", outputs_root=tmp_path / "outputs",
-        run_id="tamper-through-pipeline")
+        run_id="tamper_through_pipeline")
     run_pipeline(context, to_stage="selection")
     sites = context.paths.stage_dir("selection") / "sites.json"
     payload = json.loads(sites.read_text(encoding="utf-8"))

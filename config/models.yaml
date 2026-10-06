@@ -9,22 +9,21 @@ registry:
   ridge_mos: {family: statistical, role: value_ladder, implementation: ridge, quantile_adapter: ridge, device: cpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
   lgbm: {family: tree_ml, role: value_ladder, implementation: lightgbm, quantile_adapter: tree, algorithm: lgbm, device: cpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
   xgboost: {family: tree_ml, role: value_ladder, implementation: xgboost, quantile_adapter: tree, algorithm: xgboost, device: cpu, tuning: {enabled: true}, implementation_status: pending_validation, official_eligible: false}
-  mlp: {family: deep, internal_version: v2, implementation: mlp, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
-  cnn: {family: deep, internal_version: v3, implementation: cnn, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
-  tcn: {family: deep, internal_version: v4, implementation: tcn, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
-  lstm: {family: deep, internal_version: v5, implementation: lstm, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
-  transformer: {family: deep, internal_version: v6, implementation: transformer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
-  autoformer: {family: deep, internal_version: v7, implementation: autoformer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
-  informer: {family: deep, internal_version: v8, implementation: informer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
-  fedformer: {family: deep, internal_version: v9, implementation: fedformer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
-  itransformer: {family: deep, internal_version: v10, implementation: itransformer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
-  patchtst: {family: deep, internal_version: v11, implementation: patchtst, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
-  dlinear: {family: deep, internal_version: v12, implementation: dlinear, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
-  timesnet: {family: deep, internal_version: v13, implementation: timesnet, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
-  tsmixer: {family: deep, internal_version: v14, implementation: tsmixer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  mlp: {family: deep, implementation: mlp, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  cnn: {family: deep, implementation: cnn, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  tcn: {family: deep, implementation: tcn, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  lstm: {family: deep, implementation: lstm, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  transformer: {family: deep, implementation: transformer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  autoformer: {family: deep, implementation: autoformer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  informer: {family: deep, implementation: informer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  fedformer: {family: deep, implementation: fedformer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  itransformer: {family: deep, implementation: itransformer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  patchtst: {family: deep, implementation: patchtst, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  dlinear: {family: deep, implementation: dlinear, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  timesnet: {family: deep, implementation: timesnet, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
+  tsmixer: {family: deep, implementation: tsmixer, device: gpu, tuning: {enabled: false}, implementation_status: pending_validation, official_eligible: false, workflow_status: architecture_only}
   pinn:
     family: experimental_constrained
-    internal_version: v15
     implementation: pinn
     device: gpu
     tuning: {enabled: false}
@@ -53,4 +52,4 @@ search:
     ridge_mos: [{alpha: 0.00001}, {alpha: 0.001}, {alpha: 0.1}, {alpha: 1.0}, {alpha: 10.0}, {alpha: 1000.0}]
     lgbm: [{learning_rate: 0.05, num_leaves: 31, max_depth: -1, subsample: 0.9, colsample_bytree: 0.9}, {learning_rate: 0.05, num_leaves: 63, max_depth: 8, subsample: 0.8, colsample_bytree: 0.8}, {learning_rate: 0.1, num_leaves: 31, max_depth: 8, subsample: 0.9, colsample_bytree: 0.8}, {learning_rate: 0.1, num_leaves: 63, max_depth: -1, subsample: 0.8, colsample_bytree: 0.9}, {learning_rate: 0.05, num_leaves: 127, max_depth: 12, subsample: 0.7, colsample_bytree: 0.7}, {learning_rate: 0.03, num_leaves: 63, max_depth: 10, subsample: 0.9, colsample_bytree: 0.9}]
     xgboost: [{learning_rate: 0.05, max_depth: 6, subsample: 0.9, colsample_bytree: 0.9}, {learning_rate: 0.1, max_depth: 6, subsample: 0.8, colsample_bytree: 0.8}, {learning_rate: 0.05, max_depth: 8, subsample: 0.8, colsample_bytree: 0.7}, {learning_rate: 0.1, max_depth: 8, subsample: 0.9, colsample_bytree: 0.8}, {learning_rate: 0.08, max_depth: 7, subsample: 0.85, colsample_bytree: 0.8}, {learning_rate: 0.03, max_depth: 5, subsample: 0.9, colsample_bytree: 0.9}]
-    deep_shared_prototype: [{learning_rate: 0.0005, model_scale: small, dropout: 0.1}, {learning_rate: 0.001, model_scale: small, dropout: 0.1}, {learning_rate: 0.0005, model_scale: base, dropout: 0.1}, {learning_rate: 0.001, model_scale: base, dropout: 0.1}, {learning_rate: 0.0005, model_scale: small, dropout: 0.2}, {learning_rate: 0.001, model_scale: base, dropout: 0.2}]
+    deep_shared: [{learning_rate: 0.0005, model_scale: small, dropout: 0.1}, {learning_rate: 0.001, model_scale: small, dropout: 0.1}, {learning_rate: 0.0005, model_scale: base, dropout: 0.1}, {learning_rate: 0.001, model_scale: base, dropout: 0.1}, {learning_rate: 0.0005, model_scale: small, dropout: 0.2}, {learning_rate: 0.001, model_scale: base, dropout: 0.2}]

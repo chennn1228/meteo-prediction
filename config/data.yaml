@@ -1,4 +1,4 @@
-version: openmeteo-point-15var-archive-aligned-2024-02_2026-08-v1
+version: openmeteo_point_15var_archive_aligned_2024_02_2026_08
 forecast:
   provider: Open-Meteo Previous Runs API
   model: gfs_seamless

@@ -168,7 +168,7 @@ def validate_data_readiness(root: Path | None = None) -> list[Check]:
     bundle = to_plain(load_bundle(str(root)))
     checks = validate_structural(root)
     paths = RunPaths.create(
-        root, execution="development", run_id="readiness-validation")
+        root, execution="development", run_id="readiness_validation")
     catalog = DataCatalog(paths)
     records = catalog.records()
     ready_by_path = {record.path: record for record in records

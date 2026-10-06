@@ -55,7 +55,7 @@ def test_compatible_figures_are_resolved_before_render(tmp_path, monkeypatch):
 
     parent = RunContext.create(
         project_root(), config, data_root=tmp_path / "data",
-        outputs_root=tmp_path / "outputs", run_id="figure-parent")
+        outputs_root=tmp_path / "outputs", run_id="figure_parent")
     planner.source = _prime_indexes(parent)
     parent.active_stage = "figures"
     result = analysis_stage.figures(parent)
@@ -66,7 +66,7 @@ def test_compatible_figures_are_resolved_before_render(tmp_path, monkeypatch):
 
     child = RunContext.create(
         project_root(), config, data_root=tmp_path / "data",
-        outputs_root=tmp_path / "outputs", run_id="figure-child",
+        outputs_root=tmp_path / "outputs", run_id="figure_child",
         parent_run_id=parent.run_id, change_reason="same figure dependencies",
         changed_dependencies=["unrelated"])
     planner.source = _prime_indexes(child)

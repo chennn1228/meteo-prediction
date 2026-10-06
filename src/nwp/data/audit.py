@@ -297,11 +297,11 @@ def fetch_service_probe_batch(
 
 def probe_service_round(
         step: float, *, data_root: Path, boundary_path: Path, model: str,
-        batch_size: int = 40, max_new_batches: int = 0) -> dict[str, Any]:
+        batch_size: int = 40, max_batches: int = 0) -> dict[str, Any]:
     """Verify/reuse cached batches and optionally fetch an explicit bounded budget."""
     from shapely.geometry import Point
 
-    if not 1 <= batch_size <= 40 or max_new_batches < 0:
+    if not 1 <= batch_size <= 40 or max_batches < 0:
         raise ContractError(
             "batch size must be 1-40 and budget nonnegative")
     boundary = service_boundary(boundary_path)
@@ -322,7 +322,7 @@ def probe_service_round(
                 raise ContractError(
                     f"probe cache does not match resolved request: {path}")
             rows, reused = payload["returns"], reused + 1
-        elif newly_fetched < max_new_batches and stopped_reason is None:
+        elif newly_fetched < max_batches and stopped_reason is None:
             try:
                 rows = fetch_service_probe_batch(request, model=model)
             except ServiceRateLimitError:

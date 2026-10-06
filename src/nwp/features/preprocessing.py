@@ -75,7 +75,7 @@ class FoldCloudImputer:
     feature_columns: tuple[str, ...]
     policy: Mapping[str, Any]
     seed: int = 0
-    model_version: str = "fold-cloud-lgbm-v2"
+    imputer_id: str = "fold_local_cloud_lightgbm"
 
     def fit(self, fit_rows: pd.DataFrame) -> "FoldCloudImputer":
         assert_model_features(self.feature_columns, self.policy)
@@ -134,7 +134,7 @@ class FoldCloudImputer:
             )
             result.loc[missing, "cloud_cover_fcst"] = np.clip(values, 0, 100)
         result.attrs["cloud_imputation"] = {
-            "model_version": self.model_version,
+            "imputer_id": self.imputer_id,
             "fit_start_utc": self.fit_start_utc.isoformat(),
             "fit_end_utc": self.fit_end_utc.isoformat(),
             "imputed_fraction": float(missing.mean()),

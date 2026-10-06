@@ -145,7 +145,7 @@ class CausalIssueQuantileCalibrator:
             raise ValueError("calibration forecast issues must follow early stopping")
         identity_columns = (
             "experiment_id", "model_id", "seed", "data_version",
-            "feature_version", "protocol_revision")
+            "feature_version", "protocol_version")
         for column in identity_columns:
             if clean[column].nunique(dropna=False) != 1:
                 raise ValueError(f"calibration mixes {column}")

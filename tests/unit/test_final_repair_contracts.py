@@ -126,7 +126,7 @@ def test_artifact_resolver_rejects_byte_implementation_environment_and_official_
                                outputs_root=tmp_path / "outputs", run_id="source")
     artifact = source.paths.model_fold("ridge_mos", "outer_1") / "model.bin"
     artifact.parent.mkdir(parents=True, exist_ok=True)
-    artifact.write_bytes(b"model-v1")
+    artifact.write_bytes(b"model-before-tamper")
     relative = artifact.relative_to(source.paths.run_root)
     record = _artifact_record(relative, digest=sha256_file(artifact))
     source.artifact_resolver.append_record(record)
@@ -140,7 +140,7 @@ def test_artifact_resolver_rejects_byte_implementation_environment_and_official_
     assert resolver.find_compatible_artifact(**{**query, "implementation_fingerprint": "d" * 64}) is None
     assert resolver.find_compatible_artifact(**{**query, "environment_fingerprint": "e" * 64}) is None
     assert resolver.find_compatible_artifact(**{**query, "execution_level": "official"}) is None
-    artifact.write_bytes(b"model-v2")
+    artifact.write_bytes(b"model-after-tamper")
     assert resolver.find_compatible_artifact(**query) is None
 
 

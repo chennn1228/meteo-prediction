@@ -26,7 +26,7 @@ def test_run_paths_own_all_fixed_locations_and_reject_unsafe_segments(tmp_path):
     paths = RunPaths.create(
         project_root(),
         execution="development",
-        run_id="path-test",
+        run_id="path_test",
         data_root=tmp_path / "data",
         outputs_root=tmp_path / "outputs",
     )
@@ -75,11 +75,11 @@ def test_run_context_writes_complete_meta_and_records_immutable_stage(tmp_path):
         config,
         data_root=tmp_path / "data",
         outputs_root=tmp_path / "outputs",
-        run_id="context-test",
+        run_id="context_test",
     )
     assert (context.paths.meta_dir / "resolved_config.yaml").is_file()
     provenance = json.loads((context.paths.meta_dir / "provenance.json").read_text(encoding="utf-8"))
-    assert provenance["run_id"] == "context-test"
+    assert provenance["run_id"] == "context_test"
     assert provenance["config_hash"] == config.config_hash
     assert len(provenance["git_commit"]) == 40
     assert not (context.paths.meta_dir / "stage_results.json").exists()
@@ -104,31 +104,31 @@ def test_run_context_writes_complete_meta_and_records_immutable_stage(tmp_path):
         context.record_stage("validate", result)
     resumed = RunContext.resume(
         project_root(), config, data_root=tmp_path / "data",
-        outputs_root=tmp_path / "outputs", run_id="context-test")
+        outputs_root=tmp_path / "outputs", run_id="context_test")
     assert resumed.stage_results == saved
     registry_only_change = replace(
         config, site_registry_hash="1" * 64, model_registry_hash="2" * 64,
-        official_result_set="future-official-result",
+        official_result_set="future_official_result",
         locked_config_hash="f" * 64)
     registry_resumed = RunContext.resume(
         project_root(), registry_only_change, data_root=tmp_path / "data",
-        outputs_root=tmp_path / "outputs", run_id="context-test")
+        outputs_root=tmp_path / "outputs", run_id="context_test")
     assert registry_resumed.config.config_hash == config.config_hash
     changed = resolve_config("nanjing_cpu_diagnostic", models="raw_gfs")
     with pytest.raises(ContractError, match="differs"):
         RunContext.resume(
             project_root(), changed, data_root=tmp_path / "data",
-            outputs_root=tmp_path / "outputs", run_id="context-test")
+            outputs_root=tmp_path / "outputs", run_id="context_test")
 
 
 def test_same_run_resume_rejects_runtime_source_drift(tmp_path, monkeypatch):
     config = resolve_config("nanjing_cpu_diagnostic", models="raw_gfs")
     RunContext.create(
         project_root(), config, data_root=tmp_path / "data",
-        outputs_root=tmp_path / "outputs", run_id="runtime-drift")
+        outputs_root=tmp_path / "outputs", run_id="runtime_drift")
     monkeypatch.setattr("nwp.core.context.runtime_source_fingerprint",
                         lambda _root: "0" * 64)
     with pytest.raises(ContractError, match="runtime source fingerprint differs"):
         RunContext.resume(
             project_root(), config, data_root=tmp_path / "data",
-            outputs_root=tmp_path / "outputs", run_id="runtime-drift")
+            outputs_root=tmp_path / "outputs", run_id="runtime_drift")

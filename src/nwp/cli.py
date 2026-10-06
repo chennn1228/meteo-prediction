@@ -144,7 +144,7 @@ def main(argv: list[str] | None = None) -> int:
     probe = data_sub.add_parser(
         "probe-service", help="run a budgeted returned-service-point probe")
     probe.add_argument("--step", type=float, required=True)
-    probe.add_argument("--max-new-batches", type=int, default=0)
+    probe.add_argument("--max-batches", type=int, default=0)
     probe.add_argument("--batch-size", type=int, default=40)
     probe.add_argument("--boundary", type=Path)
     run = sub.add_parser("run", help="run the dependency-aware workflow")
@@ -181,7 +181,7 @@ def main(argv: list[str] | None = None) -> int:
                 bundle = load_bundle(str(root))
                 payload = probe_service_round(
                     args.step, batch_size=args.batch_size,
-                    max_new_batches=args.max_new_batches,
+                    max_batches=args.max_batches,
                     data_root=local_data_root,
                     boundary_path=(
                         args.boundary or load_local_paths(root)["data_root"] /

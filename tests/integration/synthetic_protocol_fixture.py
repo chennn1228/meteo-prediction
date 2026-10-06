@@ -72,8 +72,8 @@ def synthetic_feature_and_prediction_rows():
             "y": center + 5., "point_prediction": center,
             "data_version": bundle["data"]["version"],
             "feature_version": bundle["features"]["build"]["version"],
-            "protocol_revision": bundle["manifest"]["protocol_version"],
-            "experiment_id": "synthetic-smoke-only", "result_status": "diagnostic",
+            "protocol_version": bundle["manifest"]["protocol_version"],
+            "experiment_id": "synthetic_smoke_only", "result_status": "diagnostic",
         }
         for column, offset in zip(QUANTILE_COLUMNS, (-30., -20., -10., 0., 10., 20., 30.)):
             record[column] = center + offset

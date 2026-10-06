@@ -55,7 +55,7 @@ evaluation:
     point_only_model: raw_gfs
     identity_fields: [location_id, requested_coordinates, gfs_service_coordinates, truth_service_coordinates]
     temporal_fields: [target_time_utc, forecast_issue_time_utc, lead_time]
-    provenance_fields: [model_id, implementation_level, execution_level, outer_fold, inner_fold, seed, data_version, feature_version, protocol_revision, experiment_id, result_status]
+    provenance_fields: [model_id, implementation_level, execution_level, outer_fold, inner_fold, seed, data_version, feature_version, protocol_version, experiment_id, result_status]
     crps_q7_trunc_label: seven_quantile_interval_truncated_crps_approximation
 daylight_definition:
   formal: solar_elevation_gt_0

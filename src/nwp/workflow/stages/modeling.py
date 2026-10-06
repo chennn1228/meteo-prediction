@@ -345,7 +345,7 @@ def _prediction_rows(context: RunContext, score: pd.DataFrame, model_id: str,
         "point_prediction": values[:, median_index] if is_quantile else values,
         "data_version": context.config.data["version"],
         "feature_version": context.config.features["version"],
-        "protocol_revision": context.config.protocol_version,
+        "protocol_version": context.config.protocol_version,
         "experiment_id": context.run_id,
         "result_status": (
             "official" if context.execution_level == "official" else "diagnostic"),

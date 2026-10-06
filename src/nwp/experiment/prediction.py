@@ -38,7 +38,7 @@ def required_columns(protocol_config: Mapping[str, Any]) -> tuple[str, ...]:
         "target_time_utc", "forecast_issue_time_utc", "lead_time",
         "outer_fold", "inner_fold", "seed", "y", "point_prediction",
         *quantile_columns(protocol_config), "data_version", "feature_version",
-        "protocol_revision", "experiment_id", "result_status")
+        "protocol_version", "experiment_id", "result_status")
 
 
 def _coordinates(value: object, column: str) -> str:
@@ -111,7 +111,7 @@ def validate_predictions(frame: pd.DataFrame,
         raise ValueError("official model_id must be semantic; vN is provenance only")
     for column in (
             "model_id", "location_id", "outer_fold", "data_version",
-            "feature_version", "protocol_revision", "experiment_id"):
+            "feature_version", "protocol_version", "experiment_id"):
         if (output[column].isna().any()
                 or (output[column].astype(str).str.strip() == "").any()):
             raise ValueError(f"{column} contains blanks")

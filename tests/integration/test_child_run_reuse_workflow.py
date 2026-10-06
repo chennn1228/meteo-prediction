@@ -139,7 +139,7 @@ def test_xgboost_change_uses_real_tuning_dependencies_and_reuses_other_models(
 
     parent = RunContext.create(
         project_root(), base_config, data_root=tmp_path / "data",
-        outputs_root=tmp_path / "outputs", run_id="reuse-parent",
+        outputs_root=tmp_path / "outputs", run_id="reuse_parent",
         allow_model_execution=True)
     _prime_real_upstream_dependencies(parent)
     run_pipeline(parent, from_stage="tuning", to_stage="fitting")
@@ -151,7 +151,7 @@ def test_xgboost_change_uses_real_tuning_dependencies_and_reuses_other_models(
     fit_calls.update({model_id: 0 for model_id in MODELS})
     child = RunContext.create(
         project_root(), child_config, data_root=tmp_path / "data",
-        outputs_root=tmp_path / "outputs", run_id="reuse-child",
+        outputs_root=tmp_path / "outputs", run_id="reuse_child",
         parent_run_id=parent.run_id, change_reason="xgboost search-space change",
         changed_dependencies=["models.search.spaces.xgboost"],
         allow_model_execution=True)

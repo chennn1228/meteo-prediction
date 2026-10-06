@@ -101,7 +101,7 @@ class DataContractMigrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             paths = RunPaths.create(
-                project_root(), execution="development", run_id="missing-month",
+                project_root(), execution="development", run_id="missing_month",
                 data_root=root / "data", outputs_root=root / "outputs",
             )
             catalog = DataCatalog(paths)

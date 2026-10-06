@@ -18,11 +18,11 @@ from .metrics import (
 
 
 PROVENANCE_KEYS = (
-    "experiment_id", "protocol_revision", "data_version", "feature_version",
+    "experiment_id", "protocol_version", "data_version", "feature_version",
     "model_id", "implementation_level", "execution_level", "result_status",
     "prediction_type", "seed")
 SAMPLE_KEYS = (
-    "experiment_id", "protocol_revision", "data_version", "feature_version",
+    "experiment_id", "protocol_version", "data_version", "feature_version",
     "execution_level", "result_status", "seed", "location_id",
     "target_time_utc", "forecast_issue_time_utc", "lead_time", "outer_fold")
 

@@ -101,3 +101,23 @@ def test_production_dependency_truth_table():
     for change, snapshot in variants.items():
         changed = {key for key in original if original[key] != snapshot[key]}
         assert changed == expected_changed[change]
+
+
+def test_canonical_name_changes_do_not_invalidate_scientific_artifacts():
+    config = resolve_config("nanjing_cpu_diagnostic", models=MODELS)
+    data = to_plain(config.data)
+    features = to_plain(config.features)
+    source_hashes = [{"catalog-record": "a" * 64}]
+    output_hashes = {"feature-partition": "b" * 64}
+    data_before = data_dependency_fingerprint(data, source_hashes)
+    features_before = feature_dependency_fingerprint(
+        data_before, features, output_hashes)
+
+    data["version"] = "renamed_data_contract"
+    features["version"] = "renamed_feature_contract"
+    data_after = data_dependency_fingerprint(data, source_hashes)
+    features_after = feature_dependency_fingerprint(
+        data_after, features, output_hashes)
+
+    assert data_after == data_before
+    assert features_after == features_before

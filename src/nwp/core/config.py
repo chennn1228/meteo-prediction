@@ -124,7 +124,8 @@ def load_local_paths(root: Path | None = None) -> Mapping[str, Path]:
 def load_bundle(root_text: str | None = None) -> Mapping[str, Any]:
     root = Path(root_text) if root_text else project_root()
     manifest = _read_yaml(root / "project_manifest.yaml")
-    if set(manifest) != {"project_id", "protocol_version", "official_result_set", "configs"}:
+    if set(manifest) != {"project_id", "protocol_version", "protocol_status",
+                        "official_result_set", "configs"}:
         raise ConfigError("project_manifest.yaml is an entry point only; move facts to one child config")
     config_paths = manifest["configs"]
     if set(config_paths) != set(CONFIG_NAMES):
@@ -213,7 +214,7 @@ def _validate_bundle(bundle: Mapping[str, Any]) -> None:
         exact_keys(selector, {"method", "status", "official_eligible", "source_set",
                               "allowed_counts", "region_quotas"},
                    f"sites.selectors.{selector_id}")
-    model_allowed = {"family", "role", "internal_version", "implementation",
+    model_allowed = {"family", "role", "implementation",
                      "quantile_adapter", "algorithm", "device", "tuning",
                      "implementation_status", "official_eligible",
                      "workflow_status", "constraints"}
@@ -236,6 +237,8 @@ def _validate_bundle(bundle: Mapping[str, Any]) -> None:
     for value, label in ((manifest.get("project_id"), "project ID"),):
         if not isinstance(value, str) or not _SAFE_ID.fullmatch(value):
             raise ConfigError(f"unsafe {label}: {value!r}")
+    if manifest.get("protocol_status") not in {"provisional", "validated", "deprecated"}:
+        raise ConfigError("protocol_status must be provisional, validated, or deprecated")
     for section, label in ((bundle["sites"].get("registry"), "site"),
                            (bundle["sites"].get("sets"), "site set"),
                            (bundle["sites"].get("selectors"), "site selector"),
@@ -331,7 +334,7 @@ def _validate_bundle(bundle: Mapping[str, Any]) -> None:
     for model_id, spec in registry.items():
         if not _tuning_enabled(spec):
             continue
-        space_id = model_id if model_id in spaces else "deep_shared_prototype" if spec.get("family") == "deep" else None
+        space_id = model_id if model_id in spaces else "deep_shared" if spec.get("family") == "deep" else None
         if space_id is None or len(spaces[space_id]) != trials:
             raise ConfigError(f"tuned model {model_id} must resolve to exactly {trials} registered candidates")
     sites = bundle["sites"]
@@ -421,6 +424,7 @@ def _farthest_sites(registry: Mapping[str, Mapping[str, Any]], candidates: Seque
 class RunConfig:
     project_id: str
     protocol_version: str
+    protocol_status: str
     profile: str
     execution: str
     protocol: Mapping[str, Any]
@@ -445,6 +449,7 @@ class RunConfig:
     def as_dict(self) -> dict[str, Any]:
         return _plain({
             "project_id": self.project_id, "protocol_version": self.protocol_version,
+            "protocol_status": self.protocol_status,
             "profile": self.profile, "execution": self.execution,
             "protocol": self.protocol, "data": self.data, "features": self.features,
             "analysis": self.analysis,
@@ -527,7 +532,7 @@ def resolve_config(profile: str | None, *, root: Path | None = None, models: str
     all_spaces = bundle["models"]["search"]["spaces"]
     selected_search_spaces = {
         item: _plain(all_spaces[item] if item in all_spaces else
-                     all_spaces["deep_shared_prototype"])
+                     all_spaces["deep_shared"])
         for item in chosen_models
         if _tuning_enabled(model_registry[item])
     }
@@ -558,6 +563,7 @@ def resolve_config(profile: str | None, *, root: Path | None = None, models: str
     payload = {
         "project_id": bundle["manifest"]["project_id"],
         "protocol_version": bundle["manifest"]["protocol_version"],
+        "protocol_status": bundle["manifest"]["protocol_status"],
         "profile": profile,
         "execution": execution,
         "protocol": protocol,
