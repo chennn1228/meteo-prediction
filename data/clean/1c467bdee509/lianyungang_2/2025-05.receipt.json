@@ -1,0 +1,84 @@
+{
+  "clean_contract": {
+    "cloud_range": [
+      0,
+      100
+    ],
+    "missing_policy": "preserve_and_report",
+    "radiation_negative_policy": "clip_to_zero",
+    "row_unit": "site_target_time_lead"
+  },
+  "config_hash": "1c467bdee509",
+  "created_at": "2026-10-06T12:28:59.504311+00:00",
+  "dependency_fingerprint": "1c467bdee509",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "0426d40bf3a9a949b6ee8cb9b668eacbe6fa0d14e2f1689965706e2372b43efe",
+  "input_hashes": {
+    "previous_runs": "2d1831563f83da0f6ba0c9559d0f24b4561245c722a8333c071c136659bc3c48",
+    "satellite": "a67efb467a2e04dfea9ca77222132367d5387ccbbcefa848ec2c4fa0888867f0"
+  },
+  "missingness": {
+    "cloud_cover_fcst": 0.0,
+    "dewpoint_fcst": 0.0,
+    "dhi_fcst": 0.0,
+    "dni_fcst": 0.0,
+    "forecast_issue_time_utc": 0.0,
+    "gfs_service_latitude": 0.0,
+    "gfs_service_longitude": 0.0,
+    "ghi_fcst": 0.0,
+    "ghi_obs_sat": 0.0,
+    "gti_fcst": 0.0,
+    "himawari_service_latitude": 0.0,
+    "himawari_service_longitude": 0.0,
+    "is_day_fcst": 0.0,
+    "lead_time": 0.0,
+    "precip_fcst": 0.0,
+    "pressure_fcst": 0.0,
+    "requested_latitude": 0.0,
+    "requested_longitude": 0.0,
+    "rh_fcst": 0.0,
+    "sunshine_fcst": 0.0,
+    "target_time_utc": 0.0,
+    "temp_fcst": 0.0,
+    "terrestrial_fcst": 0.0,
+    "wind_dir_fcst": 0.0,
+    "wind_speed_fcst": 0.0
+  },
+  "month": "2025-05",
+  "output_hashes": {
+    "data": "de86f2a80fbf73c2ec1da11969a2b04a31822e73ae1e0fa31b69b21a0614290e"
+  },
+  "output_sha256": "de86f2a80fbf73c2ec1da11969a2b04a31822e73ae1e0fa31b69b21a0614290e",
+  "row_count": 2232,
+  "service_coordinates": {
+    "gfs": [
+      [
+        34.734787,
+        119.41406
+      ]
+    ],
+    "himawari": [
+      [
+        34.700005,
+        119.4
+      ]
+    ]
+  },
+  "site_id": "lianyungang_2",
+  "stage": "clean",
+  "status": "ready",
+  "time_range": {
+    "end": "2025-05-31",
+    "start": "2025-05-01"
+  },
+  "upstream_artifact_ids": [
+    "raw-previous_runs-lianyungang_2-2025-05-d0717afefec6",
+    "raw-satellite-lianyungang_2-2025-05-13dcfcd9ede0"
+  ],
+  "upstream_sha256": {
+    "previous_runs": "2d1831563f83da0f6ba0c9559d0f24b4561245c722a8333c071c136659bc3c48",
+    "satellite": "a67efb467a2e04dfea9ca77222132367d5387ccbbcefa848ec2c4fa0888867f0"
+  }
+}

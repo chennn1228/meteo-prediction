@@ -1,0 +1,162 @@
+[
+ {
+  "id": "changzhou_1",
+  "name": "changzhou_1",
+  "lat": 31.5,
+  "lon": 119.8,
+  "region": "苏南内陆",
+  "code": "SI"
+ },
+ {
+  "id": "nanjing_1",
+  "name": "nanjing_1",
+  "lat": 31.9,
+  "lon": 118.6,
+  "region": "苏南内陆",
+  "code": "SI"
+ },
+ {
+  "id": "suzhou_1",
+  "name": "suzhou_1",
+  "lat": 31.5,
+  "lon": 121.0,
+  "region": "苏南内陆",
+  "code": "SI"
+ },
+ {
+  "id": "wuxi_1",
+  "name": "wuxi_1",
+  "lat": 31.1,
+  "lon": 120.2,
+  "region": "苏南内陆",
+  "code": "SI"
+ },
+ {
+  "id": "nanjing_2",
+  "name": "nanjing_2",
+  "lat": 31.5,
+  "lon": 119.0,
+  "region": "苏南内陆",
+  "code": "SI"
+ },
+ {
+  "id": "taizhou_1",
+  "name": "taizhou_1",
+  "lat": 32.7,
+  "lon": 119.8,
+  "region": "苏中内陆",
+  "code": "MI"
+ },
+ {
+  "id": "taizhou_2",
+  "name": "taizhou_2",
+  "lat": 32.7,
+  "lon": 120.6,
+  "region": "苏中内陆",
+  "code": "MI"
+ },
+ {
+  "id": "nantong_1",
+  "name": "nantong_1",
+  "lat": 31.9,
+  "lon": 121.0,
+  "region": "苏中沿海",
+  "code": "MC"
+ },
+ {
+  "id": "nantong_2",
+  "name": "nantong_2",
+  "lat": 31.9,
+  "lon": 121.8,
+  "region": "苏中沿海",
+  "code": "MC"
+ },
+ {
+  "id": "suqian_1",
+  "name": "suqian_1",
+  "lat": 33.9,
+  "lon": 118.2,
+  "region": "苏北内陆",
+  "code": "NI"
+ },
+ {
+  "id": "xuzhou_1",
+  "name": "xuzhou_1",
+  "lat": 34.7,
+  "lon": 116.6,
+  "region": "苏北内陆",
+  "code": "NI"
+ },
+ {
+  "id": "huai_an_1",
+  "name": "huai_an_1",
+  "lat": 33.1,
+  "lon": 119.4,
+  "region": "苏北内陆",
+  "code": "NI"
+ },
+ {
+  "id": "huai_an_2",
+  "name": "huai_an_2",
+  "lat": 33.9,
+  "lon": 119.4,
+  "region": "苏北内陆",
+  "code": "NI"
+ },
+ {
+  "id": "xuzhou_2",
+  "name": "xuzhou_2",
+  "lat": 34.3,
+  "lon": 117.4,
+  "region": "苏北内陆",
+  "code": "NI"
+ },
+ {
+  "id": "huai_an_3",
+  "name": "huai_an_3",
+  "lat": 33.1,
+  "lon": 118.6,
+  "region": "苏北内陆",
+  "code": "NI"
+ },
+ {
+  "id": "yancheng_1",
+  "name": "yancheng_1",
+  "lat": 33.9,
+  "lon": 119.8,
+  "region": "苏北沿海",
+  "code": "NC"
+ },
+ {
+  "id": "lianyungang_1",
+  "name": "lianyungang_1",
+  "lat": 34.7,
+  "lon": 118.6,
+  "region": "苏北沿海",
+  "code": "NC"
+ },
+ {
+  "id": "yancheng_2",
+  "name": "yancheng_2",
+  "lat": 33.1,
+  "lon": 120.6,
+  "region": "苏北沿海",
+  "code": "NC"
+ },
+ {
+  "id": "yancheng_3",
+  "name": "yancheng_3",
+  "lat": 33.1,
+  "lon": 119.8,
+  "region": "苏北沿海",
+  "code": "NC"
+ },
+ {
+  "id": "lianyungang_2",
+  "name": "lianyungang_2",
+  "lat": 34.7,
+  "lon": 119.4,
+  "region": "苏北沿海",
+  "code": "NC"
+ }
+]

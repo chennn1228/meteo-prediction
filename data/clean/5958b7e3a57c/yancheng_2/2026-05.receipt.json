@@ -1,0 +1,84 @@
+{
+  "clean_contract": {
+    "cloud_range": [
+      0,
+      100
+    ],
+    "missing_policy": "preserve_and_report",
+    "radiation_negative_policy": "clip_to_zero",
+    "row_unit": "site_target_time_lead"
+  },
+  "config_hash": "5958b7e3a57c",
+  "created_at": "2026-10-06T12:27:57.456105+00:00",
+  "dependency_fingerprint": "5958b7e3a57c",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "0426d40bf3a9a949b6ee8cb9b668eacbe6fa0d14e2f1689965706e2372b43efe",
+  "input_hashes": {
+    "previous_runs": "70fac1911b2571bdd596e214857df8fb198eae414ff52b91d17357afb38b2dfc",
+    "satellite": "c92c8786db153174afd235df75f1eb74d8ec03d8f66ed7b61f266a5fa58f2f2a"
+  },
+  "missingness": {
+    "cloud_cover_fcst": 0.0,
+    "dewpoint_fcst": 0.0,
+    "dhi_fcst": 0.0,
+    "dni_fcst": 0.0,
+    "forecast_issue_time_utc": 0.0,
+    "gfs_service_latitude": 0.0,
+    "gfs_service_longitude": 0.0,
+    "ghi_fcst": 0.0,
+    "ghi_obs_sat": 0.0013440860215053765,
+    "gti_fcst": 0.0,
+    "himawari_service_latitude": 0.0,
+    "himawari_service_longitude": 0.0,
+    "is_day_fcst": 0.0,
+    "lead_time": 0.0,
+    "precip_fcst": 0.0,
+    "pressure_fcst": 0.0,
+    "requested_latitude": 0.0,
+    "requested_longitude": 0.0,
+    "rh_fcst": 0.0,
+    "sunshine_fcst": 0.0,
+    "target_time_utc": 0.0,
+    "temp_fcst": 0.0,
+    "terrestrial_fcst": 0.0,
+    "wind_dir_fcst": 0.0,
+    "wind_speed_fcst": 0.0
+  },
+  "month": "2026-05",
+  "output_hashes": {
+    "data": "2182b5ffddb678a9d03c89d40c073635dfc9b40b43929a6ffab6a92f93b2b015"
+  },
+  "output_sha256": "2182b5ffddb678a9d03c89d40c073635dfc9b40b43929a6ffab6a92f93b2b015",
+  "row_count": 2232,
+  "service_coordinates": {
+    "gfs": [
+      [
+        33.094696,
+        120.58594
+      ]
+    ],
+    "himawari": [
+      [
+        33.1,
+        120.600006
+      ]
+    ]
+  },
+  "site_id": "yancheng_2",
+  "stage": "clean",
+  "status": "ready",
+  "time_range": {
+    "end": "2026-05-31",
+    "start": "2026-05-01"
+  },
+  "upstream_artifact_ids": [
+    "raw-previous_runs-yancheng_2-2026-05-a6b4c096edc6",
+    "raw-satellite-yancheng_2-2026-05-f7ca8eaae714"
+  ],
+  "upstream_sha256": {
+    "previous_runs": "70fac1911b2571bdd596e214857df8fb198eae414ff52b91d17357afb38b2dfc",
+    "satellite": "c92c8786db153174afd235df75f1eb74d8ec03d8f66ed7b61f266a5fa58f2f2a"
+  }
+}

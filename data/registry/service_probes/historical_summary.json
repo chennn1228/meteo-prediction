@@ -1,0 +1,9 @@
+{
+  "status": "historical_probe_evidence",
+  "step_degrees": 0.05,
+  "distinct_returned_service_points": 707,
+  "inside_jiangsu": 654,
+  "outside_jiangsu": 53,
+  "identity_fields": ["returned_service_latitude", "returned_service_longitude"],
+  "requested_coordinates_role": "provenance_only"
+}

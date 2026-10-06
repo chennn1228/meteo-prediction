@@ -1,0 +1,6 @@
+source,site,start,end,status,requested_lat,requested_lon,service_lat,service_lon,data_version,bytes,error
+previous_runs,nanjing_1,2024-02-01,2024-02-29,ok,31.9,118.6,31.923203,118.59375,openmeteo-point-2024-02_2026-09-v1,188290,
+satellite,nanjing_1,2024-02-01,2024-02-29,ok,31.9,118.6,31.900002,118.600006,openmeteo-point-2024-02_2026-09-v1,29811,
+era5,nanjing_1,2024-02-01,2024-02-29,ok,31.9,118.6,31.880491,118.59206,openmeteo-point-2024-02_2026-09-v1,38167,
+previous_runs,nanjing_1,2025-06-01,2025-06-30,ok,31.9,118.6,31.923203,118.59375,openmeteo-point-2024-02_2026-09-v1,201480,
+previous_runs,nanjing_1,2026-08-01,2026-08-31,ok,31.9,118.6,31.923203,118.59375,openmeteo-point-2024-02_2026-09-v1,206644,

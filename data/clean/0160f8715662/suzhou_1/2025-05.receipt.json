@@ -1,0 +1,84 @@
+{
+  "clean_contract": {
+    "cloud_range": [
+      0,
+      100
+    ],
+    "missing_policy": "preserve_and_report",
+    "radiation_negative_policy": "clip_to_zero",
+    "row_unit": "site_target_time_lead"
+  },
+  "config_hash": "0160f8715662",
+  "created_at": "2026-10-06T12:18:50.277793+00:00",
+  "dependency_fingerprint": "0160f8715662",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "0426d40bf3a9a949b6ee8cb9b668eacbe6fa0d14e2f1689965706e2372b43efe",
+  "input_hashes": {
+    "previous_runs": "202a9b6478f03ca58a790143b2c06735442c68f9e5bb94f02ae4ff382943cd2d",
+    "satellite": "66c2e16d4457fde211fff8ab6440f20b16c337ac22c2dff4582d51baafcea434"
+  },
+  "missingness": {
+    "cloud_cover_fcst": 0.0,
+    "dewpoint_fcst": 0.0,
+    "dhi_fcst": 0.0,
+    "dni_fcst": 0.0,
+    "forecast_issue_time_utc": 0.0,
+    "gfs_service_latitude": 0.0,
+    "gfs_service_longitude": 0.0,
+    "ghi_fcst": 0.0,
+    "ghi_obs_sat": 0.0,
+    "gti_fcst": 0.0,
+    "himawari_service_latitude": 0.0,
+    "himawari_service_longitude": 0.0,
+    "is_day_fcst": 0.0,
+    "lead_time": 0.0,
+    "precip_fcst": 0.0,
+    "pressure_fcst": 0.0,
+    "requested_latitude": 0.0,
+    "requested_longitude": 0.0,
+    "rh_fcst": 0.0,
+    "sunshine_fcst": 0.0,
+    "target_time_utc": 0.0,
+    "temp_fcst": 0.0,
+    "terrestrial_fcst": 0.0,
+    "wind_dir_fcst": 0.0,
+    "wind_speed_fcst": 0.0
+  },
+  "month": "2025-05",
+  "output_hashes": {
+    "data": "a240f45fd5630fab9cb39b33d8636bb538610534f1789f51c51377e61f2949a4"
+  },
+  "output_sha256": "a240f45fd5630fab9cb39b33d8636bb538610534f1789f51c51377e61f2949a4",
+  "row_count": 2232,
+  "service_coordinates": {
+    "gfs": [
+      [
+        31.454605,
+        121.05469
+      ]
+    ],
+    "himawari": [
+      [
+        31.5,
+        121.0
+      ]
+    ]
+  },
+  "site_id": "suzhou_1",
+  "stage": "clean",
+  "status": "ready",
+  "time_range": {
+    "end": "2025-05-31",
+    "start": "2025-05-01"
+  },
+  "upstream_artifact_ids": [
+    "raw-previous_runs-suzhou_1-2025-05-1b5edd1c9d9b",
+    "raw-satellite-suzhou_1-2025-05-d9c285538366"
+  ],
+  "upstream_sha256": {
+    "previous_runs": "202a9b6478f03ca58a790143b2c06735442c68f9e5bb94f02ae4ff382943cd2d",
+    "satellite": "66c2e16d4457fde211fff8ab6440f20b16c337ac22c2dff4582d51baafcea434"
+  }
+}

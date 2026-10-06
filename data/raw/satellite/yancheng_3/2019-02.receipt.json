@@ -1,0 +1,61 @@
+{
+  "config_hash": "6ab484d38575",
+  "created_at": "2026-10-03T13:55:46.005032+00:00",
+  "data_sha256": "3f061f7c9b4f34fb7137961ce3f0d0cc45817a127ed7df839ad071fb17a891c5",
+  "data_version": "openmeteo-point-15var-archive-aligned-2024-02_2026-08-v1",
+  "execution_level": "development",
+  "git_commit": "09230bce481bca561aef94b64f0d9a02479b41ae",
+  "imported_from": "data/01_raw/03_satellite/yancheng_3/yancheng_3_2019-02.json",
+  "input_hashes": {},
+  "leads": [],
+  "missingness": {
+    "diffuse_radiation": 0.0,
+    "direct_normal_irradiance": 0.0,
+    "direct_radiation": 0.0,
+    "global_tilted_irradiance": 0.0,
+    "shortwave_radiation": 0.0
+  },
+  "output_hashes": {
+    "data": "3f061f7c9b4f34fb7137961ce3f0d0cc45817a127ed7df839ad071fb17a891c5"
+  },
+  "provider_model": "jma_jaxa_himawari",
+  "request_parameters": {
+    "azimuth": 0,
+    "cell_selection": "land",
+    "end_date": "2019-02-28",
+    "hourly": "shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,global_tilted_irradiance",
+    "latitude": 33.1,
+    "longitude": 119.8,
+    "models": "jma_jaxa_himawari",
+    "start_date": "2019-02-01",
+    "tilt": 30,
+    "timezone": "UTC"
+  },
+  "requested_site": {
+    "latitude": 33.1,
+    "longitude": 119.8,
+    "site_id": "yancheng_3"
+  },
+  "returned_coordinates": {
+    "elevation": 1.0,
+    "latitude": 33.1,
+    "longitude": 119.8
+  },
+  "row_count": 672,
+  "source": "satellite",
+  "source_preserved_during_import": true,
+  "stage": "raw",
+  "status": "ready",
+  "time_range": {
+    "end": "2019-02-28",
+    "start": "2019-02-01"
+  },
+  "validation_status": "pass",
+  "variables": [
+    "shortwave_radiation",
+    "direct_radiation",
+    "diffuse_radiation",
+    "direct_normal_irradiance",
+    "global_tilted_irradiance"
+  ]
+}

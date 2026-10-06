@@ -8,9 +8,6 @@
 credentials*.json
 /config/local.yaml
 
-# Raw, cleaned and featured research data
-/data/
-
 # Local environments and caches
 .venv/
 .venv-final-repair/
@@ -38,6 +35,7 @@ __pycache__/
 
 # Large model/checkpoint and tabular artifacts
 *.parquet
+!/data/**/*.parquet
 *.feather
 *.h5
 *.hdf5

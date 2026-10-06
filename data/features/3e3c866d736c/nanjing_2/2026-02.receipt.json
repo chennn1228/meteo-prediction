@@ -1,0 +1,76 @@
+{
+  "config_hash": "3e3c866d736c",
+  "created_at": "2026-10-06T12:20:06.537441+00:00",
+  "data_version": "openmeteo_point_15var_archive_aligned_2024_02_2026_08",
+  "dependency_fingerprint": "3e3c866d736c",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "feature_version": "feature_mechanism_raw_ratios",
+  "formal_feature_columns": [
+    "ghi_fcst",
+    "dhi_fcst",
+    "dni_fcst",
+    "gti_fcst",
+    "terrestrial_fcst",
+    "ghi_clear_sky",
+    "dni_clear_sky",
+    "kt_model",
+    "kni_model",
+    "ghi_fcst_minus_clear",
+    "diffuse_fraction_model",
+    "cloud_cover_fcst",
+    "cloud_cover_change",
+    "cloud_cover_roll1",
+    "cloud_cover_roll3",
+    "temp_fcst",
+    "rh_fcst",
+    "dewpoint_fcst",
+    "wind_speed_fcst",
+    "wind_dir_sin",
+    "wind_dir_cos",
+    "pressure_fcst",
+    "precip_fcst",
+    "sunshine_fcst",
+    "solar_elevation",
+    "solar_azimuth_sin",
+    "solar_azimuth_cos",
+    "hour_local_sin",
+    "hour_local_cos",
+    "doy_sin",
+    "doy_cos",
+    "month_sin",
+    "month_cos",
+    "ghi_fcst_lag1",
+    "ghi_fcst_lag2",
+    "lead_time",
+    "gfs_service_latitude",
+    "gfs_service_longitude",
+    "gfs_service_elevation"
+  ],
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "f485c0bfbb9434965cef9cfa0a350e773294d4d736d93fbc5b4055335433bfff",
+  "input_hashes": {
+    "clean": "bef9ce66c2bad6a63916dd6c4e0336e142fd04066954b1ea22c7a10e79959edf"
+  },
+  "issue_time_field": "forecast_issue_time_utc",
+  "month": "2026-02",
+  "output_hashes": {
+    "data": "49f1dc446bff27569582bf17abb05c5bb494139bef02c88d4a0063ea4698f3e8"
+  },
+  "output_sha256": "49f1dc446bff27569582bf17abb05c5bb494139bef02c88d4a0063ea4698f3e8",
+  "physical_coordinate_basis": "gfs_service_coordinates",
+  "row_count": 2016,
+  "site_id": "nanjing_2",
+  "stage": "features",
+  "status": "ready",
+  "time_range": {
+    "end": "2026-02-28",
+    "start": "2026-02-01"
+  },
+  "upstream_artifact_ids": [
+    "clean-nanjing_2-2026-02-31282206e21c"
+  ],
+  "upstream_sha256": {
+    "clean": "bef9ce66c2bad6a63916dd6c4e0336e142fd04066954b1ea22c7a10e79959edf"
+  }
+}

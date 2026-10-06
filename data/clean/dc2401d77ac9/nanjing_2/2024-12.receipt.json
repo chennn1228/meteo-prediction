@@ -1,0 +1,84 @@
+{
+  "clean_contract": {
+    "cloud_range": [
+      0,
+      100
+    ],
+    "missing_policy": "preserve_and_report",
+    "radiation_negative_policy": "clip_to_zero",
+    "row_unit": "site_target_time_lead"
+  },
+  "config_hash": "dc2401d77ac9",
+  "created_at": "2026-10-06T12:19:50.884978+00:00",
+  "dependency_fingerprint": "dc2401d77ac9",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "0426d40bf3a9a949b6ee8cb9b668eacbe6fa0d14e2f1689965706e2372b43efe",
+  "input_hashes": {
+    "previous_runs": "9ac164f802721fc40e76a6b0be28ae3935e25d6096c08195adeabe031cbb5fa6",
+    "satellite": "5ad2cee6ba9e7f47d3f9bb2e8fff7665d1fbe747da67cb301aad08b9474fd98d"
+  },
+  "missingness": {
+    "cloud_cover_fcst": 0.0,
+    "dewpoint_fcst": 0.0,
+    "dhi_fcst": 0.0,
+    "dni_fcst": 0.0,
+    "forecast_issue_time_utc": 0.0,
+    "gfs_service_latitude": 0.0,
+    "gfs_service_longitude": 0.0,
+    "ghi_fcst": 0.0,
+    "ghi_obs_sat": 0.0013440860215053765,
+    "gti_fcst": 0.0,
+    "himawari_service_latitude": 0.0,
+    "himawari_service_longitude": 0.0,
+    "is_day_fcst": 0.0,
+    "lead_time": 0.0,
+    "precip_fcst": 0.0,
+    "pressure_fcst": 0.0,
+    "requested_latitude": 0.0,
+    "requested_longitude": 0.0,
+    "rh_fcst": 0.0,
+    "sunshine_fcst": 0.0,
+    "target_time_utc": 0.0,
+    "temp_fcst": 0.0,
+    "terrestrial_fcst": 0.0,
+    "wind_dir_fcst": 0.0,
+    "wind_speed_fcst": 0.0
+  },
+  "month": "2024-12",
+  "output_hashes": {
+    "data": "3be9b538113a4bc38e1d13b0f8c6214b8c45691debf5103a79e523d50cd1c145"
+  },
+  "output_sha256": "3be9b538113a4bc38e1d13b0f8c6214b8c45691debf5103a79e523d50cd1c145",
+  "row_count": 2232,
+  "service_coordinates": {
+    "gfs": [
+      [
+        31.454605,
+        119.0625
+      ]
+    ],
+    "himawari": [
+      [
+        31.5,
+        119.0
+      ]
+    ]
+  },
+  "site_id": "nanjing_2",
+  "stage": "clean",
+  "status": "ready",
+  "time_range": {
+    "end": "2024-12-31",
+    "start": "2024-12-01"
+  },
+  "upstream_artifact_ids": [
+    "raw-previous_runs-nanjing_2-2024-12-496c47e2b43a",
+    "raw-satellite-nanjing_2-2024-12-3b1a91b7e55e"
+  ],
+  "upstream_sha256": {
+    "previous_runs": "9ac164f802721fc40e76a6b0be28ae3935e25d6096c08195adeabe031cbb5fa6",
+    "satellite": "5ad2cee6ba9e7f47d3f9bb2e8fff7665d1fbe747da67cb301aad08b9474fd98d"
+  }
+}

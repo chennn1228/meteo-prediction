@@ -1,0 +1,84 @@
+{
+  "clean_contract": {
+    "cloud_range": [
+      0,
+      100
+    ],
+    "missing_policy": "preserve_and_report",
+    "radiation_negative_policy": "clip_to_zero",
+    "row_unit": "site_target_time_lead"
+  },
+  "config_hash": "90aedaebf2e0",
+  "created_at": "2026-10-06T12:24:46.097627+00:00",
+  "dependency_fingerprint": "90aedaebf2e0",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "0426d40bf3a9a949b6ee8cb9b668eacbe6fa0d14e2f1689965706e2372b43efe",
+  "input_hashes": {
+    "previous_runs": "8b8e32d8611a51b7ed09117b438ee7b83d3d67cb578084161563431bad75f3cc",
+    "satellite": "ca7e2b2d007f8b1a820106771c9a70513bd764631a36082ebf455e93f4e62d32"
+  },
+  "missingness": {
+    "cloud_cover_fcst": 0.0,
+    "dewpoint_fcst": 0.0,
+    "dhi_fcst": 0.0,
+    "dni_fcst": 0.0,
+    "forecast_issue_time_utc": 0.0,
+    "gfs_service_latitude": 0.0,
+    "gfs_service_longitude": 0.0,
+    "ghi_fcst": 0.0,
+    "ghi_obs_sat": 0.002688172043010753,
+    "gti_fcst": 0.0,
+    "himawari_service_latitude": 0.0,
+    "himawari_service_longitude": 0.0,
+    "is_day_fcst": 0.0,
+    "lead_time": 0.0,
+    "precip_fcst": 0.0,
+    "pressure_fcst": 0.0,
+    "requested_latitude": 0.0,
+    "requested_longitude": 0.0,
+    "rh_fcst": 0.0,
+    "sunshine_fcst": 0.0,
+    "target_time_utc": 0.0,
+    "temp_fcst": 0.0,
+    "terrestrial_fcst": 0.0,
+    "wind_dir_fcst": 0.0,
+    "wind_speed_fcst": 0.0
+  },
+  "month": "2026-01",
+  "output_hashes": {
+    "data": "335557f9213ae686b5b7508ae01340e90029abb6313b05e949303c89775a84f8"
+  },
+  "output_sha256": "335557f9213ae686b5b7508ae01340e90029abb6313b05e949303c89775a84f8",
+  "row_count": 2232,
+  "service_coordinates": {
+    "gfs": [
+      [
+        33.91474,
+        119.41406
+      ]
+    ],
+    "himawari": [
+      [
+        33.9,
+        119.4
+      ]
+    ]
+  },
+  "site_id": "huai_an_2",
+  "stage": "clean",
+  "status": "ready",
+  "time_range": {
+    "end": "2026-01-31",
+    "start": "2026-01-01"
+  },
+  "upstream_artifact_ids": [
+    "raw-previous_runs-huai_an_2-2026-01-4d6f6c6b9522",
+    "raw-satellite-huai_an_2-2026-01-cade4cfd8bec"
+  ],
+  "upstream_sha256": {
+    "previous_runs": "8b8e32d8611a51b7ed09117b438ee7b83d3d67cb578084161563431bad75f3cc",
+    "satellite": "ca7e2b2d007f8b1a820106771c9a70513bd764631a36082ebf455e93f4e62d32"
+  }
+}

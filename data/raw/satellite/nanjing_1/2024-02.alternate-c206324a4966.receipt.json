@@ -1,0 +1,67 @@
+{
+  "canonical_sha256": "fb71f83c02aa36fd5be0777e9543d681cd562501fc2bf5a1757f97e247d71d97",
+  "config_hash": "d6e374ff4032",
+  "created_at": "2026-10-03T13:59:48.051673+00:00",
+  "data_sha256": "c206324a49667c433284068799dc27264d053be0afef0dc4443c518946d2a38f",
+  "execution_level": "development",
+  "git_commit": "09230bce481bca561aef94b64f0d9a02479b41ae",
+  "imported_from": "data/protocol15temp/01_raw/03_satellite/nanjing_1/nanjing_1_2024-02.json",
+  "imported_protocol": "protocol15temp",
+  "input_hashes": {},
+  "legacy_metadata": {
+    "data_version": "openmeteo-point-15var-temp-2024-02_2026-08-v1",
+    "end": "2024-02-29",
+    "request": {
+      "azimuth": 0,
+      "cell_selection": "land",
+      "end_date": "2024-02-29",
+      "hourly": "shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,global_tilted_irradiance",
+      "latitude": 31.9,
+      "longitude": 118.6,
+      "models": "jma_jaxa_himawari",
+      "start_date": "2024-02-01",
+      "tilt": 30,
+      "timezone": "UTC"
+    },
+    "required_fields": [
+      "shortwave_radiation",
+      "direct_radiation",
+      "diffuse_radiation",
+      "direct_normal_irradiance",
+      "global_tilted_irradiance"
+    ],
+    "schema": "openmeteo-monthly-v2",
+    "source": "satellite",
+    "start": "2024-02-01"
+  },
+  "legacy_metadata_sha256": "e96b5cabfe76559541cec8f2acbd08cfbe4de162f03b22a3b46f6520c66ba354",
+  "missingness": {
+    "diffuse_radiation": 0.0,
+    "direct_normal_irradiance": 0.0,
+    "direct_radiation": 0.0,
+    "global_tilted_irradiance": 0.0,
+    "shortwave_radiation": 0.0
+  },
+  "output_hashes": {
+    "data": "c206324a49667c433284068799dc27264d053be0afef0dc4443c518946d2a38f"
+  },
+  "relationship_to_canonical": "SCIENTIFIC_PAYLOAD_DUPLICATE",
+  "requested_site": {
+    "site_id": "nanjing_1"
+  },
+  "returned_coordinates": {
+    "elevation": 16.0,
+    "latitude": 31.900002,
+    "longitude": 118.600006
+  },
+  "row_count": 696,
+  "source": "satellite",
+  "stage": "raw",
+  "status": "blocked",
+  "time_range": {
+    "end": "2024-02-29",
+    "start": "2024-02-01"
+  },
+  "validation_error": null,
+  "validation_status": "pass"
+}

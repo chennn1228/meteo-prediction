@@ -1,0 +1,76 @@
+{
+  "config_hash": "d5b9f30b4757",
+  "created_at": "2026-10-06T12:27:33.701496+00:00",
+  "data_version": "openmeteo_point_15var_archive_aligned_2024_02_2026_08",
+  "dependency_fingerprint": "d5b9f30b4757",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "feature_version": "feature_mechanism_raw_ratios",
+  "formal_feature_columns": [
+    "ghi_fcst",
+    "dhi_fcst",
+    "dni_fcst",
+    "gti_fcst",
+    "terrestrial_fcst",
+    "ghi_clear_sky",
+    "dni_clear_sky",
+    "kt_model",
+    "kni_model",
+    "ghi_fcst_minus_clear",
+    "diffuse_fraction_model",
+    "cloud_cover_fcst",
+    "cloud_cover_change",
+    "cloud_cover_roll1",
+    "cloud_cover_roll3",
+    "temp_fcst",
+    "rh_fcst",
+    "dewpoint_fcst",
+    "wind_speed_fcst",
+    "wind_dir_sin",
+    "wind_dir_cos",
+    "pressure_fcst",
+    "precip_fcst",
+    "sunshine_fcst",
+    "solar_elevation",
+    "solar_azimuth_sin",
+    "solar_azimuth_cos",
+    "hour_local_sin",
+    "hour_local_cos",
+    "doy_sin",
+    "doy_cos",
+    "month_sin",
+    "month_cos",
+    "ghi_fcst_lag1",
+    "ghi_fcst_lag2",
+    "lead_time",
+    "gfs_service_latitude",
+    "gfs_service_longitude",
+    "gfs_service_elevation"
+  ],
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "f485c0bfbb9434965cef9cfa0a350e773294d4d736d93fbc5b4055335433bfff",
+  "input_hashes": {
+    "clean": "ca12b2bb64c1b5f6420072ecf8a76c6573ffbd78d80fee13b58987c2cb7a3677"
+  },
+  "issue_time_field": "forecast_issue_time_utc",
+  "month": "2024-09",
+  "output_hashes": {
+    "data": "7c770d08504506525141039c35565735407abe4031aa7f36fa7c9dc5c87ce708"
+  },
+  "output_sha256": "7c770d08504506525141039c35565735407abe4031aa7f36fa7c9dc5c87ce708",
+  "physical_coordinate_basis": "gfs_service_coordinates",
+  "row_count": 2160,
+  "site_id": "yancheng_2",
+  "stage": "features",
+  "status": "ready",
+  "time_range": {
+    "end": "2024-09-30",
+    "start": "2024-09-01"
+  },
+  "upstream_artifact_ids": [
+    "clean-yancheng_2-2024-09-ed25878f5526"
+  ],
+  "upstream_sha256": {
+    "clean": "ca12b2bb64c1b5f6420072ecf8a76c6573ffbd78d80fee13b58987c2cb7a3677"
+  }
+}

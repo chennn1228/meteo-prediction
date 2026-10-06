@@ -1,0 +1,61 @@
+{
+  "config_hash": "b9522655c3aa",
+  "created_at": "2026-10-03T13:55:46.005032+00:00",
+  "data_sha256": "be50ef3151fc01dbbf374b67c9696a7fa5626bdab75c2e90cca20bb4947983d0",
+  "data_version": "openmeteo-point-15var-archive-aligned-2024-02_2026-08-v1",
+  "execution_level": "development",
+  "git_commit": "09230bce481bca561aef94b64f0d9a02479b41ae",
+  "imported_from": "data/01_raw/03_satellite/huai_an_2/huai_an_2_2026-06.json",
+  "input_hashes": {},
+  "leads": [],
+  "missingness": {
+    "diffuse_radiation": 0.015277777777777777,
+    "direct_normal_irradiance": 0.015277777777777777,
+    "direct_radiation": 0.015277777777777777,
+    "global_tilted_irradiance": 0.015277777777777777,
+    "shortwave_radiation": 0.015277777777777777
+  },
+  "output_hashes": {
+    "data": "be50ef3151fc01dbbf374b67c9696a7fa5626bdab75c2e90cca20bb4947983d0"
+  },
+  "provider_model": "jma_jaxa_himawari",
+  "request_parameters": {
+    "azimuth": 0,
+    "cell_selection": "land",
+    "end_date": "2026-06-30",
+    "hourly": "shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,global_tilted_irradiance",
+    "latitude": 33.9,
+    "longitude": 119.4,
+    "models": "jma_jaxa_himawari",
+    "start_date": "2026-06-01",
+    "tilt": 30,
+    "timezone": "UTC"
+  },
+  "requested_site": {
+    "latitude": 33.9,
+    "longitude": 119.4,
+    "site_id": "huai_an_2"
+  },
+  "returned_coordinates": {
+    "elevation": 4.0,
+    "latitude": 33.9,
+    "longitude": 119.4
+  },
+  "row_count": 720,
+  "source": "satellite",
+  "source_preserved_during_import": true,
+  "stage": "raw",
+  "status": "ready",
+  "time_range": {
+    "end": "2026-06-30",
+    "start": "2026-06-01"
+  },
+  "validation_status": "pass",
+  "variables": [
+    "shortwave_radiation",
+    "direct_radiation",
+    "diffuse_radiation",
+    "direct_normal_irradiance",
+    "global_tilted_irradiance"
+  ]
+}

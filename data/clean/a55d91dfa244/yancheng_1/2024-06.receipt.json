@@ -1,0 +1,84 @@
+{
+  "clean_contract": {
+    "cloud_range": [
+      0,
+      100
+    ],
+    "missing_policy": "preserve_and_report",
+    "radiation_negative_policy": "clip_to_zero",
+    "row_unit": "site_target_time_lead"
+  },
+  "config_hash": "a55d91dfa244",
+  "created_at": "2026-10-06T12:26:14.267205+00:00",
+  "dependency_fingerprint": "a55d91dfa244",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "0426d40bf3a9a949b6ee8cb9b668eacbe6fa0d14e2f1689965706e2372b43efe",
+  "input_hashes": {
+    "previous_runs": "dd41e69c352205f4ff32e492939a89e37969bb5fdb07dab39d4674fb230d6414",
+    "satellite": "4ac14b06989ea79edc5464f21e05308f5e00d878ef5692b9ae72548c4c59bb10"
+  },
+  "missingness": {
+    "cloud_cover_fcst": 0.0,
+    "dewpoint_fcst": 0.0,
+    "dhi_fcst": 0.0,
+    "dni_fcst": 0.0,
+    "forecast_issue_time_utc": 0.0,
+    "gfs_service_latitude": 0.0,
+    "gfs_service_longitude": 0.0,
+    "ghi_fcst": 0.0,
+    "ghi_obs_sat": 0.0,
+    "gti_fcst": 0.0,
+    "himawari_service_latitude": 0.0,
+    "himawari_service_longitude": 0.0,
+    "is_day_fcst": 0.0,
+    "lead_time": 0.0,
+    "precip_fcst": 0.0,
+    "pressure_fcst": 0.0,
+    "requested_latitude": 0.0,
+    "requested_longitude": 0.0,
+    "rh_fcst": 0.0,
+    "sunshine_fcst": 0.0,
+    "target_time_utc": 0.0,
+    "temp_fcst": 0.0,
+    "terrestrial_fcst": 0.0,
+    "wind_dir_fcst": 0.0,
+    "wind_speed_fcst": 0.0
+  },
+  "month": "2024-06",
+  "output_hashes": {
+    "data": "e4d28d78a48211475a8d7192f6e64dbde8b091f7539a07b5a07c4934cb70cc97"
+  },
+  "output_sha256": "e4d28d78a48211475a8d7192f6e64dbde8b091f7539a07b5a07c4934cb70cc97",
+  "row_count": 2160,
+  "service_coordinates": {
+    "gfs": [
+      [
+        33.91474,
+        119.765625
+      ]
+    ],
+    "himawari": [
+      [
+        33.9,
+        119.8
+      ]
+    ]
+  },
+  "site_id": "yancheng_1",
+  "stage": "clean",
+  "status": "ready",
+  "time_range": {
+    "end": "2024-06-30",
+    "start": "2024-06-01"
+  },
+  "upstream_artifact_ids": [
+    "raw-previous_runs-yancheng_1-2024-06-e2a8146db6ae",
+    "raw-satellite-yancheng_1-2024-06-08a4029e25be"
+  ],
+  "upstream_sha256": {
+    "previous_runs": "dd41e69c352205f4ff32e492939a89e37969bb5fdb07dab39d4674fb230d6414",
+    "satellite": "4ac14b06989ea79edc5464f21e05308f5e00d878ef5692b9ae72548c4c59bb10"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "canonical_sha256": "0643d173ad8813464ca07b14829520fa49d55b13ba9ef79d013091d4071fd60c",
+  "config_hash": "3a34d5398ce1",
+  "created_at": "2026-10-03T13:59:48.051673+00:00",
+  "data_sha256": "c86018d0768dc4a3958ff4a1461af21abacb62a1ff6f37b260ef8de67145b948",
+  "execution_level": "development",
+  "git_commit": "09230bce481bca561aef94b64f0d9a02479b41ae",
+  "imported_from": "data/protocol15temp/01_raw/03_satellite/nanjing_1/nanjing_1_2026-06.json",
+  "imported_protocol": "protocol15temp",
+  "input_hashes": {},
+  "legacy_metadata": {
+    "data_version": "openmeteo-point-15var-temp-2024-02_2026-08-v1",
+    "end": "2026-06-30",
+    "request": {
+      "azimuth": 0,
+      "cell_selection": "land",
+      "end_date": "2026-06-30",
+      "hourly": "shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,global_tilted_irradiance",
+      "latitude": 31.9,
+      "longitude": 118.6,
+      "models": "jma_jaxa_himawari",
+      "start_date": "2026-06-01",
+      "tilt": 30,
+      "timezone": "UTC"
+    },
+    "required_fields": [
+      "shortwave_radiation",
+      "direct_radiation",
+      "diffuse_radiation",
+      "direct_normal_irradiance",
+      "global_tilted_irradiance"
+    ],
+    "schema": "openmeteo-monthly-v2",
+    "source": "satellite",
+    "start": "2026-06-01"
+  },
+  "legacy_metadata_sha256": "61d24e738a4d54613b6242f0bbcaea16326554dbbb8968ca60b814f50edd043e",
+  "missingness": {
+    "diffuse_radiation": 0.0763888888888889,
+    "direct_normal_irradiance": 0.0763888888888889,
+    "direct_radiation": 0.0763888888888889,
+    "global_tilted_irradiance": 0.0763888888888889,
+    "shortwave_radiation": 0.0763888888888889
+  },
+  "output_hashes": {
+    "data": "c86018d0768dc4a3958ff4a1461af21abacb62a1ff6f37b260ef8de67145b948"
+  },
+  "relationship_to_canonical": "SCIENTIFIC_PAYLOAD_DUPLICATE",
+  "requested_site": {
+    "site_id": "nanjing_1"
+  },
+  "returned_coordinates": {
+    "elevation": 16.0,
+    "latitude": 31.900002,
+    "longitude": 118.600006
+  },
+  "row_count": 720,
+  "source": "satellite",
+  "stage": "raw",
+  "status": "blocked",
+  "time_range": {
+    "end": "2026-06-30",
+    "start": "2026-06-01"
+  },
+  "validation_error": null,
+  "validation_status": "pass"
+}

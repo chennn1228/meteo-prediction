@@ -1,0 +1,84 @@
+{
+  "clean_contract": {
+    "cloud_range": [
+      0,
+      100
+    ],
+    "missing_policy": "preserve_and_report",
+    "radiation_negative_policy": "clip_to_zero",
+    "row_unit": "site_target_time_lead"
+  },
+  "config_hash": "e3fc630b7497",
+  "created_at": "2026-10-06T12:20:35.252403+00:00",
+  "dependency_fingerprint": "e3fc630b7497",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "0426d40bf3a9a949b6ee8cb9b668eacbe6fa0d14e2f1689965706e2372b43efe",
+  "input_hashes": {
+    "previous_runs": "290d322210264f1e5d29a1b0a5fbf4ec4cb19b3e6c4d5d190658a15e61e8a998",
+    "satellite": "ad6b385f5412ea11bd16227c732c53792862113fde72ef4974b604240abee55f"
+  },
+  "missingness": {
+    "cloud_cover_fcst": 0.0,
+    "dewpoint_fcst": 0.0,
+    "dhi_fcst": 0.0,
+    "dni_fcst": 0.0,
+    "forecast_issue_time_utc": 0.0,
+    "gfs_service_latitude": 0.0,
+    "gfs_service_longitude": 0.0,
+    "ghi_fcst": 0.0,
+    "ghi_obs_sat": 0.0,
+    "gti_fcst": 0.0,
+    "himawari_service_latitude": 0.0,
+    "himawari_service_longitude": 0.0,
+    "is_day_fcst": 0.0,
+    "lead_time": 0.0,
+    "precip_fcst": 0.0,
+    "pressure_fcst": 0.0,
+    "requested_latitude": 0.0,
+    "requested_longitude": 0.0,
+    "rh_fcst": 0.0,
+    "sunshine_fcst": 0.0,
+    "target_time_utc": 0.0,
+    "temp_fcst": 0.0,
+    "terrestrial_fcst": 0.0,
+    "wind_dir_fcst": 0.0,
+    "wind_speed_fcst": 0.0
+  },
+  "month": "2025-10",
+  "output_hashes": {
+    "data": "2ab82bcbab0d739e0454a1af63d39e803c5da8d363606167feccfaf77bc9f23c"
+  },
+  "output_sha256": "2ab82bcbab0d739e0454a1af63d39e803c5da8d363606167feccfaf77bc9f23c",
+  "row_count": 2232,
+  "service_coordinates": {
+    "gfs": [
+      [
+        32.743248,
+        119.765625
+      ]
+    ],
+    "himawari": [
+      [
+        32.700005,
+        119.8
+      ]
+    ]
+  },
+  "site_id": "taizhou_1",
+  "stage": "clean",
+  "status": "ready",
+  "time_range": {
+    "end": "2025-10-31",
+    "start": "2025-10-01"
+  },
+  "upstream_artifact_ids": [
+    "raw-previous_runs-taizhou_1-2025-10-1a5ec48dce91",
+    "raw-satellite-taizhou_1-2025-10-4377f056ca09"
+  ],
+  "upstream_sha256": {
+    "previous_runs": "290d322210264f1e5d29a1b0a5fbf4ec4cb19b3e6c4d5d190658a15e61e8a998",
+    "satellite": "ad6b385f5412ea11bd16227c732c53792862113fde72ef4974b604240abee55f"
+  }
+}

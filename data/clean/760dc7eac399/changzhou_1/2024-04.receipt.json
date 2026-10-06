@@ -1,0 +1,84 @@
+{
+  "clean_contract": {
+    "cloud_range": [
+      0,
+      100
+    ],
+    "missing_policy": "preserve_and_report",
+    "radiation_negative_policy": "clip_to_zero",
+    "row_unit": "site_target_time_lead"
+  },
+  "config_hash": "760dc7eac399",
+  "created_at": "2026-10-06T12:17:33.647867+00:00",
+  "dependency_fingerprint": "760dc7eac399",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "0426d40bf3a9a949b6ee8cb9b668eacbe6fa0d14e2f1689965706e2372b43efe",
+  "input_hashes": {
+    "previous_runs": "a34b728e03850ca87d6aacfc7a60e64214c5c65b82b39d5881c84938f7e87f14",
+    "satellite": "6c619fc5cd48c5e5f11523e064be7f696211cf8a73c6133a23095633b00a62d2"
+  },
+  "missingness": {
+    "cloud_cover_fcst": 0.0,
+    "dewpoint_fcst": 0.0,
+    "dhi_fcst": 0.0,
+    "dni_fcst": 0.0,
+    "forecast_issue_time_utc": 0.0,
+    "gfs_service_latitude": 0.0,
+    "gfs_service_longitude": 0.0,
+    "ghi_fcst": 0.0,
+    "ghi_obs_sat": 0.0,
+    "gti_fcst": 0.0,
+    "himawari_service_latitude": 0.0,
+    "himawari_service_longitude": 0.0,
+    "is_day_fcst": 0.0,
+    "lead_time": 0.0,
+    "precip_fcst": 0.0,
+    "pressure_fcst": 0.0,
+    "requested_latitude": 0.0,
+    "requested_longitude": 0.0,
+    "rh_fcst": 0.0,
+    "sunshine_fcst": 0.0,
+    "target_time_utc": 0.0,
+    "temp_fcst": 0.0,
+    "terrestrial_fcst": 0.0,
+    "wind_dir_fcst": 0.0,
+    "wind_speed_fcst": 0.0
+  },
+  "month": "2024-04",
+  "output_hashes": {
+    "data": "0f922c47ee912670d6853f71cd7024951a44cf59383276acd423652c9b436a64"
+  },
+  "output_sha256": "0f922c47ee912670d6853f71cd7024951a44cf59383276acd423652c9b436a64",
+  "row_count": 2160,
+  "service_coordinates": {
+    "gfs": [
+      [
+        31.454605,
+        119.765625
+      ]
+    ],
+    "himawari": [
+      [
+        31.5,
+        119.8
+      ]
+    ]
+  },
+  "site_id": "changzhou_1",
+  "stage": "clean",
+  "status": "ready",
+  "time_range": {
+    "end": "2024-04-30",
+    "start": "2024-04-01"
+  },
+  "upstream_artifact_ids": [
+    "raw-previous_runs-changzhou_1-2024-04-2bf86cd19085",
+    "raw-satellite-changzhou_1-2024-04-9a2506079373"
+  ],
+  "upstream_sha256": {
+    "previous_runs": "a34b728e03850ca87d6aacfc7a60e64214c5c65b82b39d5881c84938f7e87f14",
+    "satellite": "6c619fc5cd48c5e5f11523e064be7f696211cf8a73c6133a23095633b00a62d2"
+  }
+}

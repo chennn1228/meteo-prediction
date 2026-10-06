@@ -1,0 +1,84 @@
+{
+  "clean_contract": {
+    "cloud_range": [
+      0,
+      100
+    ],
+    "missing_policy": "preserve_and_report",
+    "radiation_negative_policy": "clip_to_zero",
+    "row_unit": "site_target_time_lead"
+  },
+  "config_hash": "d985325a0c30",
+  "created_at": "2026-10-06T12:29:13.310854+00:00",
+  "dependency_fingerprint": "d985325a0c30",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "0426d40bf3a9a949b6ee8cb9b668eacbe6fa0d14e2f1689965706e2372b43efe",
+  "input_hashes": {
+    "previous_runs": "eaf1c32e3dc9909a1b6be0eae202f80e61cfdcbc9a412b1e37837f44b12024ef",
+    "satellite": "026b11aebbc250bab172cb17a2aee19e3fa63964e8764237ff829ef34e83d154"
+  },
+  "missingness": {
+    "cloud_cover_fcst": 0.013425925925925926,
+    "dewpoint_fcst": 0.0,
+    "dhi_fcst": 0.013425925925925926,
+    "dni_fcst": 0.013425925925925926,
+    "forecast_issue_time_utc": 0.0,
+    "gfs_service_latitude": 0.0,
+    "gfs_service_longitude": 0.0,
+    "ghi_fcst": 0.0,
+    "ghi_obs_sat": 0.011111111111111112,
+    "gti_fcst": 0.013425925925925926,
+    "himawari_service_latitude": 0.0,
+    "himawari_service_longitude": 0.0,
+    "is_day_fcst": 0.0,
+    "lead_time": 0.0,
+    "precip_fcst": 0.0,
+    "pressure_fcst": 0.0,
+    "requested_latitude": 0.0,
+    "requested_longitude": 0.0,
+    "rh_fcst": 0.0,
+    "sunshine_fcst": 0.013425925925925926,
+    "target_time_utc": 0.0,
+    "temp_fcst": 0.0,
+    "terrestrial_fcst": 0.0,
+    "wind_dir_fcst": 0.0,
+    "wind_speed_fcst": 0.0
+  },
+  "month": "2026-04",
+  "output_hashes": {
+    "data": "e18d359c360a131c8ac0ab360dde15c289a6ba11781d39f40622683e1483d7fc"
+  },
+  "output_sha256": "e18d359c360a131c8ac0ab360dde15c289a6ba11781d39f40622683e1483d7fc",
+  "row_count": 2160,
+  "service_coordinates": {
+    "gfs": [
+      [
+        34.734787,
+        119.41406
+      ]
+    ],
+    "himawari": [
+      [
+        34.700005,
+        119.4
+      ]
+    ]
+  },
+  "site_id": "lianyungang_2",
+  "stage": "clean",
+  "status": "ready",
+  "time_range": {
+    "end": "2026-04-30",
+    "start": "2026-04-01"
+  },
+  "upstream_artifact_ids": [
+    "raw-previous_runs-lianyungang_2-2026-04-d7ff570b45fc",
+    "raw-satellite-lianyungang_2-2026-04-027e30b4beb8"
+  ],
+  "upstream_sha256": {
+    "previous_runs": "eaf1c32e3dc9909a1b6be0eae202f80e61cfdcbc9a412b1e37837f44b12024ef",
+    "satellite": "026b11aebbc250bab172cb17a2aee19e3fa63964e8764237ff829ef34e83d154"
+  }
+}

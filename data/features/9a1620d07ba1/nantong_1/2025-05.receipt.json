@@ -1,0 +1,76 @@
+{
+  "config_hash": "9a1620d07ba1",
+  "created_at": "2026-10-06T12:21:38.438839+00:00",
+  "data_version": "openmeteo_point_15var_archive_aligned_2024_02_2026_08",
+  "dependency_fingerprint": "9a1620d07ba1",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "feature_version": "feature_mechanism_raw_ratios",
+  "formal_feature_columns": [
+    "ghi_fcst",
+    "dhi_fcst",
+    "dni_fcst",
+    "gti_fcst",
+    "terrestrial_fcst",
+    "ghi_clear_sky",
+    "dni_clear_sky",
+    "kt_model",
+    "kni_model",
+    "ghi_fcst_minus_clear",
+    "diffuse_fraction_model",
+    "cloud_cover_fcst",
+    "cloud_cover_change",
+    "cloud_cover_roll1",
+    "cloud_cover_roll3",
+    "temp_fcst",
+    "rh_fcst",
+    "dewpoint_fcst",
+    "wind_speed_fcst",
+    "wind_dir_sin",
+    "wind_dir_cos",
+    "pressure_fcst",
+    "precip_fcst",
+    "sunshine_fcst",
+    "solar_elevation",
+    "solar_azimuth_sin",
+    "solar_azimuth_cos",
+    "hour_local_sin",
+    "hour_local_cos",
+    "doy_sin",
+    "doy_cos",
+    "month_sin",
+    "month_cos",
+    "ghi_fcst_lag1",
+    "ghi_fcst_lag2",
+    "lead_time",
+    "gfs_service_latitude",
+    "gfs_service_longitude",
+    "gfs_service_elevation"
+  ],
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "f485c0bfbb9434965cef9cfa0a350e773294d4d736d93fbc5b4055335433bfff",
+  "input_hashes": {
+    "clean": "3b3f6f46525ea577c707bde503491ced6d83e9d9632c429ec8a0feb783936980"
+  },
+  "issue_time_field": "forecast_issue_time_utc",
+  "month": "2025-05",
+  "output_hashes": {
+    "data": "5601a41a9c0302311281097228f1abfedd38bcef5da13b8d2041a5e72706d417"
+  },
+  "output_sha256": "5601a41a9c0302311281097228f1abfedd38bcef5da13b8d2041a5e72706d417",
+  "physical_coordinate_basis": "gfs_service_coordinates",
+  "row_count": 2232,
+  "site_id": "nantong_1",
+  "stage": "features",
+  "status": "ready",
+  "time_range": {
+    "end": "2025-05-31",
+    "start": "2025-05-01"
+  },
+  "upstream_artifact_ids": [
+    "clean-nantong_1-2025-05-516efb2c4ecc"
+  ],
+  "upstream_sha256": {
+    "clean": "3b3f6f46525ea577c707bde503491ced6d83e9d9632c429ec8a0feb783936980"
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "clean_contract": {
+    "cloud_range": [
+      0,
+      100
+    ],
+    "missing_policy": "preserve_and_report",
+    "radiation_negative_policy": "clip_to_zero",
+    "row_unit": "site_target_time_lead"
+  },
+  "config_hash": "96d66d5516aa",
+  "created_at": "2026-10-06T12:21:52.223557+00:00",
+  "dependency_fingerprint": "96d66d5516aa",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "0426d40bf3a9a949b6ee8cb9b668eacbe6fa0d14e2f1689965706e2372b43efe",
+  "input_hashes": {
+    "previous_runs": "a90edfa4d4c6e80020db5c9147500c56206c8af04da5e73fbba793662d92f9af",
+    "satellite": "f086dddf798e2ce7f619fb5d8256976ece23c99131ce6bd763e9c9bee9468789"
+  },
+  "missingness": {
+    "cloud_cover_fcst": 0.0,
+    "dewpoint_fcst": 0.0,
+    "dhi_fcst": 0.0,
+    "dni_fcst": 0.0,
+    "forecast_issue_time_utc": 0.0,
+    "gfs_service_latitude": 0.0,
+    "gfs_service_longitude": 0.0,
+    "ghi_fcst": 0.0,
+    "ghi_obs_sat": 0.06111111111111111,
+    "gti_fcst": 0.0,
+    "himawari_service_latitude": 0.0,
+    "himawari_service_longitude": 0.0,
+    "is_day_fcst": 0.0,
+    "lead_time": 0.0,
+    "precip_fcst": 0.0,
+    "pressure_fcst": 0.0,
+    "requested_latitude": 0.0,
+    "requested_longitude": 0.0,
+    "rh_fcst": 0.0,
+    "sunshine_fcst": 0.0,
+    "target_time_utc": 0.0,
+    "temp_fcst": 0.0,
+    "terrestrial_fcst": 0.0,
+    "wind_dir_fcst": 0.0,
+    "wind_speed_fcst": 0.0
+  },
+  "month": "2026-06",
+  "output_hashes": {
+    "data": "b7067ca27d895762df84b2950861bbbb47e3a1f6c07c0f9acb42879889287461"
+  },
+  "output_sha256": "b7067ca27d895762df84b2950861bbbb47e3a1f6c07c0f9acb42879889287461",
+  "row_count": 2160,
+  "service_coordinates": {
+    "gfs": [
+      [
+        31.923203,
+        121.05469
+      ]
+    ],
+    "himawari": [
+      [
+        31.900002,
+        121.0
+      ]
+    ]
+  },
+  "site_id": "nantong_1",
+  "stage": "clean",
+  "status": "ready",
+  "time_range": {
+    "end": "2026-06-30",
+    "start": "2026-06-01"
+  },
+  "upstream_artifact_ids": [
+    "raw-previous_runs-nantong_1-2026-06-8e193855af87",
+    "raw-satellite-nantong_1-2026-06-9de38df6f958"
+  ],
+  "upstream_sha256": {
+    "previous_runs": "a90edfa4d4c6e80020db5c9147500c56206c8af04da5e73fbba793662d92f9af",
+    "satellite": "f086dddf798e2ce7f619fb5d8256976ece23c99131ce6bd763e9c9bee9468789"
+  }
+}

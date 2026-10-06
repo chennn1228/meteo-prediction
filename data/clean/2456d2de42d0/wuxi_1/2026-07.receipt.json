@@ -1,0 +1,84 @@
+{
+  "clean_contract": {
+    "cloud_range": [
+      0,
+      100
+    ],
+    "missing_policy": "preserve_and_report",
+    "radiation_negative_policy": "clip_to_zero",
+    "row_unit": "site_target_time_lead"
+  },
+  "config_hash": "2456d2de42d0",
+  "created_at": "2026-10-06T12:19:37.987043+00:00",
+  "dependency_fingerprint": "2456d2de42d0",
+  "environment_fingerprint": "ca0d4aef679becc3ba9a6030621005bb207cf08b9b8d1cee299cca29bc00e359",
+  "execution_level": "development",
+  "git_commit": "175cd74483ff01f2261d1725e922370c74405098",
+  "implementation_fingerprint": "0426d40bf3a9a949b6ee8cb9b668eacbe6fa0d14e2f1689965706e2372b43efe",
+  "input_hashes": {
+    "previous_runs": "3ba905963e8b5a5373f447052bbb35df0993749aaaa2000c2246a7f83525ba06",
+    "satellite": "901335e92f8b1d3d44ec52f57a45292799ff1cd1fb09a794e151f69b5ac79c29"
+  },
+  "missingness": {
+    "cloud_cover_fcst": 0.0,
+    "dewpoint_fcst": 0.0,
+    "dhi_fcst": 0.0,
+    "dni_fcst": 0.0,
+    "forecast_issue_time_utc": 0.0,
+    "gfs_service_latitude": 0.0,
+    "gfs_service_longitude": 0.0,
+    "ghi_fcst": 0.0,
+    "ghi_obs_sat": 0.004032258064516129,
+    "gti_fcst": 0.0,
+    "himawari_service_latitude": 0.0,
+    "himawari_service_longitude": 0.0,
+    "is_day_fcst": 0.0,
+    "lead_time": 0.0,
+    "precip_fcst": 0.0,
+    "pressure_fcst": 0.0,
+    "requested_latitude": 0.0,
+    "requested_longitude": 0.0,
+    "rh_fcst": 0.0,
+    "sunshine_fcst": 0.0,
+    "target_time_utc": 0.0,
+    "temp_fcst": 0.0,
+    "terrestrial_fcst": 0.0,
+    "wind_dir_fcst": 0.0,
+    "wind_speed_fcst": 0.0
+  },
+  "month": "2026-07",
+  "output_hashes": {
+    "data": "5a0ff2f2f0a20a964858666289874784dba9d6e9e441d2bef6672a5359ff3ad4"
+  },
+  "output_sha256": "5a0ff2f2f0a20a964858666289874784dba9d6e9e441d2bef6672a5359ff3ad4",
+  "row_count": 2232,
+  "service_coordinates": {
+    "gfs": [
+      [
+        31.103157,
+        120.234375
+      ]
+    ],
+    "himawari": [
+      [
+        31.099998,
+        120.2
+      ]
+    ]
+  },
+  "site_id": "wuxi_1",
+  "stage": "clean",
+  "status": "ready",
+  "time_range": {
+    "end": "2026-07-31",
+    "start": "2026-07-01"
+  },
+  "upstream_artifact_ids": [
+    "raw-previous_runs-wuxi_1-2026-07-cf2b9f6359b9",
+    "raw-satellite-wuxi_1-2026-07-1bad107df8a6"
+  ],
+  "upstream_sha256": {
+    "previous_runs": "3ba905963e8b5a5373f447052bbb35df0993749aaaa2000c2246a7f83525ba06",
+    "satellite": "901335e92f8b1d3d44ec52f57a45292799ff1cd1fb09a794e151f69b5ac79c29"
+  }
+}

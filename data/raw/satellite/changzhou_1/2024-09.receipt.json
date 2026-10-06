@@ -1,0 +1,61 @@
+{
+  "config_hash": "3efe22ed6058",
+  "created_at": "2026-10-03T13:55:46.005032+00:00",
+  "data_sha256": "9caa176927324921567aaf02372095b36a7fd45e9c965c6bfa9c60af69c3c54f",
+  "data_version": "openmeteo-point-15var-archive-aligned-2024-02_2026-08-v1",
+  "execution_level": "development",
+  "git_commit": "09230bce481bca561aef94b64f0d9a02479b41ae",
+  "imported_from": "data/01_raw/03_satellite/changzhou_1/changzhou_1_2024-09.json",
+  "input_hashes": {},
+  "leads": [],
+  "missingness": {
+    "diffuse_radiation": 0.0,
+    "direct_normal_irradiance": 0.0,
+    "direct_radiation": 0.0,
+    "global_tilted_irradiance": 0.0,
+    "shortwave_radiation": 0.0
+  },
+  "output_hashes": {
+    "data": "9caa176927324921567aaf02372095b36a7fd45e9c965c6bfa9c60af69c3c54f"
+  },
+  "provider_model": "jma_jaxa_himawari",
+  "request_parameters": {
+    "azimuth": 0,
+    "cell_selection": "land",
+    "end_date": "2024-09-30",
+    "hourly": "shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,global_tilted_irradiance",
+    "latitude": 31.5,
+    "longitude": 119.8,
+    "models": "jma_jaxa_himawari",
+    "start_date": "2024-09-01",
+    "tilt": 30,
+    "timezone": "UTC"
+  },
+  "requested_site": {
+    "latitude": 31.5,
+    "longitude": 119.8,
+    "site_id": "changzhou_1"
+  },
+  "returned_coordinates": {
+    "elevation": 2.0,
+    "latitude": 31.5,
+    "longitude": 119.8
+  },
+  "row_count": 720,
+  "source": "satellite",
+  "source_preserved_during_import": true,
+  "stage": "raw",
+  "status": "ready",
+  "time_range": {
+    "end": "2024-09-30",
+    "start": "2024-09-01"
+  },
+  "validation_status": "pass",
+  "variables": [
+    "shortwave_radiation",
+    "direct_radiation",
+    "diffuse_radiation",
+    "direct_normal_irradiance",
+    "global_tilted_irradiance"
+  ]
+}
