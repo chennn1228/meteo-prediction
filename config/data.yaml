@@ -3,6 +3,7 @@ forecast:
   provider: Open-Meteo Previous Runs API
   model: gfs_seamless
   product_class: location_specific
+  lead_semantics: retained_previous_run_offset_not_verified_native_initialization
   cell_selection: land
   source_grid_id_exposed: false
   resolution: hourly
@@ -12,12 +13,9 @@ truth:
   primary:
     provider: jma_jaxa_himawari_shortwave_radiation
     model: jma_jaxa_himawari
+    role: satellite_derived_ghi_reference
     semantics: preceding_hour_mean
-    variables: [shortwave_radiation, direct_radiation, diffuse_radiation, direct_normal_irradiance, global_tilted_irradiance]
-  supplementary:
-    provider: era5_reanalysis
-    role: supplementary_exploratory
-    variables: [shortwave_radiation, direct_radiation, diffuse_radiation, direct_normal_irradiance, global_tilted_irradiance, cloud_cover, cloud_cover_low, cloud_cover_mid, cloud_cover_high]
+    variables: [shortwave_radiation]
 radiation_semantics: preceding_hour_mean
 requested_coordinates_role: provenance_only
 timezone: UTC

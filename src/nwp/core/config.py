@@ -186,11 +186,10 @@ def _validate_bundle(bundle: Mapping[str, Any]) -> None:
         "truth_gate", "study_object", "service_registry_status",
         "empirical_probe_step_degrees", "service_probe_registry",
         "convergence_required_before_official"}, "protocol.spatial_design")
-    exact_keys(data["truth"], {"primary", "supplementary"}, "data.truth")
+    exact_keys(data["truth"], {"primary"}, "data.truth")
     exact_keys(data["truth"]["primary"], {
-        "provider", "model", "semantics", "variables"}, "data.truth.primary")
-    exact_keys(data["truth"]["supplementary"], {
-        "provider", "role", "variables"}, "data.truth.supplementary")
+        "provider", "model", "role", "semantics", "variables"},
+        "data.truth.primary")
     exact_keys(data["storage"], {
         "raw_partitioning", "clean_partitioning", "feature_partitioning",
         "raw_overwrite_forbidden"}, "data.storage")
@@ -199,7 +198,7 @@ def _validate_bundle(bundle: Mapping[str, Any]) -> None:
         "data.clean_contract")
     exact_keys(features, {
         "version", "status", "clear_sky", "feature_groups",
-        "derived_features", "policy"}, "features.build")
+        "model_contracts", "derived_features", "policy"}, "features.build")
     exact_keys(features["policy"], {
         "issue_time_availability_required", "identity_fields_forbidden",
         "truth_fields_forbidden", "location_for_solar_geometry",
@@ -286,13 +285,19 @@ def _validate_bundle(bundle: Mapping[str, Any]) -> None:
     forecast = data.get("forecast", {})
     if not isinstance(forecast, Mapping):
         raise ConfigError("forecast must be a mapping")
-    expected_forecast = {"provider", "model", "product_class", "cell_selection", "source_grid_id_exposed", "resolution", "leads", "variables"}
+    expected_forecast = {"provider", "model", "product_class", "lead_semantics", "cell_selection", "source_grid_id_exposed", "resolution", "leads", "variables"}
     if set(forecast) != expected_forecast:
         raise ConfigError("forecast contains unknown or missing keys")
     if forecast.get("cell_selection") not in {"land"} or forecast.get("resolution") not in {"hourly"}:
         raise ConfigError("invalid forecast enum")
     if not forecast.get("variables") or len(forecast["variables"]) != len(set(forecast["variables"])):
         raise ConfigError("forecast variables must be declared in data.yaml")
+    if forecast.get("lead_semantics") != "retained_previous_run_offset_not_verified_native_initialization":
+        raise ConfigError("Previous Runs lead semantics must not claim a verified native initialization")
+    primary_truth = data["truth"]["primary"]
+    if (primary_truth.get("role") != "satellite_derived_ghi_reference"
+            or primary_truth.get("variables") != ["shortwave_radiation"]):
+        raise ConfigError("active truth must be Himawari satellite-derived shortwave-radiation GHI")
     leads = forecast.get("leads", [])
     if not leads or len(leads) != len(set(leads)) or any(int(lead) <= 0 for lead in leads):
         raise ConfigError("forecast leads must be unique positive hours")
@@ -315,9 +320,26 @@ def _validate_bundle(bundle: Mapping[str, Any]) -> None:
     )
     if forbidden_features:
         raise ConfigError(f"formal feature groups contain forbidden fields: {sorted(forbidden_features)}")
+    assigned_models = []
+    for contract_id, contract in features["model_contracts"].items():
+        groups = contract.get("feature_groups", [])
+        if not groups or set(groups) - set(features["feature_groups"]):
+            raise ConfigError(f"feature contract {contract_id} contains unknown feature groups")
+        models = contract.get("models", [])
+        if not models or len(models) != len(set(models)):
+            raise ConfigError(f"feature contract {contract_id} must list unique models")
+        assigned_models.extend(models)
+    if len(assigned_models) != len(set(assigned_models)):
+        raise ConfigError("a model may belong to only one model-specific feature contract")
     registry = bundle["models"].get("registry", {})
     if not registry or len(registry) != len(set(registry)):
         raise ConfigError("model registry IDs must be unique")
+    unknown_contract_models = set(assigned_models) - set(registry)
+    if unknown_contract_models:
+        raise ConfigError(
+            "model-specific feature contracts reference unknown models: "
+            f"{sorted(unknown_contract_models)}"
+        )
     for group, ids in bundle["models"].get("groups", {}).items():
         unknown = set(ids) - set(registry)
         if unknown:

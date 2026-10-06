@@ -168,18 +168,14 @@ def audit_month_coverage(
 
 def audit_truth(data_config: Mapping[str, Any]) -> dict[str, Any]:
     primary = data_config["truth"]["primary"]
-    supplementary = data_config["truth"]["supplementary"]
     issues = []
     if primary.get("semantics") != data_config.get("radiation_semantics"):
         issues.append("primary truth and forecast radiation semantics differ")
     if not primary.get("variables"):
         issues.append("primary truth variables are empty")
-    if not supplementary.get("variables"):
-        issues.append("supplementary truth variables are empty")
     return {
         "status": "pass" if not issues else "blocked",
         "primary_provider": primary.get("provider"),
-        "supplementary_provider": supplementary.get("provider"),
         "issues": issues,
     }
 

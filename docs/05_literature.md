@@ -17,8 +17,9 @@ the bibliography or invent citations.
 
 ## Index and verification
 
-The bibliographic index is [literature/00_index.md](../literature/00_index.md); local source files remain
-under `literature/`. Before manuscript use, verify title, authors, venue,
+The optional local bibliographic index and source files remain under the
+Git-ignored `literature/` directory; they are not part of the repository.
+Before manuscript use, verify title, authors, venue,
 publication year, DOI, exact supported claim, and whether the cited source was
 actually read. External literature supports method choice and positioning;
 numeric project claims must trace to a run and may not be replaced by a paper's

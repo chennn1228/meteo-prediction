@@ -37,21 +37,6 @@ FCST_RENAME = {
 }
 SATELLITE_RENAME = {
     "shortwave_radiation": "ghi_obs_sat",
-    "direct_radiation": "direct_obs_sat",
-    "diffuse_radiation": "dhi_obs_sat",
-    "direct_normal_irradiance": "dni_obs_sat",
-    "global_tilted_irradiance": "gti_obs_sat",
-}
-ERA5_RENAME = {
-    "shortwave_radiation": "ghi_obs_era5",
-    "direct_radiation": "direct_obs_era5",
-    "diffuse_radiation": "dhi_obs_era5",
-    "direct_normal_irradiance": "dni_obs_era5",
-    "global_tilted_irradiance": "gti_obs_era5",
-    "cloud_cover": "cloud_cover_obs",
-    "cloud_cover_low": "cloud_cover_low_obs",
-    "cloud_cover_mid": "cloud_cover_mid_obs",
-    "cloud_cover_high": "cloud_cover_high_obs",
 }
 RADIATION_COLUMNS = (
     "ghi_fcst",
@@ -59,24 +44,11 @@ RADIATION_COLUMNS = (
     "dni_fcst",
     "gti_fcst",
     "ghi_obs_sat",
-    "direct_obs_sat",
-    "dhi_obs_sat",
-    "dni_obs_sat",
-    "gti_obs_sat",
-    "ghi_obs_era5",
-    "direct_obs_era5",
-    "dhi_obs_era5",
-    "dni_obs_era5",
-    "gti_obs_era5",
     "terrestrial_fcst",
     "sunshine_fcst",
 )
 CLOUD_COLUMNS = (
     "cloud_cover_fcst",
-    "cloud_cover_obs",
-    "cloud_cover_low_obs",
-    "cloud_cover_mid_obs",
-    "cloud_cover_high_obs",
 )
 def clean_dependency_hash(source_hashes: Mapping[str, str], clean_contract: Mapping[str, object]) -> str:
     if not source_hashes:
@@ -148,7 +120,7 @@ def apply_clean_contract(frame: pd.DataFrame, clean_contract: Mapping[str, objec
 
 def required_clean_columns(data_config: Mapping[str, Any]) -> tuple[str, ...]:
     columns = tuple(FCST_RENAME[name] for name in data_config["forecast"]["variables"])
-    columns += tuple(SATELLITE_RENAME.values()) + tuple(ERA5_RENAME.values())
+    columns += tuple(SATELLITE_RENAME.values())
     columns += (
         "target_time_utc",
         "forecast_issue_time_utc",
@@ -159,8 +131,6 @@ def required_clean_columns(data_config: Mapping[str, Any]) -> tuple[str, ...]:
         "gfs_service_longitude",
         "himawari_service_latitude",
         "himawari_service_longitude",
-        "era5_service_latitude",
-        "era5_service_longitude",
     )
     return columns
 
@@ -201,6 +171,11 @@ def build_clean_month(
             time_range=f"{first.isoformat()}/{last.isoformat()}",
         )
         if record is None:
+            record = catalog.resolve_compatible_raw(
+                source=request.source, site_id=site_id, month=month,
+                required_variables=request.variables,
+                time_range=f"{first.isoformat()}/{last.isoformat()}")
+        if record is None:
             raise ContractError(f"catalog has no ready {request.source} raw partition for {site_id}/{month}")
         raw_records[request.source] = record
         receipt = read_receipt(catalog.receipt_path(record))
@@ -218,8 +193,7 @@ def build_clean_month(
 
     previous = read_previous_runs(catalog.dataset_path(raw_records["previous_runs"]), data_config)
     satellite = read_truth(catalog.dataset_path(raw_records["satellite"]), SATELLITE_RENAME, "himawari")
-    era5 = read_truth(catalog.dataset_path(raw_records["era5"]), ERA5_RENAME, "era5")
-    frame = previous.merge(satellite, on="target_time_utc", how="left").merge(era5, on="target_time_utc", how="left")
+    frame = previous.merge(satellite, on="target_time_utc", how="left")
     frame = apply_clean_contract(frame, clean_contract)
     site = site_registry[site_id]
     frame.insert(0, "station_id", site_id)

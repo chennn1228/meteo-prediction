@@ -11,11 +11,24 @@ build:
     solar_geometry: [solar_elevation, solar_azimuth_sin, solar_azimuth_cos]
     temporal: [hour_local_sin, hour_local_cos, doy_sin, doy_cos, month_sin, month_cos, ghi_fcst_lag1, ghi_fcst_lag2, lead_time]
     spatial: [gfs_service_latitude, gfs_service_longitude, gfs_service_elevation]
+  model_contracts:
+    statistical:
+      models: [linear_mos, ridge_mos]
+      feature_groups: [radiation, clear_sky, cloud, meteorology, solar_geometry, temporal]
+      dimensionality_reduction: allowed_fold_local
+    tree_ml:
+      models: [lgbm, xgboost]
+      feature_groups: [radiation, clear_sky, cloud, meteorology, solar_geometry, temporal, spatial]
+      dimensionality_reduction: not_required
+    deep:
+      models: [mlp, cnn, tcn, lstm, transformer, autoformer, informer, fedformer, itransformer, patchtst, dlinear, timesnet, tsmixer, pinn]
+      feature_groups: [radiation, clear_sky, cloud, meteorology, solar_geometry, temporal, spatial]
+      future_inputs: [temporal_sequences, spatial_neighbourhoods]
   derived_features: {kt: true, kni: true, diffuse_fraction: true, cloud_change: true, lag_features: true}
   policy:
     issue_time_availability_required: true
     identity_fields_forbidden: [station_id, location_id, source_grid_id, requested_location_id, gfs_service_id, truth_service_id]
-    truth_fields_forbidden: [ghi_obs_sat, ghi_obs_era5, cloud_cover_obs, y]
+    truth_fields_forbidden: [ghi_obs_sat, y]
     location_for_solar_geometry: gfs_service_coordinates
     solar_geometry_time_basis: preceding_hour_interval_midpoint
     clear_sky_time_basis: preceding_hour_mean_12x5min_midpoints

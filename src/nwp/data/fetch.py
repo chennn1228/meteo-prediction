@@ -17,7 +17,6 @@ from .contracts import DataCatalog, DatasetRecord, expected_hourly_fields, expec
 SOURCE_ENDPOINTS = {
     "previous_runs": "https://previous-runs-api.open-meteo.com/v1/forecast",
     "satellite": "https://satellite-api.open-meteo.com/v1/archive",
-    "era5": "https://archive-api.open-meteo.com/v1/archive",
 }
 
 
@@ -77,7 +76,7 @@ def build_requests(
     site_ids: Iterable[str],
     start: dt.date,
     end: dt.date,
-    sources: Iterable[str] = ("previous_runs", "satellite", "era5"),
+    sources: Iterable[str] = ("previous_runs", "satellite"),
 ) -> tuple[FetchRequest, ...]:
     if start > end:
         raise ContractError("fetch start exceeds end")
@@ -93,12 +92,10 @@ def build_requests(
     variables = {
         "previous_runs": tuple(data_config["forecast"]["variables"]),
         "satellite": tuple(data_config["truth"]["primary"]["variables"]),
-        "era5": tuple(data_config["truth"]["supplementary"]["variables"]),
     }
     models = {
         "previous_runs": data_config["forecast"]["model"],
         "satellite": data_config["truth"]["primary"]["model"],
-        "era5": None,
     }
     output = []
     for source in requested_sources:
@@ -168,7 +165,7 @@ def execute_request(
     ) -> Mapping[str, Any]:
         returned = audit["returned_coordinates"]
         provider = (data_config["forecast"]["provider"] if request.source == "previous_runs"
-                    else data_config["truth"]["primary" if request.source == "satellite" else "supplementary"]["provider"])
+                    else data_config["truth"]["primary"]["provider"])
         return make_receipt(
             root=paths.root,
             stage="raw",

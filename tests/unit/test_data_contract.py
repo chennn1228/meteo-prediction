@@ -116,8 +116,8 @@ def test_fetch_planning_is_site_month_partitioned_and_config_driven():
         start=dt.date(2024, 2, 1),
         end=dt.date(2024, 3, 31),
     )
-    assert len(requests) == 6
-    assert {request.source for request in requests} == {"previous_runs", "satellite", "era5"}
+    assert len(requests) == 4
+    assert {request.source for request in requests} == {"previous_runs", "satellite"}
     assert {request.month for request in requests} == {"2024-02", "2024-03"}
     forecast = next(request for request in requests if request.source == "previous_runs")
     assert forecast.variables == tuple(bundle["data"]["forecast"]["variables"])

@@ -14,7 +14,7 @@ from nwp.data.fetch import build_requests, execute_request
 from nwp.features.build import build_feature_month
 
 
-def test_three_source_month_builds_receipted_clean_partition(tmp_path):
+def test_two_source_month_builds_receipted_clean_partition(tmp_path):
     bundle = to_plain(load_bundle())
     data_config = bundle["data"]
     sites = bundle["sites"]["registry"]
@@ -88,7 +88,7 @@ def test_three_source_month_builds_receipted_clean_partition(tmp_path):
     assert set(frame["lead_time"]) == set(data_config["forecast"]["leads"])
     receipt = read_receipt(catalog.receipt_path(record))
     assert receipt["stage"] == "clean"
-    assert set(receipt["input_hashes"]) == {"previous_runs", "satellite", "era5"}
+    assert set(receipt["input_hashes"]) == {"previous_runs", "satellite"}
     assert receipt["row_count"] == len(frame)
     assert build_clean_month(
         site_id="nanjing_1",

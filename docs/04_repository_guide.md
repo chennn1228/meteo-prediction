@@ -1,7 +1,5 @@
 # Repository guide
 
-STATUS: MERGE_READY
-
 ## Where changes belong
 
 - `project_manifest.yaml` points to the six authoritative configurations.
@@ -40,9 +38,9 @@ Metrics and analysis tables belong in `06_metrics` and `07_analysis`.
 through its index to a source table, predictions, resolved configuration, and
 data receipts. Never infer provenance from a human version suffix.
 
-## History
+## History and local-only material
 
 Prior source is retrieved through the Git tags listed in `docs/07_history.md`.
-Do not create new historical-code directories, numbered source packages, or copied
-documentation trees. Migration evidence belongs in `migration/` and is not an
-active runtime entry point.
+Do not create historical-code directories, numbered source packages, copied
+documentation trees, or a new migration tree. Local literature is intentionally
+ignored by Git. Historical tracked material is recovered from commits and tags.

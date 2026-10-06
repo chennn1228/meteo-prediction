@@ -18,6 +18,7 @@ from nwp.experiment.fitting import (
 from nwp.experiment.prediction import (
     quantile_columns, quantiles, read_predictions, write_predictions)
 from nwp.experiment.tuning import IncompleteTrialsError, candidates, run_trials
+from nwp.features.build import model_feature_config
 from nwp.models.base import BaseModel
 from nwp.models.statistical import ridge_fit_predict as _ridge_fit_predict
 from nwp.models.trees import tree_fit_predict
@@ -57,6 +58,8 @@ def tune_models(context: RunContext) -> StageResult:
                 fold.score_start) for fold in folds]
             for model_id in context.selected_models:
                 entry = models["registry"][model_id]
+                feature_config = model_feature_config(
+                    context.config.features, model_id)
                 if not entry["tuning"]["enabled"]:
                     continue
                 adapter_name = entry.get("quantile_adapter")
@@ -64,12 +67,12 @@ def tune_models(context: RunContext) -> StageResult:
                     def adapter(parameters, fit, early, score, seed, levels):
                         return _ridge_fit_predict(
                             parameters, fit, early, score, seed, levels,
-                            feature_config=context.config.features)
+                            feature_config=feature_config)
                     tree_receipts = []
                 elif adapter_name == "tree":
                     adapter = tree_fit_predict(
                         str(entry["implementation"]),
-                        feature_config=context.config.features)
+                        feature_config=feature_config)
                     tree_receipts = adapter.receipts
                 else:
                     raise ContractError(

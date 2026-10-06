@@ -9,6 +9,7 @@ import pandas as pd
 
 from nwp.core.schema import ContractError, assert_model_features
 from nwp.evaluation.metrics import probability_metrics
+from nwp.features.build import model_feature_config
 from nwp.features.preprocessing import fit_fold_preprocessing
 from nwp.splits.rolling import inner_folds, outer_folds
 
@@ -170,6 +171,7 @@ def group_mechanism_evidence(
     if not isinstance(entry, Mapping) or entry.get("quantile_adapter") != "tree":
         raise ValueError("reference_model must be a supported tree model")
     implementation = str(entry["implementation"])
+    feature_config = model_feature_config(feature_config, model_id)
     levels = tuple(float(value) for value in
                    protocol_config["probability"]["quantiles"])
     leads = tuple(sorted(int(value) for value in frame.lead_time.unique()))

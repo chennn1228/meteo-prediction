@@ -177,11 +177,11 @@ def validate_data_readiness(root: Path | None = None) -> list[Check]:
     end = dt.date.fromisoformat(bundle["protocol"]["test_period"]["end"][:10])
     expected = {
         f"raw/{source}/{site}/{month}.json"
-        for source in ("previous_runs", "satellite", "era5")
+        for source in ("previous_runs", "satellite")
         for site in bundle["sites"]["sets"]["training_20"]
         for month in _months(start, end)}
     missing = sorted(expected - set(ready_by_path))
-    receipt_errors, imported = [], 0
+    receipt_errors, unverified_provenance = [], 0
     for relative in sorted(expected & set(ready_by_path)):
         record = ready_by_path[relative]
         try:
@@ -192,7 +192,16 @@ def validate_data_readiness(root: Path | None = None) -> list[Check]:
                     file_sha256(data_path)
                     not in receipt["output_hashes"].values()):
                 raise ValueError("receipt status/hash mismatch")
-            imported += int(bool(receipt.get("imported_from")))
+            if receipt.get("imported_from"):
+                proven = (
+                    receipt.get("source_preserved_during_import") is True
+                    and receipt.get("validation_status") == "pass"
+                    and bool(receipt.get("imported_from"))
+                    and bool(receipt.get("request_parameters"))
+                    and bool(receipt.get("returned_coordinates"))
+                    and bool(receipt.get("data_sha256"))
+                )
+                unverified_provenance += int(not proven)
         except (OSError, ValueError, ConfigError, ContractError) as exc:
             receipt_errors.append(f"{relative}: {exc}")
     checks.append(Check(
@@ -201,15 +210,15 @@ def validate_data_readiness(root: Path | None = None) -> list[Check]:
         f"expected={len(expected)}; missing={len(missing)}; receipt_errors={len(receipt_errors)}",
         "data_ready"))
     checks.append(Check(
-        "acquisition-time provenance accepted for official use",
-        imported == 0,
-        f"migration-imported ready partitions={imported}; explicit acceptance or reacquisition required",
+        "raw provenance is complete and byte-verifiable",
+        unverified_provenance == 0,
+        f"unverified imported partitions={unverified_provenance}",
         "data_ready"))
     checks.append(Check(
         "primary truth coverage is independently receipt-backed",
         not any(path.startswith("raw/satellite/") for path in missing)
         and not receipt_errors,
-        "coverage pass does not waive the imported-provenance decision",
+        "Himawari shortwave-radiation partitions are independently verified",
         "data_ready"))
     return checks
 

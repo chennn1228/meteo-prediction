@@ -19,6 +19,7 @@ from nwp.features.engineering import (  # noqa: E402
     assert_forecast_issue_semantics, build_forecast_features,
     formal_daylight_mask,
 )
+from nwp.features.build import model_feature_config  # noqa: E402
 from nwp.features.preprocessing import FoldPreprocessor  # noqa: E402
 
 
@@ -26,6 +27,18 @@ BUNDLE = to_plain(load_bundle())
 
 
 class CoreFeatureMigrationTests(unittest.TestCase):
+    def test_model_specific_feature_contracts_are_distinct(self):
+        feature_config = BUNDLE["features"]["build"]
+        ridge = model_feature_config(feature_config, "ridge_mos")
+        tree = model_feature_config(feature_config, "lgbm")
+        deep = model_feature_config(feature_config, "transformer")
+        self.assertNotIn("spatial", ridge["feature_groups"])
+        self.assertIn("spatial", tree["feature_groups"])
+        self.assertIn("spatial", deep["feature_groups"])
+        self.assertLess(
+            sum(map(len, ridge["feature_groups"].values())),
+            sum(map(len, tree["feature_groups"].values())))
+
     def test_manifest_and_result_gate(self):
         self.assertIsNone(BUNDLE["manifest"]["official_result_set"])
         self.assertEqual(

@@ -7,13 +7,22 @@ variables, leads, truth roles, radiation semantics, timezone, tilt, azimuth,
 and storage policy. `config/sites.yaml` is the sole authority for requested
 site coordinates. Code must not carry a second variable or site registry.
 
-Previous Runs supplies the location-specific GFS forecast fields at the
-configured lead hours. A lead is the elapsed time from
-`forecast_issue_time_utc` to `target_time_utc`; those three values must be
-arithmetically consistent. Himawari is primary truth. ERA5 is supplementary and
-exploratory and may not silently replace missing GFS or Himawari values. GHI
-and the registered radiation variables use the configured preceding-hour
-semantics.
+Previous Runs supplies location-specific fields from the recorded
+`gfs_seamless` product at 24, 48, and 72 h offsets. The derived
+`forecast_issue_time_utc = target_time_utc - lead_time` boundary is used for
+causal availability; it is not claimed to be a verified native GFS
+initialization timestamp. Himawari `shortwave_radiation` is the sole active
+satellite-derived GHI reference. ERA5 is not part of active acquisition,
+cleaning, features, audit, or evaluation.
+
+The raw acquisition contract and model-specific feature contracts are
+separate. Linear and Ridge use the declared compact statistical groups and may
+apply fold-local dimensionality reduction. LightGBM and XGBoost use the richer
+tabular groups. Deep models may use the richer raw-derived table, temporal
+sequences, and later spatial neighbourhood inputs. The project does not create
+an artificial all-model-identical feature layer. Variables available from an
+API but absent from the preserved Previous Runs bytes, including low/mid/high
+cloud and pressure-level fields, are not active contract variables.
 
 ## Coordinates and fields
 
@@ -47,6 +56,16 @@ records are accepted only when the file, receipt, stage, configuration hash,
 status, and content hash agree. Inherited artifacts without sufficient lineage
 are retained as `incomplete` and cannot satisfy resolution.
 
-`data/data_inventory.csv` is the non-destructive filesystem audit. Its actions
+`data/data_inventory.csv` is the complete local filesystem audit. Its actions
 are restricted to `KEEP`, `MOVE`, `MERGE`, `DUPLICATE_DELETE`, and `UNKNOWN`;
 automatic quarantine is forbidden.
+
+## Local ERA5 archive
+
+ERA5 is outside the active repository and catalog. Its preserved local archive
+is `../meteo prediction.local-archive/era5_20261006/data/raw/era5` relative to
+the repository. It contains 3,744 files and 78,002,911 bytes. The archive
+inventory is `era5_inventory_sha256.csv`; its SHA-256 is
+`38784f71fc060ea4aebe58c35ade0c52526fc7ac0426bad86be368668edaca9e`.
+The archive bytes and per-file inventory are local-only and are not uploaded to
+GitHub.

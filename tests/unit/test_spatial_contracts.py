@@ -41,7 +41,7 @@ def payload(source="previous_runs"):
 class DataContractMigrationTests(unittest.TestCase):
     def test_request_explicitly_selects_land(self):
         site = {"id": "test", "lat": 32.0, "lon": 119.0}
-        for source in ("previous_runs", "satellite", "era5"):
+        for source in ("previous_runs", "satellite"):
             request = FetchRequest(
                 source=source,
                 site_id=site["id"],
@@ -52,13 +52,13 @@ class DataContractMigrationTests(unittest.TestCase):
                 variables=tuple(
                     CFG["forecast"]["variables"]
                     if source == "previous_runs"
-                    else CFG["truth"]["primary" if source == "satellite" else "supplementary"]["variables"]
+                    else CFG["truth"]["primary"]["variables"]
                 ),
                 leads=tuple(CFG["forecast"]["leads"]) if source == "previous_runs" else (),
                 model=(
                     CFG["forecast"]["model"]
                     if source == "previous_runs"
-                    else CFG["truth"]["primary"]["model"] if source == "satellite" else None
+                    else CFG["truth"]["primary"]["model"]
                 ),
             )
             params = request_parameters(request, CFG)
@@ -117,7 +117,7 @@ class DataContractMigrationTests(unittest.TestCase):
         frame = pd.DataFrame({"target_time_utc": list(target) * 3,
                               "lead_time": [24] * 24 + [48] * 24 + [72] * 24})
         frame["forecast_issue_time_utc"] = frame["target_time_utc"] - pd.to_timedelta(frame["lead_time"], unit="h")
-        for source, lat in (("gfs", 32.1), ("himawari", 32.2), ("era5", 32.3)):
+        for source, lat in (("gfs", 32.1), ("himawari", 32.2)):
             frame[f"{source}_service_latitude"] = lat
             frame[f"{source}_service_longitude"] = 119.0
         frame["requested_latitude"] = 32.0

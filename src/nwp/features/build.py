@@ -17,6 +17,25 @@ from .engineering import build_forecast_features, formal_feature_columns
 from .physics import add_returned_service_physics
 
 
+def model_feature_config(
+    feature_config: Mapping[str, Any], model_id: str
+) -> dict[str, Any]:
+    """Resolve one model's declared feature groups from the shared feature table."""
+    selected = None
+    for contract in feature_config.get("model_contracts", {}).values():
+        if model_id in contract["models"]:
+            if selected is not None:
+                raise ContractError(
+                    f"model has multiple feature contracts: {model_id}")
+            selected = tuple(contract["feature_groups"])
+    if selected is None:
+        return dict(feature_config)
+    groups = feature_config["feature_groups"]
+    resolved = dict(feature_config)
+    resolved["feature_groups"] = {name: groups[name] for name in selected}
+    return resolved
+
+
 def feature_dependency_hash(clean_hash: str, feature_config: Mapping[str, Any]) -> str:
     if not clean_hash:
         raise ContractError("feature data requires a clean content hash")

@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 from nwp.core.config import to_plain
 from nwp.core.context import RunContext
+from nwp.features.build import model_feature_config
 from nwp.models.factory import model_factory, quantile_model_factory
 from nwp.models.trees import final_tree_rounds, selected_tree_rounds
 
@@ -28,11 +29,13 @@ def fit_outer_quantile_model(
                    context.config.protocol["probability"]["quantiles"])
     seed = int(context.config.protocol["seed_policy"]["tuning_seed"])
     entry = context.config.models["registry"][model_id]
+    feature_config = model_feature_config(
+        to_plain(context.config.features), model_id)
     adapter = entry.get("quantile_adapter")
     if adapter == "ridge":
         return quantile_model_factory(
             model_id, to_plain(context.config.models),
-            to_plain(context.config.features), to_plain(context.config.protocol),
+            feature_config, to_plain(context.config.protocol),
             parameters=parameters, seed=seed).fit(
                 {"outer_fit": outer_fit, "inner_folds": inner_folds})
     if adapter == "tree":
@@ -44,7 +47,7 @@ def fit_outer_quantile_model(
                 context.config.protocol["validation"]["inner_folds"]))
         return quantile_model_factory(
             model_id, to_plain(context.config.models),
-            to_plain(context.config.features), to_plain(context.config.protocol),
+            feature_config, to_plain(context.config.protocol),
             parameters=parameters, rounds=rounds, seed=seed).fit(outer_fit)
     raise ValueError(f"no outer quantile fitter for {model_id}")
 
@@ -57,20 +60,22 @@ def fit_final_quantile_model(
                    context.config.protocol["probability"]["quantiles"])
     seed = int(context.config.protocol["seed_policy"]["tuning_seed"])
     entry = context.config.models["registry"][model_id]
+    feature_config = model_feature_config(
+        to_plain(context.config.features), model_id)
     adapter = entry.get("quantile_adapter")
     if adapter == "ridge":
         fold = SimpleNamespace(fit=fit, early_stop=early_stop)
         return quantile_model_factory(
             model_id, to_plain(context.config.models),
-            to_plain(context.config.features), to_plain(context.config.protocol),
+            feature_config, to_plain(context.config.protocol),
             parameters=parameters, seed=seed).fit(
                 {"outer_fit": fit, "inner_folds": [fold]})
     if adapter == "tree":
         rounds = final_tree_rounds(
             str(entry["implementation"]), parameters, fit, early_stop, seed, levels,
-            feature_config=to_plain(context.config.features))
+            feature_config=feature_config)
         return quantile_model_factory(
             model_id, to_plain(context.config.models),
-            to_plain(context.config.features), to_plain(context.config.protocol),
+            feature_config, to_plain(context.config.protocol),
             parameters=parameters, rounds=rounds, seed=seed).fit(fit)
     raise ValueError(f"no final quantile fitter for {model_id}")

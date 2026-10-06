@@ -27,12 +27,12 @@ __pycache__/
 /deploy/
 /artifacts/
 /outputs/
-/literature/*
-!/literature/00_index.md
+/literature/
 
 # Website work is outside this repository's upload scope
 /website/
 /NWP_website_handoff/
+/NWP_website/
 /handoff_templates/
 /schemas/
 

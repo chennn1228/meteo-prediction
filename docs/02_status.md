@@ -1,52 +1,34 @@
 # Status
 
-STATUS: MERGE_READY
+## Current repository and local data state
 
-## Targeted dependency repair complete
-
-- Gap propagation, model-local reuse, pre-render figure reuse, implementation
-  routing, deep capability status, and base import boundaries are verified.
-- Inherited API responses are stored by source/site/month with receipts and a
-  catalog. Valid data are `ready`; invalid, partial, variant, and unverified
-  processed imports are retained but fail-closed as `incomplete`.
-- Data and inherited figure/report inventories are complete. No formal/full
-  training, network acquisition, or result regeneration occurred.
-- Historical raw-audit evidence was imported from the freeze tag with exact
-  hashes: 42 current audit files are materialized, of which 34 came from Git
-  and 8 were exact local files. Sixty Nanjing diagnostic files were restored
-  from Git and materialized read-only. Imported evidence is non-official.
-- Of the original 282 recovery-required paths, 121 have exact local recovery
-  and 161 remain `RECOVERY_REQUIRED`. The canonical current snapshot is
-  `migration/recovery_required_register.csv`.
-- The earlier acceptances are superseded by the targeted 2026-10-06 repair.
-  The independent full environment passes 160 tests; the base-only bounded
-  workflow reaches the real split stage without model libraries.
+- `main` is the active branch; refactor history is recoverable from Git tags,
+  including `nwp-refactor-closeout-20261006`.
+- Active local data cover the configured 20 sites using immutable Previous
+  Runs `gfs_seamless` bytes and Himawari shortwave-radiation bytes.
+- ERA5 has left the active project and is retained only in a checksummed local
+  archive outside the repository.
+- Clean and feature partitions are regenerated from reusable raw bytes through
+  the current receipt-backed pipeline; no network acquisition was performed.
+- Raw acquisition fields and model-specific feature contracts are separate.
+- CI runs the complete test suite on every push and pull request.
 
 ## Blocked
 
-- Imported raw receipts reconstruct some request facts from configuration; the
-  project must decide whether that evidence is sufficient or reacquire data
-  with acquisition-time receipts before an official run.
 - Models not marked eligible in `config/models.yaml` still need real-data
   validation, including one receipt-backed development mini-E2E.
 - Spatial evaluation remains deferred pending its configured returned-point
   convergence and truth gates.
 - `project_manifest.yaml::official_result_set` is intentionally unset.
-- The 161 unresolved recovery paths have no exact local or Git-tag copy found;
-  they remain recorded by path and SHA-256 and must not be represented as
-  restored.
 
 ## Safe now
 
-Configuration validation, data inventory, status inspection, and a development
-run through `splits` are safe. They do not start model training. Model stages
-remain opt-in through `--execute-model-stages`; official execution remains
-blocked by the gate.
+Configuration validation, local data inventory, and development execution are
+safe. Model stages remain opt-in through `--execute-model-stages`; official
+execution remains blocked by the gate.
 
 ## Next
 
-Validate the chosen development model set on receipt-backed data. Current
-readiness values are snapshots; canonical scientific state remains in
-`config/`. Only after
-closing the open evidence items in `docs/06_issues.md` should an official
-profile/hash and result set be registered.
+Validate the chosen development model set on receipt-backed data. Canonical
+scientific state remains in `config/`. Province-wide GFS025 acquisition is out
+of scope and must not begin without an explicit user instruction.

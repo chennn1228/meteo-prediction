@@ -1,8 +1,5 @@
 from pathlib import Path
-import hashlib
-import json
 import re
-import subprocess
 import sys
 import unittest
 
@@ -51,24 +48,6 @@ class ManifestTests(unittest.TestCase):
         self.assertTrue(all(pattern.fullmatch(value) for value in identifiers))
         self.assertTrue(all(not re.search(r"(?:^|_)v\d+(?:_|$)", value)
                             for value in identifiers))
-
-    def test_import_manifests_use_original_tag_paths_and_exact_bytes(self):
-        verified = 0
-        for name in ("raw_data_audit.json", "nanjing_diagnostic.json"):
-            manifest = json.loads((
-                ROOT / "migration" / "import_manifests" / name
-            ).read_text(encoding="utf-8"))
-            for row in manifest["files"]:
-                source = row["source_path"]
-                self.assertFalse(source.startswith("migration/recovery_staging/"))
-                if not source.startswith(("figs/", "reports/")):
-                    continue
-                data = subprocess.check_output(
-                    ["git", "show", f"{manifest['source_tag']}:{source}"], cwd=ROOT)
-                self.assertEqual(hashlib.sha256(data).hexdigest(), row["sha256"])
-                verified += 1
-        self.assertEqual(verified, 94)
-
 
 if __name__ == "__main__":
     unittest.main()

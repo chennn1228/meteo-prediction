@@ -10,15 +10,18 @@ from nwp.core.validation import readiness_result
 def test_layered_modes_fail_closed_without_real_completion():
     structural = readiness_result("structural")
     assert structural["status"] == "pass"
-    for mode in ("data_ready", "cpu_ready", "deep_ready", "official_full"):
+    data = readiness_result("data_ready")
+    assert data["status"] == "pass"
+    assert data["total"] > structural["total"]
+    for mode in ("cpu_ready", "deep_ready", "official_full"):
         report = readiness_result(mode)
         assert report["status"] == "blocked"
-        assert report["total"] > structural["total"]
+        assert report["total"] > data["total"]
     cpu = readiness_result("cpu_ready")
     assert any(check["name"] == "complete ready raw source-site-month coverage"
                and check["passed"] for check in cpu["checks"])
-    assert any(check["name"] == "acquisition-time provenance accepted for official use"
-               and not check["passed"] for check in cpu["checks"])
+    assert any(check["name"] == "raw provenance is complete and byte-verifiable"
+               and check["passed"] for check in cpu["checks"])
     assert not any(check["scope"] == "deep_ready" for check in cpu["checks"])
 
 

@@ -4,6 +4,7 @@
 |---|---|---|---|
 | 2026-10-02 | pre-refactor freeze | tag `pre-nwp-refactor-20261002` / commit `09230bce481bca561aef94b64f0d9a02479b41ae` | Tracked state before the unified refactor. |
 | 2026-10-04 | pre-final-repair freeze | tag `pre-final-repair-20261004` / commit `1a60bdc9b9ff1e21f79c9943161aac95e0621e74` | Immutable starting point for the final repair pass. |
+| 2026-10-06 | refactor closeout | tag `nwp-refactor-closeout-20261006` / commit `8ddcb99bd500b293b8a029b07bc43089915ad966` | Accepted unified repository state before local 20-site data consolidation. |
 
 Use Git commits and tags to recover prior tracked material. This document is
 only an index; it is not a copied archive.

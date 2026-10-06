@@ -39,8 +39,6 @@ def _source_variables(source: str, data_config: Mapping[str, Any]) -> tuple[str,
         )
     if source == "satellite":
         return tuple(data_config["truth"]["primary"]["variables"])
-    if source == "era5":
-        return tuple(data_config["truth"]["supplementary"]["variables"])
     raise ContractError(f"unknown data source: {source}")
 
 
@@ -159,8 +157,6 @@ def validate_clean_frame(
         "gfs_service_longitude",
         "himawari_service_latitude",
         "himawari_service_longitude",
-        "era5_service_latitude",
-        "era5_service_longitude",
     )
     for column in coordinate_columns:
         if column not in frame or frame[column].isna().any():
@@ -182,7 +178,7 @@ def validate_clean_frame(
                     )
                 }
             )
-            for source in ("gfs", "himawari", "era5")
+            for source in ("gfs", "himawari")
         },
     }
 
@@ -396,6 +392,29 @@ class DataCatalog:
             return None
         self._validate_ready(matches[0])
         return matches[0]
+
+    def resolve_compatible_raw(
+        self, *, source: str, site_id: str, month: str,
+        required_variables: Iterable[str], time_range: str,
+    ) -> DatasetRecord | None:
+        """Reuse immutable raw bytes when their receipt is a proven superset."""
+        expected_path = f"raw/{source}/{site_id}/{month}.json"
+        matches = [record for record in self._read()
+                   if record.stage == "raw" and record.status == "ready"
+                   and record.path == expected_path
+                   and record.sites == (site_id,)
+                   and record.time_range == time_range]
+        if len(matches) > 1:
+            raise ContractError(f"ambiguous compatible raw partition: {expected_path}")
+        if not matches:
+            return None
+        record = matches[0]
+        self._validate_ready(record)
+        receipt = read_receipt(self.receipt_path(record))
+        if (receipt.get("source") != source
+                or not set(required_variables) <= set(receipt.get("variables", []))):
+            return None
+        return record
 
     def raw_partition(self, source: str, site_id: str, month: str, *, suffix: str = ".parquet") -> Path:
         return self.paths.raw_partition(source, site_id, month, suffix=suffix)
